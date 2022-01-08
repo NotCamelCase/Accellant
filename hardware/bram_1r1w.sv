@@ -14,15 +14,14 @@ module bram_1r1w
     logic[DATA_WIDTH-1:0]   buffer[2**ADDR_WIDTH-1:0];
     logic[DATA_WIDTH-1:0]   data_reg;
 
-    // Write port
+    // Write-first mode
     always_ff @(posedge clk) begin
-        if (wr_en)
+        if (wr_en) begin
+            data_reg <= wr_data;
             buffer[wr_addr] <= wr_data;
-    end
-
-    // Read port
-    always_ff @(posedge clk) begin
-        data_reg <= buffer[rd_addr];
+        end else begin
+            data_reg <= buffer[rd_addr];
+        end
     end
 
     assign rd_data = data_reg;

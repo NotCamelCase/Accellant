@@ -16,8 +16,7 @@ module true_rom
             initial begin
                 $readmemh(ROM_FILE, rom);
             end
-        end
-        else begin
+        end else begin
             initial begin
                 $readmemb(ROM_FILE, rom);
             end

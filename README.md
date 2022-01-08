@@ -1,2 +1,2 @@
 # Accellant
-Simple RISC-V SoC
+A simple WIP RISC-V SoC

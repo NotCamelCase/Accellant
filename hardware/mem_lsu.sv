@@ -25,8 +25,7 @@ module mem_lsu
             mem_wb_inf.ctrl.mem_load <= 1'b0;
             mem_wb_inf.ctrl.register_write <= 1'b0;
             mem_wb_inf.ctrl.result_src <= 2'b0;
-        end
-        else begin
+        end else begin
             mem_wb_inf.ctrl.mem_load <= exe_mem_inf.ctrl.mem_load;
             mem_wb_inf.ctrl.register_write <= exe_mem_inf.ctrl.register_write;
             mem_wb_inf.ctrl.result_src <= exe_mem_inf.ctrl.result_src;

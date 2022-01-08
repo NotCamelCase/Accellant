@@ -11,6 +11,8 @@ typedef struct packed {
 // ID -> EXE control signals
 typedef struct packed {
     logic       register_write;
+    logic       branch, jal, jalr;
+    logic[2:0]  branch_op;
     logic[1:0]  result_src;
     logic       mem_store;
     logic       mem_load;
