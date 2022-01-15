@@ -20,6 +20,9 @@ module instruction_fetch
     // Max number of instructions
     localparam  MAX_PROG_SIZE   = 1024; // 4KB Instruction ROM
 
+    // Start instructions from this address upon reset
+    localparam  RESET_PC        = 32'h0;
+
     // PC
     logic[31:0] pc_reg;
     
@@ -31,9 +34,9 @@ module instruction_fetch
     // PC registers
     always_ff @(posedge clk) begin
         if (rst)
-            pc_reg <= 32'h0;
+            pc_reg <= RESET_PC;
         else if (!stall_fetch)
-            pc_reg <= pc_src ? branch_target : pc_inc;
+            pc_reg <= pc_src ? {branch_target[31:1], 1'b0} : pc_inc;
     end
 
     assign pc_inc = pc_reg + 32'h4;

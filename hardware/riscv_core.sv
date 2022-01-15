@@ -22,48 +22,52 @@ module riscv_core
     mem_wb_inf_t    mem_wb_inf;
     wb_id_inf_t     wb_id_inf;
 
-    logic           pc_src;
-    logic[31:0]     branch_target;
-
-    logic           lw_stall;
+    logic           lw_stall, branch_stall;
     logic           stall_fetch, stall_decode;
-    logic           flush_decode, flush_exe;
+    logic           flush_decode, flush_exe, flush_mem;
 
-    logic[1:0]      fwd_rs1, fwd_rs2;
+    bypass_src_e    fwd_rs1, fwd_rs2;
     logic[4:0]      rs1_d, rs2_d;
 
     // Bypass path for EXE
     always_comb begin
-        fwd_rs1 = 2'b0;
-        fwd_rs2 = 2'b0;
+        fwd_rs1 = BYPASS_REG_FILE;
+        fwd_rs2 = BYPASS_REG_FILE;
 
         if ((id_exe_inf.a1 == exe_mem_inf.rd) && exe_mem_inf.ctrl.register_write && (id_exe_inf.a1 != 0))
-            fwd_rs1 = 2'b10; // Forward from MEM
+            fwd_rs1 = BYPASS_MEMORY; // Forward from MEM
         else if ((id_exe_inf.a1 == mem_wb_inf.rd) && mem_wb_inf.ctrl.register_write && (id_exe_inf.a1 != 0))
-            fwd_rs1 = 2'b01; // Forward from WB
+            fwd_rs1 = BYPASS_WRITEBACK; // Forward from WB
 
         if ((id_exe_inf.a2 == exe_mem_inf.rd) && exe_mem_inf.ctrl.register_write && (id_exe_inf.a2 != 0))
-            fwd_rs2 = 2'b10; // Forward from MEM
+            fwd_rs2 = BYPASS_MEMORY; // Forward from MEM
         else if ((id_exe_inf.a2 == mem_wb_inf.rd) && mem_wb_inf.ctrl.register_write && (id_exe_inf.a2 != 0))
-            fwd_rs2 = 2'b01; // Forward from WB
+            fwd_rs2 = BYPASS_WRITEBACK; // Forward from WB
     end
 
     // Resolve lw & control dependencies
     always_comb begin
+        // Loads take 2 cycles; there is a data hazard when an instruction
+        // being decoded requires load result, so we must stall for one cycle.
         lw_stall = id_exe_inf.ctrl.mem_load &&
                    ((rs1_d == id_exe_inf.rd) || (rs2_d == id_exe_inf.rd));
-        
-        stall_fetch = lw_stall;
-        stall_decode = lw_stall;
-        flush_decode = pc_src;
-        flush_exe = lw_stall || pc_src;
+
+        // Branches are assumed to be "not-taken", which means
+        // 3 instructions following a taken branch/jump must be flushed.  
+        branch_stall = exe_mem_inf.ctrl.branch_taken;
+
+        stall_fetch = lw_stall && ~(branch_stall);
+        stall_decode = lw_stall && ~(branch_stall);
+        flush_decode = branch_stall;
+        flush_exe = lw_stall || branch_stall;
+        flush_mem = branch_stall;
     end
 
     instruction_fetch #(.TEST_PROG(TEST_PROG), .READ_HEX(READ_HEX)) ifetch(
         .clk(clk),
         .rst(rst),
-        .pc_src(pc_src),
-        .branch_target(branch_target),
+        .pc_src(exe_mem_inf.ctrl.branch_taken),
+        .branch_target(exe_mem_inf.branch_target),
         .stall_fetch(stall_fetch),
         .stall_decode(stall_decode),
         .flush_decode(flush_decode),
@@ -82,8 +86,7 @@ module riscv_core
     exe_alu alu(
         .clk(clk),
         .rst(rst),
-        .pc_src(pc_src),
-        .branch_target(branch_target),
+        .flush_mem(flush_mem),
         .fwd_rs1(fwd_rs1),
         .fwd_rs2(fwd_rs2),
         .id_exe_inf(id_exe_inf),
@@ -100,7 +103,6 @@ module riscv_core
     // Writeback to register file
     assign wb_id_inf.wr_en = mem_wb_inf.ctrl.register_write;
     assign wb_id_inf.rd = mem_wb_inf.rd;
-    assign wb_id_inf.wr_data = (mem_wb_inf.ctrl.result_src == 2'b0) ? mem_wb_inf.alu_result :
-                               ((mem_wb_inf.ctrl.result_src == 2'b01) ? mem_wb_inf.read_data :
-                               mem_wb_inf.pc_inc);
+    assign wb_id_inf.wr_data = ({32{~mem_wb_inf.ctrl.result_src}} & mem_wb_inf.alu_result_or_pc_inc) |
+                               ({32{mem_wb_inf.ctrl.result_src}} & mem_wb_inf.read_data);
 endmodule

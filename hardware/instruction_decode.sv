@@ -38,14 +38,14 @@ module instruction_decode
 
     // Control signals
     logic       register_write;
-    logic[1:0]  result_src;
+    wb_src_e    result_src;
     logic       mem_store;
     logic       mem_load;
     logic       branch, jal, jalr;
-    logic[2:0]  branch_op;
-    logic[3:0]  alu_control;
+    branch_op_e branch_op;
+    alu_op_e    alu_control;
     logic       alu_src;
-    logic[2:0]  imm_src;
+    imm_type_e  imm_src;
 
     // Extract control signals
     control ctrl(
@@ -63,7 +63,7 @@ module instruction_decode
         .imm_src(imm_src),
         .register_write(register_write));
 
-    assign branch_op = if_id_inf.instr[14:12];
+    assign branch_op = branch_op_e'(if_id_inf.instr[14:12]);
 
     // Propagate control signals to EXE
     always_ff @(posedge clk) begin
@@ -72,11 +72,11 @@ module instruction_decode
             id_exe_inf.ctrl.branch <= 1'b0;
             id_exe_inf.ctrl.jal <= 1'b0;
             id_exe_inf.ctrl.jalr <= 1'b0;
-            id_exe_inf.ctrl.branch_op <= 3'b0;
-            id_exe_inf.ctrl.result_src <= 2'b0;
+            id_exe_inf.ctrl.branch_op <= BEQ;
+            id_exe_inf.ctrl.result_src <= WB_SRC_ALU;
             id_exe_inf.ctrl.mem_store <= 1'b0;
             id_exe_inf.ctrl.mem_load <= 1'b0;
-            id_exe_inf.ctrl.alu_control <= 4'b0;
+            id_exe_inf.ctrl.alu_control <= ALU_OP_ADD;
             id_exe_inf.ctrl.alu_src <= 1'b0;
         end else begin
             id_exe_inf.ctrl.register_write <= register_write;
@@ -122,12 +122,12 @@ module instruction_decode
         imm_ext = 32'h0;
 
         unique case (imm_src)
-            3'b000: imm_ext = {{20{if_id_inf.instr[31]}}, imm_ext_i};
-            3'b001: imm_ext = {{20{if_id_inf.instr[31]}}, imm_ext_s};
-            3'b010: imm_ext = {{20{if_id_inf.instr[31]}}, imm_ext_b};
-            3'b011: imm_ext = {{12{if_id_inf.instr[31]}}, imm_ext_j};
-            3'b100: imm_ext = {27'b0, imm_ext_shamt};
-            default: imm_ext = {imm_ext_u, 12'b0};
+            IMM_TYPE_I: imm_ext = {{20{if_id_inf.instr[31]}}, imm_ext_i};
+            IMM_TYPE_S: imm_ext = {{20{if_id_inf.instr[31]}}, imm_ext_s};
+            IMM_TYPE_B: imm_ext = {{20{if_id_inf.instr[31]}}, imm_ext_b};
+            IMM_TYPE_J: imm_ext = {{12{if_id_inf.instr[31]}}, imm_ext_j};
+            IMM_TYPE_SH: imm_ext = {27'b0, imm_ext_shamt};
+            default: imm_ext = {imm_ext_u, 12'b0}; // IMM_TYPE_U
         endcase
     end    
 
@@ -151,9 +151,15 @@ module instruction_decode
     end
 
     always_ff @(posedge clk) begin
-        id_exe_inf.a1 <= a1;
-        id_exe_inf.a2 <= a2;
-        id_exe_inf.rd <= rd;
+        if (rst || flush_exe) begin
+            id_exe_inf.a1 <= 5'b0;
+            id_exe_inf.a2 <= 5'b0;
+            id_exe_inf.rd <= 5'b0;
+        end else begin
+            id_exe_inf.a1 <= a1;
+            id_exe_inf.a2 <= a2;
+            id_exe_inf.rd <= rd;
+        end
     
         id_exe_inf.imm_ext <= imm_ext;
         id_exe_inf.pc <= if_id_inf.pc;

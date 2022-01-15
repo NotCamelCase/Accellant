@@ -35,7 +35,7 @@ module tb_riscv_core
         
         @(negedge clk);
 
-        repeat(1500) @(negedge clk);
+        repeat(2000) @(negedge clk);
 
         $finish;
     end

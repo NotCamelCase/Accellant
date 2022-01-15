@@ -24,17 +24,17 @@ module mem_lsu
         if (rst) begin
             mem_wb_inf.ctrl.mem_load <= 1'b0;
             mem_wb_inf.ctrl.register_write <= 1'b0;
-            mem_wb_inf.ctrl.result_src <= 2'b0;
+            mem_wb_inf.ctrl.result_src <= 1'b0;
         end else begin
             mem_wb_inf.ctrl.mem_load <= exe_mem_inf.ctrl.mem_load;
             mem_wb_inf.ctrl.register_write <= exe_mem_inf.ctrl.register_write;
-            mem_wb_inf.ctrl.result_src <= exe_mem_inf.ctrl.result_src;
+            mem_wb_inf.ctrl.result_src <= exe_mem_inf.ctrl.result_src[0];
         end
     end
 
     always_ff @(posedge clk) begin
         mem_wb_inf.rd <= exe_mem_inf.rd;
-        mem_wb_inf.alu_result <= exe_mem_inf.alu_result;
-        mem_wb_inf.pc_inc <= exe_mem_inf.pc_inc;
+        mem_wb_inf.alu_result_or_pc_inc <= (exe_mem_inf.ctrl.result_src == WB_SRC_ALU) ? exe_mem_inf.alu_result :
+                                           exe_mem_inf.pc_inc;
     end
 endmodule
