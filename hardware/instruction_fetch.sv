@@ -11,9 +11,8 @@ module instruction_fetch
     // From Core
     input logic         pc_src,
     input logic[31:0]   branch_target,
-    input logic         stall_fetch,
-    input logic         stall_decode,
-    input logic         flush_decode,
+    input logic         stall,
+    input logic         flush,
     // To ID
     output if_id_inf_t  if_id_inf
 );
@@ -35,7 +34,7 @@ module instruction_fetch
     always_ff @(posedge clk) begin
         if (rst)
             pc_reg <= RESET_PC;
-        else if (!stall_fetch)
+        else if (!stall)
             pc_reg <= pc_src ? {branch_target[31:1], 1'b0} : pc_inc;
     end
 
@@ -51,10 +50,9 @@ module instruction_fetch
             .data(instruction));
 
     always_ff @(posedge clk) begin
-        if (rst || flush_decode) begin
+        if (flush) begin
             if_id_inf.instr <= 32'h0;
-        end
-        else if (!stall_decode) begin
+        end else if (!stall) begin
             if_id_inf.pc <= pc_reg;
             if_id_inf.pc_inc <= pc_inc;
             if_id_inf.instr <= instruction;
