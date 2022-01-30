@@ -181,8 +181,8 @@ module instruction_decode
     // Immediate types
     assign imm_ext_i = if_id_inf.instr[31:20];
     assign imm_ext_s = {if_id_inf.instr[31:25], if_id_inf.instr[11:7]};
-    assign imm_ext_b = {if_id_inf.instr[7], if_id_inf.instr[30:25], if_id_inf.instr[11:8], 1'b0};
-    assign imm_ext_j = {if_id_inf.instr[19:12], if_id_inf.instr[20], if_id_inf.instr[30:21], 1'b0};
+    assign imm_ext_b = {if_id_inf.instr[7], if_id_inf.instr[30:25], if_id_inf.instr[11:8], `FALSE};
+    assign imm_ext_j = {if_id_inf.instr[19:12], if_id_inf.instr[20], if_id_inf.instr[30:21], `FALSE};
     assign imm_ext_shamt = if_id_inf.instr[24:20];
     assign imm_ext_u = if_id_inf.instr[31:12];
 
