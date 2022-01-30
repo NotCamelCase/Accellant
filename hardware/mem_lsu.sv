@@ -2,39 +2,45 @@
 
 module mem_lsu
 (
-    input logic         clk, rst,
-    // From EXE
-    input exe_mem_inf_t exe_mem_inf,
+    input logic                 clk, rst,
+    // From Core
+    input logic                 stall,
+    input logic                 flush,
+    // From DISPATCHER
+    input dispatcher_lsu_inf_t  dispatcher_lsu_inf,
     // To WB
-    output mem_wb_inf_t mem_wb_inf
+    output exe_wb_inf_t         mem_wb_inf
 );
     localparam  MEM_SIZE    =   4096; // 16 KB Data Memory
+
+    logic       mem_store, mem_load;
+    logic[31:0] mem_addr;
 
     bram_1r1w #(.ADDR_WIDTH($clog2(MEM_SIZE)), .DATA_WIDTH(32)) memory(
         .clk(clk),
         //TODO: Byte-addressabiltiy?!
-        .rd_addr(exe_mem_inf.alu_result[11:0]),
-        .wr_addr(exe_mem_inf.alu_result[11:0]),
-        .wr_en(exe_mem_inf.ctrl.mem_store),
-        .wr_data(exe_mem_inf.write_data),
-        .rd_data(mem_wb_inf.read_data));
+        .rd_addr(mem_addr[11:0]),
+        .wr_addr(mem_addr[11:0]),
+        .wr_en(mem_store),
+        .wr_data(dispatcher_lsu_inf.write_data),
+        .rd_data(mem_wb_inf.exe_result));
 
-    // Propagate control signals to WB
+    // Propagate signals to WB
     always_ff @(posedge clk) begin
-        if (rst) begin
-            mem_wb_inf.ctrl.mem_load <= 1'b0;
-            mem_wb_inf.ctrl.register_write <= 1'b0;
-            mem_wb_inf.ctrl.result_src <= 1'b0;
-        end else begin
-            mem_wb_inf.ctrl.mem_load <= exe_mem_inf.ctrl.mem_load;
-            mem_wb_inf.ctrl.register_write <= exe_mem_inf.ctrl.register_write;
-            mem_wb_inf.ctrl.result_src <= exe_mem_inf.ctrl.result_src[0];
+        if (flush) begin
+            mem_wb_inf.instruction_valid <= `FALSE;
+            mem_wb_inf.register_write <= `FALSE;
+        end else if (!stall) begin
+            mem_wb_inf.instruction_valid <= dispatcher_lsu_inf.ctrl.instruction_valid;
+            mem_wb_inf.register_write <= dispatcher_lsu_inf.ctrl.register_write;
+            mem_wb_inf.rd <= dispatcher_lsu_inf.rd;
         end
     end
 
-    always_ff @(posedge clk) begin
-        mem_wb_inf.rd <= exe_mem_inf.rd;
-        mem_wb_inf.alu_result_or_pc_inc <= (exe_mem_inf.ctrl.result_src == WB_SRC_ALU) ? exe_mem_inf.alu_result :
-                                           exe_mem_inf.pc_inc;
-    end
+    // Memory location to access <= rs1 + immediate
+    assign mem_addr = dispatcher_lsu_inf.rs1 + dispatcher_lsu_inf.imm_ext;
+
+    //TODO: Take all necessary stall/flush and control signals into account!
+    assign mem_store = dispatcher_lsu_inf.ctrl.mem_store & dispatcher_lsu_inf.ctrl.instruction_valid;
+    assign mem_load = dispatcher_lsu_inf.ctrl.mem_load & dispatcher_lsu_inf.ctrl.instruction_valid;
 endmodule

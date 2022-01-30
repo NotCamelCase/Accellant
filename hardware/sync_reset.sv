@@ -1,3 +1,5 @@
+`include "defines.svh"
+
 module sync_reset
 #(parameter N = 4) // # of FFs to debounce reset input
 (
@@ -11,22 +13,17 @@ module sync_reset
     logic[N-1:0]    rst_db;
 
     // Async reset bridge, active-low
-    always_ff @(posedge clk, negedge arst)
-    begin
-        if (~arst)
-        begin
-            async_rst_meta <= 1'b0;
-            async_rst_sync <= 1'b0;
-        end
-        else
-        begin
-            async_rst_meta <= 1'b1;
+    always_ff @(posedge clk, negedge arst) begin
+        if (~arst) begin
+            async_rst_meta <= `FALSE;
+            async_rst_sync <= `FALSE;
+        end else begin
+            async_rst_meta <= `TRUE;
             async_rst_sync <= async_rst_meta;
         end
     end
 
-    always_ff @(posedge clk)
-    begin
+    always_ff @(posedge clk) begin
         for (integer i = 0; i < N-1; i++)
             rst_db[i+1] <= rst_db[i];
 
