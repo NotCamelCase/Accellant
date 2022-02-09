@@ -39,7 +39,6 @@ module exe_alu
         end
     end
 
-    //TODO: Bypass path for simple ALU operations!
     assign src_a = dispatcher_alu_inf.rs1;
     assign src_b = dispatcher_alu_inf.rs2; // MUX for imm_ext by Dispatcher unit already
 
@@ -69,7 +68,7 @@ module exe_alu
     assign lt_result = $signed(src_a) < $signed(src_b); // signed
     assign ltu_result = src_a < src_b; // unsigned
     
-    //TODO: Convert to use src_b instead
+    //TODO: Convert to use src_b instead?
     assign lui_result = {dispatcher_alu_inf.imm_ext[31:12], 12'b0};
     assign auipc_result = dispatcher_alu_inf.pc + dispatcher_alu_inf.imm_ext;
 
