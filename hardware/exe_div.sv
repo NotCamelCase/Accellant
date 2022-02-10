@@ -6,10 +6,10 @@ module exe_div
     // From Core
     input logic                 stall,
     input logic                 flush,
-    // From DISPATCHER
-    input dispatcher_div_inf_t  dispatcher_div_inf,
     // To DISPATCHER
     output logic                div_done,
+    // From DISPATCHER
+    input dispatcher_div_inf_t  dispatcher_div_inf,
     // To WB
     output exe_wb_inf_t         div_wb_inf
 );
@@ -28,13 +28,10 @@ module exe_div
     logic       div_op_reg, div_op_nxt;
     logic[4:0]  rd_reg, rd_nxt;
 
-    logic[31:0] quotient_reg, quotient_nxt;
-    logic[63:0] divisor_reg, divisor_nxt;
-    logic[63:0] remainder_reg, remainder_nxt;
+    logic[31:0] divisor_reg, divisor_nxt;
+    logic[64:0] rq_reg, rq_nxt;
 
-    logic[63:0] sub_result;
-
-    //TODO: Imlement the optimized algorithm to halve ALU width!
+    logic[32:0] sub_result;
 
     always_ff @(posedge clk) begin
         if (flush) // Abort operation
@@ -58,15 +55,13 @@ module exe_div
 
         div_op_reg <= div_op_nxt;
 
-        quotient_reg <= quotient_nxt;
         divisor_reg <= divisor_nxt;
-        remainder_reg <= remainder_nxt;
+        rq_reg <= rq_nxt;
 
         rd_reg <= rd_nxt;
     end
 
-
-    assign sub_result = remainder_reg - divisor_reg;
+    assign sub_result = rq_reg[64:32] - {1'b0, divisor_reg};
 
     // Next-state logic
     always_comb begin
@@ -79,9 +74,8 @@ module exe_div
 
         div_op_nxt = div_op_reg;
 
-        quotient_nxt = quotient_reg;
         divisor_nxt = divisor_reg;
-        remainder_nxt = remainder_reg;
+        rq_nxt = rq_reg;
 
         rd_nxt = rd_reg;
 
@@ -91,37 +85,34 @@ module exe_div
                 ctr_nxt = '0;
 
                 flip_quot_sign_nxt = (dispatcher_div_inf.rs1[31] ^ dispatcher_div_inf.rs2[31]) &
-                                     (~dispatcher_div_inf.ctrl.div_control[0]); // DIV_OP_DIV or DIV_OP_REM
+                                     (~dispatcher_div_inf.ctrl.div_control[0]) & // DIV_OP_DIV or DIV_OP_REM
+                                     (|dispatcher_div_inf.rs2); // Don't negate if division-by-zero
 
                 flip_rem_sign_nxt = dispatcher_div_inf.rs1[31] &
                                      (~dispatcher_div_inf.ctrl.div_control[0]); // DIV_OP_DIV or DIV_OP_REM
 
                 div_op_nxt = ~dispatcher_div_inf.ctrl.div_control[1]; // DIV_OP_DIV or DIV_OP_DIVU
 
-                quotient_nxt = '0;
-
                 divisor_nxt = {((~dispatcher_div_inf.ctrl.div_control[0]) & dispatcher_div_inf.rs2[31]) ? -$signed(dispatcher_div_inf.rs2) :
-                              dispatcher_div_inf.rs2, 32'h0};
+                              dispatcher_div_inf.rs2};
 
-                remainder_nxt = {32'h0, ((~dispatcher_div_inf.ctrl.div_control[0]) & dispatcher_div_inf.rs1[31]) ? -$signed(dispatcher_div_inf.rs1) :
-                              dispatcher_div_inf.rs1};
+                rq_nxt = {32'h0, ((~dispatcher_div_inf.ctrl.div_control[0]) & dispatcher_div_inf.rs1[31]) ? -$signed(dispatcher_div_inf.rs1) :
+                              dispatcher_div_inf.rs1, 1'b0};
 
                 rd_nxt = dispatcher_div_inf.rd;
 
                 if ((~(stall | flush)) & dispatcher_div_inf.ctrl.instruction_valid)
-                    state_nxt = BUSY; // Initiate serial divider
+                    state_nxt = BUSY; // Initiate division
             end
 
             BUSY: begin
-                quotient_nxt = {quotient_reg[30:0], ~sub_result[63]};
-                remainder_nxt = {~sub_result[63] ? sub_result : remainder_reg};
-                divisor_nxt = divisor_reg >> 1;
-
-                ctr_nxt = ctr_reg + 1;
-
-                if (ctr_reg == 6'h20) begin
-                    div_done_nxt = `TRUE;
+                if (ctr_reg != 6'h20) begin
+                    rq_nxt = sub_result[32] ? {rq_reg[63:0], 1'b0} :
+                             {sub_result[31:0], rq_reg[31:0], 1'b1};
+                    ctr_nxt = ctr_reg + 1;
+                end else begin
                     state_nxt = IDLE;
+                    div_done_nxt = `TRUE;
                 end
             end
 
@@ -134,8 +125,8 @@ module exe_div
         div_wb_inf.instruction_valid <= div_done_reg;
         div_wb_inf.register_write <= `TRUE;
         div_wb_inf.rd <= rd_reg;
-        div_wb_inf.exe_result <= div_op_reg ? (flip_quot_sign_reg ? -$signed(quotient_reg) : quotient_reg) :
-                                 (flip_rem_sign_reg ? -$signed(remainder_reg[31:0]) : remainder_reg[31:0]);
+        div_wb_inf.exe_result <= div_op_reg ? (flip_quot_sign_reg ? -$signed(rq_reg[31:0]) : rq_reg[31:0]) :
+                                 (flip_rem_sign_reg ? -$signed(rq_reg[64:33]) : rq_reg[64:33]);
     end
 
     // Notify Dispatcher that Divider is done, so it can continue issuing instructions

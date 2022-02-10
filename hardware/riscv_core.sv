@@ -78,12 +78,12 @@ module riscv_core
         .flush_div(flush_div),
         .dispatcher_conflict(dispatcher_conflict),
         .div_stall(div_stall),
+        .div_done(div_done),
         .id_dispatcher_inf(id_dispatcher_inf),
         .wb_dispatcher_inf(wb_dispatcher_inf),
         .dispatcher_alu_inf(dispatcher_alu_inf),
         .dispatcher_lsu_inf(dispatcher_lsu_inf),
         .dispatcher_mul_inf(dispatcher_mul_inf),
-        .div_done(div_done),
         .dispatcher_div_inf(dispatcher_div_inf));
 
     exe_alu alu(
@@ -117,8 +117,8 @@ module riscv_core
         .rst(rst),
         .stall(stall_div),
         .flush(flush_writeback),
-        .dispatcher_div_inf(dispatcher_div_inf),
         .div_done(div_done),
+        .dispatcher_div_inf(dispatcher_div_inf),
         .div_wb_inf(div_wb_inf));
 
     writeback writeback_unit(

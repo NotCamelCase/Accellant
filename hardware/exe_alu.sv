@@ -68,7 +68,6 @@ module exe_alu
     assign lt_result = $signed(src_a) < $signed(src_b); // signed
     assign ltu_result = src_a < src_b; // unsigned
     
-    //TODO: Convert to use src_b instead?
     assign lui_result = {dispatcher_alu_inf.imm_ext[31:12], 12'b0};
     assign auipc_result = dispatcher_alu_inf.pc + dispatcher_alu_inf.imm_ext;
 
@@ -97,8 +96,6 @@ module exe_alu
     // Resolve branch/jump
     always_comb begin
         branch_taken = `FALSE;
-
-        //TODO: Separate from bypassed ALU path to relax timing of pc_src!!!
 
         if (dispatcher_alu_inf.ctrl.jal || dispatcher_alu_inf.ctrl.jalr)
             branch_taken = `TRUE;

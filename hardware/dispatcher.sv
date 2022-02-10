@@ -11,6 +11,8 @@ module dispatcher
     // To Core
     output logic                dispatcher_conflict,
     output logic                div_stall,
+    // From DIV
+    input logic                 div_done,
     // From ID
     input id_dispatcher_inf_t   id_dispatcher_inf,
     // From WB
@@ -21,8 +23,6 @@ module dispatcher
     output dispatcher_lsu_inf_t dispatcher_lsu_inf,
     // To MUL
     output dispatcher_mul_inf_t dispatcher_mul_inf,
-    // From DIV
-    input logic                 div_done,
     // To DIV
     output dispatcher_div_inf_t dispatcher_div_inf
 );
@@ -237,6 +237,6 @@ module dispatcher
     // Stall upstream until all write-back and register conflicts are resolved.
     assign dispatcher_conflict = sb_conflict || wb_conflict;
 
-    // Handle processor stalls due to out-of-pipeline div operations!
+    // Stall the pre-DIV stages until serial division operation is performed.
     assign div_stall = div_stall_reg;
 endmodule
