@@ -148,7 +148,7 @@ typedef struct packed {
 typedef struct packed {
     logic       instruction_valid;
     logic       register_write;
-    logic       branch, jal, jalr;
+    logic       branch, jump;
     branch_op_e branch_op;
     logic       result_src;
     alu_op_e    alu_control;
@@ -159,6 +159,7 @@ typedef struct packed {
     logic[REG_WIDTH-1:0]    rd;
     logic[31:0]             pc;
     logic[31:0]             pc_inc;
+    logic[31:0]             pc_base;
     logic[31:0]             rs1;
     logic[31:0]             rs2;
     logic[31:0]             imm_ext;

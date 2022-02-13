@@ -43,7 +43,7 @@ module exe_div
     always_ff @(posedge clk) begin
         if (rst)
             div_done_reg <= `FALSE;
-        else
+        else if (!stall)
             div_done_reg <= div_done_nxt;
 
         ctr_reg <= ctr_nxt;
@@ -61,7 +61,7 @@ module exe_div
         rd_reg <= rd_nxt;
     end
 
-    assign sub_result = rq_reg[64:32] - {1'b0, divisor_reg};
+    assign sub_result = rq_reg[63:32] - divisor_reg;
 
     // Next-state logic
     always_comb begin
@@ -89,7 +89,7 @@ module exe_div
                                      (|dispatcher_div_inf.rs2); // Don't negate if division-by-zero
 
                 flip_rem_sign_nxt = dispatcher_div_inf.rs1[31] &
-                                     (~dispatcher_div_inf.ctrl.div_control[0]); // DIV_OP_DIV or DIV_OP_REM
+                                    (~dispatcher_div_inf.ctrl.div_control[0]); // DIV_OP_DIV or DIV_OP_REM
 
                 div_op_nxt = ~dispatcher_div_inf.ctrl.div_control[1]; // DIV_OP_DIV or DIV_OP_DIVU
 
@@ -97,18 +97,17 @@ module exe_div
                               dispatcher_div_inf.rs2};
 
                 rq_nxt = {32'h0, ((~dispatcher_div_inf.ctrl.div_control[0]) & dispatcher_div_inf.rs1[31]) ? -$signed(dispatcher_div_inf.rs1) :
-                              dispatcher_div_inf.rs1, 1'b0};
+                         dispatcher_div_inf.rs1, 1'b0};
 
                 rd_nxt = dispatcher_div_inf.rd;
 
-                if ((~(stall | flush)) & dispatcher_div_inf.ctrl.instruction_valid)
+                if (dispatcher_div_inf.ctrl.instruction_valid)
                     state_nxt = BUSY; // Initiate division
             end
 
             BUSY: begin
                 if (ctr_reg != 6'h20) begin
-                    rq_nxt = sub_result[32] ? {rq_reg[63:0], 1'b0} :
-                             {sub_result[31:0], rq_reg[31:0], 1'b1};
+                    rq_nxt = {sub_result[32] ? rq_reg[63:32] : sub_result[31:0], rq_reg[31:0], ~sub_result[32]};
                     ctr_nxt = ctr_reg + 1;
                 end else begin
                     state_nxt = IDLE;
@@ -124,7 +123,7 @@ module exe_div
         // No latching required due to out-of-pipeline execution
         div_wb_inf.instruction_valid <= div_done_reg;
         div_wb_inf.register_write <= `TRUE;
-        div_wb_inf.rd <= rd_reg;
+        div_wb_inf.rd <= REG_WIDTH'(rd_reg);
         div_wb_inf.exe_result <= div_op_reg ? (flip_quot_sign_reg ? -$signed(rq_reg[31:0]) : rq_reg[31:0]) :
                                  (flip_rem_sign_reg ? -$signed(rq_reg[64:33]) : rq_reg[64:33]);
     end

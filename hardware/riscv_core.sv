@@ -38,8 +38,8 @@ module riscv_core
 
     // Pipeline stall & flush logic
     always_comb begin
-        stall_fetch = (div_stall || dispatcher_conflict) && ~(branch_taken);
-        stall_decode = (div_stall || dispatcher_conflict) && ~(branch_taken);
+        stall_fetch = (div_stall || dispatcher_conflict) && (~branch_taken);
+        stall_decode = (div_stall || dispatcher_conflict) && (~branch_taken);
         stall_dispatcher = div_stall;
         stall_alu = `FALSE;
         stall_mem = `FALSE;

@@ -73,8 +73,7 @@ module dispatcher
             dispatcher_alu_inf.ctrl.instruction_valid <= `FALSE;
             dispatcher_alu_inf.ctrl.register_write <= `FALSE;
             dispatcher_alu_inf.ctrl.branch <= `FALSE;
-            dispatcher_alu_inf.ctrl.jal <= `FALSE;
-            dispatcher_alu_inf.ctrl.jalr <= `FALSE;
+            dispatcher_alu_inf.ctrl.jump <= `FALSE;
             dispatcher_alu_inf.ctrl.branch_op <= BRANCH_OP_BEQ;
             dispatcher_alu_inf.ctrl.result_src <= `FALSE;
             dispatcher_alu_inf.ctrl.alu_control <= ALU_OP_ADD;
@@ -82,8 +81,7 @@ module dispatcher
             dispatcher_alu_inf.ctrl.instruction_valid <= id_dispatcher_inf.ctrl.exe_pipe[`EXE_PIPE_ID_ALU];
             dispatcher_alu_inf.ctrl.register_write <= id_dispatcher_inf.ctrl.register_write;
             dispatcher_alu_inf.ctrl.branch <= id_dispatcher_inf.ctrl.branch;
-            dispatcher_alu_inf.ctrl.jal <= id_dispatcher_inf.ctrl.jal;
-            dispatcher_alu_inf.ctrl.jalr <= id_dispatcher_inf.ctrl.jalr;
+            dispatcher_alu_inf.ctrl.jump <= id_dispatcher_inf.ctrl.jal || id_dispatcher_inf.ctrl.jalr;
             dispatcher_alu_inf.ctrl.branch_op <= id_dispatcher_inf.ctrl.branch_op;
             dispatcher_alu_inf.ctrl.result_src <= id_dispatcher_inf.ctrl.result_src;
             dispatcher_alu_inf.ctrl.alu_control <= id_dispatcher_inf.ctrl.alu_control;
@@ -104,6 +102,7 @@ module dispatcher
         dispatcher_alu_inf.rd <= id_dispatcher_inf.rd;
         dispatcher_alu_inf.pc <= id_dispatcher_inf.pc;
         dispatcher_alu_inf.pc_inc <= id_dispatcher_inf.pc_inc;
+        dispatcher_alu_inf.pc_base <= id_dispatcher_inf.ctrl.jalr ? rs1 : id_dispatcher_inf.pc;
         dispatcher_alu_inf.imm_ext <= id_dispatcher_inf.imm_ext;
     end
 
@@ -212,7 +211,7 @@ module dispatcher
         if (rst)
             wb_active_mul_reg <= '0;
         else
-            wb_active_mul_reg <= {wb_active_mul_reg[LATENCY_MUL_OP-2:0], (decoded_instruction_valid & (id_dispatcher_inf.ctrl.exe_pipe[`EXE_PIPE_ID_MUL]))};;
+            wb_active_mul_reg <= {wb_active_mul_reg[LATENCY_MUL_OP-2:0], (decoded_instruction_valid & (id_dispatcher_inf.ctrl.exe_pipe[`EXE_PIPE_ID_MUL]))};
     end
 
     // Determine conflict at WB

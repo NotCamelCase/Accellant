@@ -68,6 +68,7 @@ module exe_alu
     assign lt_result = $signed(src_a) < $signed(src_b); // signed
     assign ltu_result = src_a < src_b; // unsigned
     
+    // LUI and AUIPC operations
     assign lui_result = {dispatcher_alu_inf.imm_ext[31:12], 12'b0};
     assign auipc_result = dispatcher_alu_inf.pc + dispatcher_alu_inf.imm_ext;
 
@@ -91,13 +92,13 @@ module exe_alu
     end
 
     // Calculate branch target
-    assign branch_target = dispatcher_alu_inf.imm_ext + (dispatcher_alu_inf.ctrl.jalr ? src_a : dispatcher_alu_inf.pc);
+    assign branch_target = dispatcher_alu_inf.pc_base + dispatcher_alu_inf.imm_ext;
 
     // Resolve branch/jump
     always_comb begin
         branch_taken = `FALSE;
 
-        if (dispatcher_alu_inf.ctrl.jal || dispatcher_alu_inf.ctrl.jalr)
+        if (dispatcher_alu_inf.ctrl.jump)
             branch_taken = `TRUE;
         else if (dispatcher_alu_inf.ctrl.branch) begin
             unique case (dispatcher_alu_inf.ctrl.branch_op)
