@@ -25,6 +25,7 @@ module instruction_decode
     div_op_e                div_control;
     logic                   alu_src;
     imm_type_e              imm_src;
+    logic[2:0]              lsu_control;
 
     logic[REG_WIDTH-1:0]    a1, a2, rd; // Decoded operands
     exe_pipe_e              exe_pipe; // Which execution unit instruction will be dispatched to
@@ -40,17 +41,23 @@ module instruction_decode
 
     // Main decoder
     always_comb begin
+        funct3 = if_id_inf.instr[14:12];
+        funct7 = if_id_inf.instr[31:25];
+
         result_src = `FALSE;
+
         mem_store = `FALSE;
         mem_load = `FALSE;
+
         alu_control = ALU_OP_ADD;
         mul_control = MUL_OP_MUL;
         div_control = DIV_OP_DIV;
+        lsu_control = funct3;
+
         alu_src = `FALSE;
         imm_src = IMM_TYPE_I;
+
         register_write = `FALSE;
-        funct3 = if_id_inf.instr[14:12];
-        funct7 = if_id_inf.instr[31:25];
 
         branch = `FALSE;
         jal = `FALSE;
@@ -81,7 +88,6 @@ module instruction_decode
                 register_write = `TRUE;
                 a2 = '0;
                 exe_pipe[`EXE_PIPE_ID_LSU] = `TRUE;
-                //TODO: Byte/half-word instructions!
             end
 
             INSTR_OPCODE_LSU_STORE: begin
@@ -90,7 +96,6 @@ module instruction_decode
                 imm_src = IMM_TYPE_S;
                 exe_pipe[`EXE_PIPE_ID_LSU] = `TRUE;
                 rd = '0;
-                //TODO: Byte/half-word instructions!
             end
 
             INSTR_OPCODE_ALU_BRANCH: begin
@@ -171,6 +176,7 @@ module instruction_decode
             id_dispatcher_inf.ctrl.alu_control <= ALU_OP_ADD;
             id_dispatcher_inf.ctrl.mul_control <= MUL_OP_MUL;
             id_dispatcher_inf.ctrl.div_control <= DIV_OP_DIV;
+            id_dispatcher_inf.ctrl.lsu_control <= 3'b0;
             id_dispatcher_inf.ctrl.alu_src <= `FALSE;
             id_dispatcher_inf.ctrl.exe_pipe <= EXE_PIPE_INVALID;
         end else if (!stall) begin
@@ -185,6 +191,7 @@ module instruction_decode
             id_dispatcher_inf.ctrl.alu_control <= alu_control;
             id_dispatcher_inf.ctrl.mul_control <= mul_control;
             id_dispatcher_inf.ctrl.div_control <= div_control;
+            id_dispatcher_inf.ctrl.lsu_control <= lsu_control;
             id_dispatcher_inf.ctrl.alu_src <= alu_src;
             id_dispatcher_inf.ctrl.exe_pipe <= exe_pipe;
         end
@@ -200,8 +207,6 @@ module instruction_decode
 
     // Decode immediates based on instruction type
     always_comb begin
-        imm_ext = 32'h0;
-
         unique case (imm_src)
             IMM_TYPE_I: imm_ext = {{20{if_id_inf.instr[31]}}, imm_ext_i};
             IMM_TYPE_S: imm_ext = {{20{if_id_inf.instr[31]}}, imm_ext_s};

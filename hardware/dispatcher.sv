@@ -113,11 +113,13 @@ module dispatcher
             dispatcher_lsu_inf.ctrl.register_write <= `FALSE;
             dispatcher_lsu_inf.ctrl.mem_store <= `FALSE;
             dispatcher_lsu_inf.ctrl.mem_load <= `FALSE;
+            dispatcher_lsu_inf.ctrl.lsu_control <= 3'b0;
         end else if (!stall) begin
             dispatcher_lsu_inf.ctrl.instruction_valid <= id_dispatcher_inf.ctrl.exe_pipe[`EXE_PIPE_ID_LSU];
             dispatcher_lsu_inf.ctrl.register_write <= id_dispatcher_inf.ctrl.register_write;
             dispatcher_lsu_inf.ctrl.mem_store <= id_dispatcher_inf.ctrl.mem_store;
             dispatcher_lsu_inf.ctrl.mem_load <= id_dispatcher_inf.ctrl.mem_load;
+            dispatcher_lsu_inf.ctrl.lsu_control <= id_dispatcher_inf.ctrl.lsu_control;
         end
     end
 
@@ -141,7 +143,7 @@ module dispatcher
 
     always_ff @(posedge clk) begin
         dispatcher_mul_inf.rd <= id_dispatcher_inf.rd;
-        // No immediates; MUL operats only on registers.
+        // No immediates; MUL operates only on registers.
         dispatcher_mul_inf.rs1 <= rs1;
         dispatcher_mul_inf.rs2 <= rs2;
     end

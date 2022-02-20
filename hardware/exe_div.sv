@@ -34,17 +34,13 @@ module exe_div
     logic[32:0] sub_result;
 
     always_ff @(posedge clk) begin
-        if (flush) // Abort operation
+        if (flush) begin // Abort operation
             state_reg <= IDLE;
-        else if (!stall)
-            state_reg <= state_nxt;
-    end
-
-    always_ff @(posedge clk) begin
-        if (rst)
             div_done_reg <= `FALSE;
-        else if (!stall)
+        end else if (!stall) begin
+            state_reg <= state_nxt;
             div_done_reg <= div_done_nxt;
+        end
 
         ctr_reg <= ctr_nxt;
     end

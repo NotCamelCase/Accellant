@@ -111,6 +111,22 @@ typedef enum logic[2:0] {
     BRANCH_OP_BGEU  = 3'b111
 } branch_op_e;
 
+// Load ops
+typedef enum logic[2:0] {
+    LOAD_OP_LB  = 3'b000,
+    LOAD_OP_LH  = 3'b001,
+    LOAD_OP_LW  = 3'b010,
+    LOAD_OP_LBU = 3'b100,
+    LOAD_OP_LHU = 3'b101
+} load_op_e;
+
+// Store ops
+typedef enum logic[1:0] {
+    STORE_OP_SB = 2'b00,
+    STORE_OP_SH = 2'b01,
+    STORE_OP_SW = 2'b10
+} store_op_e;
+
 // IF -> ID
 typedef struct packed {
     logic[31:0] pc;
@@ -129,6 +145,7 @@ typedef struct packed {
     alu_op_e    alu_control;
     mul_op_e    mul_control;
     div_op_e    div_control;
+    logic[2:0]  lsu_control;
     logic       alu_src;
     exe_pipe_e  exe_pipe;
 } dispatcher_ctrl_t;
@@ -168,10 +185,11 @@ typedef struct packed {
 
 // DISPATCHER -> MEM control signals
 typedef struct packed {
-    logic   instruction_valid;
-    logic   register_write;
-    logic   mem_store;
-    logic   mem_load;
+    logic       instruction_valid;
+    logic       register_write;
+    logic       mem_store;
+    logic       mem_load;
+    logic[2:0]  lsu_control;
 } mem_ctrl_t;
 
 // DISPATCHER -> LSU

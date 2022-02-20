@@ -41,13 +41,9 @@ module instruction_fetch
     assign pc_inc = pc_reg + 32'h4;
 
     // Instruction memory (true ROM)
-    true_rom #(
-        .ROM_FILE(TEST_PROG),
-        .READ_HEX(READ_HEX),
-        .ADDR_WIDTH($clog2(MAX_PROG_SIZE)),
-        .DATA_WIDTH(32)) instruction_rom(
-            .addr(pc_reg[11:2]),
-            .data(instruction));
+    true_rom #(.ROM_FILE(TEST_PROG), .READ_HEX(READ_HEX), .ADDR_WIDTH($clog2(MAX_PROG_SIZE)), .DATA_WIDTH(32)) instruction_rom(
+        .addr(pc_reg[11:2]),
+        .data(instruction));
 
     always_ff @(posedge clk) begin
         if (flush) begin

@@ -25,7 +25,7 @@ module tb_riscv_core
         rst = `FALSE;
     end
 
-    riscv_core #(.TEST_PROG("test.mem")) core(
+    riscv_core #(.TEST_PROG("complex_mul.mem")) core(
         .clk(clk),
         .rst(rst),
         .led(led));
@@ -35,7 +35,7 @@ module tb_riscv_core
         
         @(negedge clk);
 
-        repeat(100) @(negedge clk);
+        repeat(3000) @(negedge clk);
 
         $finish;
     end

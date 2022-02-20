@@ -67,7 +67,7 @@ module exe_alu
     // LESS_THAN operation
     assign lt_result = $signed(src_a) < $signed(src_b); // signed
     assign ltu_result = src_a < src_b; // unsigned
-    
+
     // LUI and AUIPC operations
     assign lui_result = {dispatcher_alu_inf.imm_ext[31:12], 12'b0};
     assign auipc_result = dispatcher_alu_inf.pc + dispatcher_alu_inf.imm_ext;
@@ -107,7 +107,7 @@ module exe_alu
                 BRANCH_OP_BLT:     branch_taken = lt_result;
                 BRANCH_OP_BLTU:    branch_taken = ltu_result;
                 BRANCH_OP_BGE:     branch_taken = ~lt_result;
-                default: branch_taken = ~ltu_result;
+                default: branch_taken = ~ltu_result; // BGEU
             endcase
         end
     end
