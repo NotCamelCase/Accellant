@@ -3,9 +3,6 @@
 module exe_div
 (
     input logic                 clk, rst,
-    // From Core
-    input logic                 stall,
-    input logic                 flush,
     // To DISPATCHER
     output logic                div_done,
     // From DISPATCHER
@@ -20,7 +17,7 @@ module exe_div
     } state_t;
 
     state_t     state_reg, state_nxt;
-    logic       div_done_reg, div_done_nxt;
+    logic       div_done_reg;
     logic[5:0]  ctr_reg, ctr_nxt;
 
     logic       flip_quot_sign_reg, flip_quot_sign_nxt;
@@ -31,18 +28,19 @@ module exe_div
     logic[31:0] divisor_reg, divisor_nxt;
     logic[64:0] rq_reg, rq_nxt;
 
+    logic       div_busy;
     logic[32:0] sub_result;
 
     always_ff @(posedge clk) begin
-        if (flush) begin // Abort operation
+        if (rst) begin // Abort operation
             state_reg <= IDLE;
-            div_done_reg <= `FALSE;
-        end else if (!stall) begin
+            ctr_reg <= 6'h0;
+        end else begin
             state_reg <= state_nxt;
-            div_done_reg <= div_done_nxt;
+            ctr_reg <= ctr_nxt;
         end
 
-        ctr_reg <= ctr_nxt;
+        div_done_reg <= ~div_busy;
     end
 
     always_ff @(posedge clk) begin
@@ -59,10 +57,11 @@ module exe_div
 
     assign sub_result = rq_reg[63:32] - divisor_reg;
 
+    assign div_busy = |ctr_nxt;
+
     // Next-state logic
     always_comb begin
         state_nxt = state_reg;
-        div_done_nxt = div_done_reg;
         ctr_nxt = ctr_reg;
 
         flip_quot_sign_nxt = flip_quot_sign_reg;
@@ -77,8 +76,7 @@ module exe_div
 
         case (state_reg)
             IDLE: begin
-                div_done_nxt = `FALSE;
-                ctr_nxt = '0;
+                ctr_nxt = 6'h20; // Serial division of N-bit word takes N+1 iterations
 
                 flip_quot_sign_nxt = (dispatcher_div_inf.rs1[31] ^ dispatcher_div_inf.rs2[31]) &
                                      (~dispatcher_div_inf.ctrl.div_control[0]) & // DIV_OP_DIV or DIV_OP_REM
@@ -102,21 +100,19 @@ module exe_div
             end
 
             BUSY: begin
-                if (ctr_reg != 6'h20) begin
-                    rq_nxt = {sub_result[32] ? rq_reg[63:32] : sub_result[31:0], rq_reg[31:0], ~sub_result[32]};
-                    ctr_nxt = ctr_reg + 1;
-                end else begin
-                    state_nxt = IDLE;
-                    div_done_nxt = `TRUE;
-                end
+                rq_nxt = {sub_result[32] ? rq_reg[63:32] : sub_result[31:0], rq_reg[31:0], ~sub_result[32]};
+                ctr_nxt = ctr_reg - 6'b1;
+
+                if (~div_busy)
+                    state_nxt = IDLE; // End of division
             end
 
             default: ;
         endcase
     end
 
+    // DIV payload
     always_ff @(posedge clk) begin
-        // No latching required due to out-of-pipeline execution
         div_wb_inf.instruction_valid <= div_done_reg;
         div_wb_inf.register_write <= `TRUE;
         div_wb_inf.rd <= REG_WIDTH'(rd_reg);

@@ -7,7 +7,6 @@ module dispatcher
     // From Core
     input logic                 stall,
     input logic                 flush,
-    input logic                 flush_div,
     // To Core
     output logic                dispatcher_conflict,
     output logic                div_stall,
@@ -150,7 +149,7 @@ module dispatcher
 
     // Propagate control signals to DIV
     always_ff @(posedge clk) begin
-        if (flush_div) begin
+        if (flush) begin
             dispatcher_div_inf.ctrl.instruction_valid <= `FALSE;
             dispatcher_div_inf.ctrl.div_control <= DIV_OP_DIV;
         end else if (!stall) begin
@@ -228,11 +227,12 @@ module dispatcher
         endcase
     end
 
+    // Stalls due to out-of-pipeline divider
     always_ff @(posedge clk) begin
-        if (flush || div_done)
+        if (flush || div_done) // div_done has priority over stall
             div_stall_reg <= `FALSE;
-        else if ((~stall) & id_dispatcher_inf.ctrl.exe_pipe[`EXE_PIPE_ID_DIV])
-            div_stall_reg <= `TRUE;
+        else if (!stall)
+            div_stall_reg <= id_dispatcher_inf.ctrl.exe_pipe[`EXE_PIPE_ID_DIV];
     end
 
     // Stall upstream until all write-back and register conflicts are resolved.

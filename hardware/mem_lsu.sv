@@ -3,9 +3,6 @@
 module mem_lsu
 (
     input logic                 clk, rst,
-    // From Core
-    input logic                 stall,
-    input logic                 flush,
     // From DISPATCHER
     input dispatcher_lsu_inf_t  dispatcher_lsu_inf,
     // To WB
@@ -49,16 +46,11 @@ module mem_lsu
     always_ff @(posedge clk) lsu_control_reg <= dispatcher_lsu_inf.ctrl.lsu_control;
     always_ff @(posedge clk) load_selector_reg <= mem_addr[1:0];
 
-    // Propagate signals to WB
+    // LSU payload
     always_ff @(posedge clk) begin
-        if (flush) begin
-            mem_wb_inf.instruction_valid <= `FALSE;
-            mem_wb_inf.register_write <= `FALSE;
-        end else if (!stall) begin
-            mem_wb_inf.instruction_valid <= dispatcher_lsu_inf.ctrl.instruction_valid;
-            mem_wb_inf.register_write <= dispatcher_lsu_inf.ctrl.register_write;
-            mem_wb_inf.rd <= dispatcher_lsu_inf.rd;
-        end
+        mem_wb_inf.instruction_valid <= dispatcher_lsu_inf.ctrl.instruction_valid;
+        mem_wb_inf.register_write <= dispatcher_lsu_inf.ctrl.register_write;
+        mem_wb_inf.rd <= dispatcher_lsu_inf.rd;
     end
 
     // Memory location to access -> rs1 + immediate
@@ -70,7 +62,7 @@ module mem_lsu
 
     // Adjust byte-enable for SB/SH/SW
     assign sb_wr_en = 4'b0001 << mem_addr[1:0];
-    assign sh_wr_en = 4'b0011 << (mem_addr[0] ? 2 : 1);
+    assign sh_wr_en = mem_addr[0] ? 4'b1100 : 4'b0011;
     assign sw_wr_en = 4'b1111;
 
     assign byte_en = {4{mem_store}} &

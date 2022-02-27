@@ -3,9 +3,6 @@
 module exe_alu
 (
     input logic                 clk, rst,
-    // From Core
-    input logic                 stall,
-    input logic                 flush,
     // To Core
     output logic                branch_taken,
     output logic[31:0]          branch_target,
@@ -26,17 +23,12 @@ module exe_alu
     logic[31:0] src_a, src_b;
     logic[31:0] alu_result;
 
-    // ALU -> WB signals
+    // ALU payload
     always_ff @(posedge clk) begin
-        if (flush) begin
-            alu_wb_inf.instruction_valid <= `FALSE;
-            alu_wb_inf.register_write <= `FALSE;
-        end else if (!stall) begin
-            alu_wb_inf.instruction_valid <= dispatcher_alu_inf.ctrl.instruction_valid;
-            alu_wb_inf.register_write <= dispatcher_alu_inf.ctrl.register_write;
-            alu_wb_inf.rd <= dispatcher_alu_inf.rd;
-            alu_wb_inf.exe_result <= dispatcher_alu_inf.ctrl.result_src ? dispatcher_alu_inf.pc_inc : alu_result;
-        end
+        alu_wb_inf.instruction_valid <= dispatcher_alu_inf.ctrl.instruction_valid;
+        alu_wb_inf.register_write <= dispatcher_alu_inf.ctrl.register_write;
+        alu_wb_inf.rd <= dispatcher_alu_inf.rd;
+        alu_wb_inf.exe_result <= dispatcher_alu_inf.ctrl.result_src ? dispatcher_alu_inf.pc_inc : alu_result;
     end
 
     assign src_a = dispatcher_alu_inf.rs1;
@@ -73,8 +65,6 @@ module exe_alu
     assign auipc_result = dispatcher_alu_inf.pc + dispatcher_alu_inf.imm_ext;
 
     always_comb begin
-        alu_result = 32'h0;
-
         unique case (dispatcher_alu_inf.ctrl.alu_control)
             ALU_OP_ADD: alu_result = add_result;
             ALU_OP_SUB: alu_result = sub_result;
