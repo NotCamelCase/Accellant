@@ -1,9 +1,9 @@
 module bram_1r1w
 #
 (
-    parameter   ADDR_WIDTH  = 4,
-    parameter   DATA_WIDTH  = 8,
-    parameter   NUM_COL     = 1
+    parameter   ADDR_WIDTH          = 4,
+    parameter   DATA_WIDTH          = 8,
+    parameter   NUM_COL             = 1
 )
 (
     input logic                     clk,
@@ -12,6 +12,8 @@ module bram_1r1w
     input logic[DATA_WIDTH-1:0]     wr_data,
     output logic[DATA_WIDTH-1:0]    rd_data
 );
+    localparam  COL_WIDTH = DATA_WIDTH / NUM_COL;
+
     logic[DATA_WIDTH-1:0]   buffer[2**ADDR_WIDTH-1:0];
     logic[DATA_WIDTH-1:0]   data_reg;
 
@@ -20,7 +22,7 @@ module bram_1r1w
         for (genvar i = 0; i < NUM_COL; i++) begin
             always_ff @(posedge clk) begin
                 if (wr_en[i])
-                    buffer[wr_addr][i*8 +: 8] <= wr_data[i*8 +: 8];
+                    buffer[wr_addr][i*COL_WIDTH +: COL_WIDTH] <= wr_data[i*COL_WIDTH +: COL_WIDTH];
             end
         end
     endgenerate

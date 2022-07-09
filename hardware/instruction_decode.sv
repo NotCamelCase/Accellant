@@ -6,8 +6,8 @@ module instruction_decode
     // From Core
     input logic                 stall,
     input logic                 flush,
-    // From IF  
-    input if_id_inf_t           if_id_inf,
+    // From IFD
+    input ifd_id_inf_t          ifd_id_inf,
     // To Dispatcher
     output id_dispatcher_inf_t  id_dispatcher_inf
 );
@@ -39,10 +39,12 @@ module instruction_decode
     logic[19:0]             imm_ext_u;
     logic[31:0]             imm_ext;
 
+    logic                   input_valid;
+
     // Main decoder
     always_comb begin
-        funct3 = if_id_inf.instr[14:12];
-        funct7 = if_id_inf.instr[31:25];
+        funct3 = ifd_id_inf.instr[14:12];
+        funct7 = ifd_id_inf.instr[31:25];
 
         result_src = `FALSE;
 
@@ -62,15 +64,15 @@ module instruction_decode
         branch = `FALSE;
         jal = `FALSE;
         jalr = `FALSE;
-        branch_op = branch_op_e'(if_id_inf.instr[14:12]);
+        branch_op = branch_op_e'(ifd_id_inf.instr[14:12]);
 
         exe_pipe = EXE_PIPE_INVALID;
 
-        a1 = if_id_inf.instr[19:15];
-        a2 = if_id_inf.instr[24:20];
-        rd = if_id_inf.instr[11:7];
+        a1 = ifd_id_inf.instr[19:15];
+        a2 = ifd_id_inf.instr[24:20];
+        rd = ifd_id_inf.instr[11:7];
 
-        case (if_id_inf.instr[6:0])
+        case (ifd_id_inf.instr[6:0])
             INSTR_OPCODE_ALU_MUL_DIV_R: begin
                 register_write = `TRUE;
                 alu_control = alu_op_e'({funct7[5], funct3});
@@ -155,6 +157,10 @@ module instruction_decode
                 exe_pipe[`EXE_PIPE_ID_ALU] = `TRUE;
             end
 
+            //TODO: fence.i
+            //TODO: FPU ops
+            //TODO: CSR ops
+
             default: ; //TODO: Assert for undefined/un-implemented opcodes!!!
         endcase
 
@@ -162,9 +168,13 @@ module instruction_decode
         register_write &= (|rd);
     end
 
+    // Pass instruction_valid to DISPATCHER using input valid signals
+    assign input_valid = ~(stall | flush);
+
     // Propagate control signals to DISPATCHER
     always_ff @(posedge clk) begin
         if (flush) begin
+            id_dispatcher_inf.ctrl.instruction_valid <= `FALSE;
             id_dispatcher_inf.ctrl.register_write <= `FALSE;
             id_dispatcher_inf.ctrl.branch <= `FALSE;
             id_dispatcher_inf.ctrl.jal <= `FALSE;
@@ -180,6 +190,7 @@ module instruction_decode
             id_dispatcher_inf.ctrl.alu_src <= `FALSE;
             id_dispatcher_inf.ctrl.exe_pipe <= EXE_PIPE_INVALID;
         end else if (!stall) begin
+            id_dispatcher_inf.ctrl.instruction_valid <= ifd_id_inf.ctrl.instruction_valid & input_valid;
             id_dispatcher_inf.ctrl.register_write <= register_write;
             id_dispatcher_inf.ctrl.branch <= branch;
             id_dispatcher_inf.ctrl.jal <= jal;
@@ -198,20 +209,20 @@ module instruction_decode
     end
 
     // Immediate types
-    assign imm_ext_i = if_id_inf.instr[31:20];
-    assign imm_ext_s = {if_id_inf.instr[31:25], if_id_inf.instr[11:7]};
-    assign imm_ext_b = {if_id_inf.instr[7], if_id_inf.instr[30:25], if_id_inf.instr[11:8], 1'b0};
-    assign imm_ext_j = {if_id_inf.instr[19:12], if_id_inf.instr[20], if_id_inf.instr[30:21], 1'b0};
-    assign imm_ext_shamt = if_id_inf.instr[24:20];
-    assign imm_ext_u = if_id_inf.instr[31:12];
+    assign imm_ext_i = ifd_id_inf.instr[31:20];
+    assign imm_ext_s = {ifd_id_inf.instr[31:25], ifd_id_inf.instr[11:7]};
+    assign imm_ext_b = {ifd_id_inf.instr[7], ifd_id_inf.instr[30:25], ifd_id_inf.instr[11:8], 1'b0};
+    assign imm_ext_j = {ifd_id_inf.instr[19:12], ifd_id_inf.instr[20], ifd_id_inf.instr[30:21], 1'b0};
+    assign imm_ext_shamt = ifd_id_inf.instr[24:20];
+    assign imm_ext_u = ifd_id_inf.instr[31:12];
 
     // Decode immediates based on instruction type
     always_comb begin
         unique case (imm_src)
-            IMM_TYPE_I: imm_ext = {{20{if_id_inf.instr[31]}}, imm_ext_i};
-            IMM_TYPE_S: imm_ext = {{20{if_id_inf.instr[31]}}, imm_ext_s};
-            IMM_TYPE_B: imm_ext = {{20{if_id_inf.instr[31]}}, imm_ext_b};
-            IMM_TYPE_J: imm_ext = {{12{if_id_inf.instr[31]}}, imm_ext_j};
+            IMM_TYPE_I: imm_ext = {{20{ifd_id_inf.instr[31]}}, imm_ext_i};
+            IMM_TYPE_S: imm_ext = {{20{ifd_id_inf.instr[31]}}, imm_ext_s};
+            IMM_TYPE_B: imm_ext = {{20{ifd_id_inf.instr[31]}}, imm_ext_b};
+            IMM_TYPE_J: imm_ext = {{12{ifd_id_inf.instr[31]}}, imm_ext_j};
             IMM_TYPE_SH: imm_ext = {27'b0, imm_ext_shamt};
             default: imm_ext = {imm_ext_u, 12'b0}; // IMM_TYPE_U
         endcase
@@ -228,8 +239,8 @@ module instruction_decode
             id_dispatcher_inf.a2 <= a2;
             id_dispatcher_inf.rd <= rd;
             id_dispatcher_inf.imm_ext <= imm_ext;
-            id_dispatcher_inf.pc <= if_id_inf.pc;
-            id_dispatcher_inf.pc_inc <= if_id_inf.pc_inc;
+            id_dispatcher_inf.pc <= ifd_id_inf.pc;
+            id_dispatcher_inf.pc_inc <= ifd_id_inf.pc_inc;
         end
     end
 endmodule

@@ -1,5 +1,4 @@
 `include "defines.svh"
-`include "config.svh"
 
 module dispatcher
 (
@@ -66,10 +65,19 @@ module dispatcher
     assign rs1 = fwd_rs1_wb ? wb_dispatcher_inf.wr_data : reg_file[id_dispatcher_inf.a1];
     assign rs2 = fwd_rs2_wb ? wb_dispatcher_inf.wr_data : reg_file[id_dispatcher_inf.a2];
 
+    // Decoded instruction is valid if no stall or flush occurs
+    assign decoded_instruction_valid = id_dispatcher_inf.ctrl.instruction_valid & ~(stall | flush);
+
     // Propagate control signals to ALU
     always_ff @(posedge clk) begin
-        if (flush) begin
+        if (flush)
             dispatcher_alu_inf.ctrl.instruction_valid <= `FALSE;
+        else if (!stall)
+            dispatcher_alu_inf.ctrl.instruction_valid <= decoded_instruction_valid & id_dispatcher_inf.ctrl.exe_pipe[`EXE_PIPE_ID_ALU];
+    end
+
+    always_ff @(posedge clk) begin
+        if (flush) begin
             dispatcher_alu_inf.ctrl.register_write <= `FALSE;
             dispatcher_alu_inf.ctrl.branch <= `FALSE;
             dispatcher_alu_inf.ctrl.jump <= `FALSE;
@@ -77,7 +85,6 @@ module dispatcher
             dispatcher_alu_inf.ctrl.result_src <= `FALSE;
             dispatcher_alu_inf.ctrl.alu_control <= ALU_OP_ADD;
         end else if (!stall) begin
-            dispatcher_alu_inf.ctrl.instruction_valid <= id_dispatcher_inf.ctrl.exe_pipe[`EXE_PIPE_ID_ALU];
             dispatcher_alu_inf.ctrl.register_write <= id_dispatcher_inf.ctrl.register_write;
             dispatcher_alu_inf.ctrl.branch <= id_dispatcher_inf.ctrl.branch;
             dispatcher_alu_inf.ctrl.jump <= id_dispatcher_inf.ctrl.jal || id_dispatcher_inf.ctrl.jalr;
@@ -107,14 +114,19 @@ module dispatcher
 
     // Propagate control signals to MEM
     always_ff @(posedge clk) begin
-        if (flush) begin
+        if (flush)
             dispatcher_lsu_inf.ctrl.instruction_valid <= `FALSE;
+        else if (!stall)
+            dispatcher_lsu_inf.ctrl.instruction_valid <= decoded_instruction_valid & id_dispatcher_inf.ctrl.exe_pipe[`EXE_PIPE_ID_LSU];
+    end
+
+    always_ff @(posedge clk) begin
+        if (flush) begin
             dispatcher_lsu_inf.ctrl.register_write <= `FALSE;
             dispatcher_lsu_inf.ctrl.mem_store <= `FALSE;
             dispatcher_lsu_inf.ctrl.mem_load <= `FALSE;
             dispatcher_lsu_inf.ctrl.lsu_control <= 3'b0;
         end else if (!stall) begin
-            dispatcher_lsu_inf.ctrl.instruction_valid <= id_dispatcher_inf.ctrl.exe_pipe[`EXE_PIPE_ID_LSU];
             dispatcher_lsu_inf.ctrl.register_write <= id_dispatcher_inf.ctrl.register_write;
             dispatcher_lsu_inf.ctrl.mem_store <= id_dispatcher_inf.ctrl.mem_store;
             dispatcher_lsu_inf.ctrl.mem_load <= id_dispatcher_inf.ctrl.mem_load;
@@ -131,11 +143,16 @@ module dispatcher
 
     // Propagate control signals to MUL
     always_ff @(posedge clk) begin
-        if (flush) begin
+        if (flush)
             dispatcher_mul_inf.ctrl.instruction_valid <= `FALSE;
+        else
+            dispatcher_mul_inf.ctrl.instruction_valid <= decoded_instruction_valid & id_dispatcher_inf.ctrl.exe_pipe[`EXE_PIPE_ID_MUL];
+    end
+
+    always_ff @(posedge clk) begin
+        if (flush) begin
             dispatcher_mul_inf.ctrl.mul_control <= MUL_OP_MUL;
         end else if (!stall) begin
-            dispatcher_mul_inf.ctrl.instruction_valid <= id_dispatcher_inf.ctrl.exe_pipe[`EXE_PIPE_ID_MUL];
             dispatcher_mul_inf.ctrl.mul_control <= id_dispatcher_inf.ctrl.mul_control;
         end
     end
@@ -149,11 +166,16 @@ module dispatcher
 
     // Propagate control signals to DIV
     always_ff @(posedge clk) begin
-        if (flush) begin
+        if (flush)
             dispatcher_div_inf.ctrl.instruction_valid <= `FALSE;
+        else if (!stall)
+            dispatcher_div_inf.ctrl.instruction_valid <= decoded_instruction_valid & id_dispatcher_inf.ctrl.exe_pipe[`EXE_PIPE_ID_DIV];
+    end
+
+    always_ff @(posedge clk) begin
+        if (flush) begin
             dispatcher_div_inf.ctrl.div_control <= DIV_OP_DIV;
         end else if (!stall) begin
-            dispatcher_div_inf.ctrl.instruction_valid <= id_dispatcher_inf.ctrl.exe_pipe[`EXE_PIPE_ID_DIV];
             dispatcher_div_inf.ctrl.div_control <= id_dispatcher_inf.ctrl.div_control;
         end
     end
@@ -169,9 +191,6 @@ module dispatcher
     assign fwd_rs1_wb = ENABLE_BYPASS_WB ? (wb_dispatcher_inf.wr_en && (wb_dispatcher_inf.rd == id_dispatcher_inf.a1)) : `FALSE;
     assign fwd_rs2_wb = ENABLE_BYPASS_WB ? (wb_dispatcher_inf.wr_en && (wb_dispatcher_inf.rd == id_dispatcher_inf.a2)) : `FALSE;
     assign fwd_rd_wb = ENABLE_BYPASS_WB ? (wb_dispatcher_inf.wr_en && (wb_dispatcher_inf.rd == id_dispatcher_inf.rd)) : `FALSE;
-
-    // Decoded instruction is valid if no stall or flush occurs
-    assign decoded_instruction_valid = ~(stall | flush); //TODO: Needs enhancement?
 
     // SB registers
     always_ff @(posedge clk) begin

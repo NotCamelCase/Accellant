@@ -19,6 +19,11 @@ parameter   REG_WIDTH       = $clog2(NUM_REGS);
 //TODO: FPU + CSR?!
 parameter   NUM_EXE_PIPES   = 4; // ALU + LSU + MUL + DIV
 
+`define EXE_PIPE_ID_ALU 0
+`define EXE_PIPE_ID_LSU 1
+`define EXE_PIPE_ID_MUL 2
+`define EXE_PIPE_ID_DIV 3
+
 // Latency of simple ALU
 parameter   LATENCY_ALU_OP  = 1;
 
@@ -28,10 +33,26 @@ parameter   LATENCY_LSU_OP  = 1;
 // Latency of MUL
 parameter   LATENCY_MUL_OP  = 3;
 
-`define EXE_PIPE_ID_ALU 0
-`define EXE_PIPE_ID_LSU 1
-`define EXE_PIPE_ID_MUL 2
-`define EXE_PIPE_ID_DIV 3
+// Toggle forwarding result from WB stage to save one cycle during Dispatch
+parameter   ENABLE_BYPASS_WB    = 1'b0;
+
+// Instruction Cache params
+parameter   ICACHE_NUM_WAYS = 4;
+parameter   ICACHE_NUM_SETS = 64; // 16K
+parameter   ICACHE_CL_SIZE  = 64; // In bytes
+
+parameter   ICACHE_NUM_BLOCK_BITS   = $clog2(ICACHE_CL_SIZE);
+parameter   ICACHE_NUM_SET_BITS     = $clog2(ICACHE_NUM_SETS);
+parameter   ICACHE_NUM_TAG_BITS     = 32 - (ICACHE_NUM_BLOCK_BITS + ICACHE_NUM_SET_BITS);
+parameter   ICACHE_NUM_WAY_BITS     = $clog2(ICACHE_NUM_WAYS);
+
+typedef struct packed {
+    logic[ICACHE_NUM_TAG_BITS-1:0]      tag_idx;
+    logic[ICACHE_NUM_SET_BITS-1:0]      set_idx;
+    logic[ICACHE_NUM_BLOCK_BITS-1:0]    block_idx;
+} instr_pc_t;
+
+typedef logic[ICACHE_NUM_TAG_BITS-1:0] icache_tag_t;
 
 // Parallel execution units
 typedef enum logic[NUM_EXE_PIPES-1:0] {
@@ -127,15 +148,43 @@ typedef enum logic[1:0] {
     STORE_OP_SW = 2'b10
 } store_op_e;
 
-// IF -> ID
+// IFT -> IFD control signals
+typedef struct packed {
+    logic   instruction_valid;
+} ift_ctrl_t;
+
+// IFT -> IFD
+typedef struct packed {
+    instr_pc_t                          fetched_pc;
+    logic[ICACHE_NUM_WAYS-1:0]          valid_bits;
+    icache_tag_t[ICACHE_NUM_WAYS-1:0]   tags_read;
+    ift_ctrl_t                          ctrl;
+} ift_ifd_inf_t;
+
+// IFD -> IFT
+typedef struct packed {
+    logic                           cache_miss;
+    logic[ICACHE_NUM_WAYS-1:0]      update_tag_en;
+    logic[ICACHE_NUM_SET_BITS-1:0]  update_tag_set;
+    icache_tag_t                    update_tag;
+} ifd_ift_inf_t;
+
+// IFD -> ID control signals
+typedef struct packed {
+    logic   instruction_valid;
+} ifd_ctrl_t;
+
+// IFD -> ID
 typedef struct packed {
     logic[31:0] pc;
     logic[31:0] pc_inc;
     logic[31:0] instr;
-} if_id_inf_t;
+    ifd_ctrl_t  ctrl;
+} ifd_id_inf_t;
 
 // ID -> DISPATCHER control signals
 typedef struct packed {
+    logic       instruction_valid;
     logic       register_write;
     logic       branch, jal, jalr;
     branch_op_e branch_op;

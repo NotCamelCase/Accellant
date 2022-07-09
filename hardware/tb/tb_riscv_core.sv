@@ -13,19 +13,19 @@ module tb_riscv_core
     logic[3:0]  led;
 
     always begin
-        clk = `TRUE;
+        clk = 1'b1;
         #(T/2);
-        clk = `FALSE;
+        clk = 1'b0;
         #(T/2);
     end
 
     initial begin
-        rst = `TRUE;
-        #(T/2);
-        rst = `FALSE;
+        rst = 1'b1;
+        #(2*T);
+        rst = 1'b0;
     end
 
-    riscv_core #(.TEST_PROG("complex_mul.mem")) core(
+    riscv_core #(.TEST_PROG("test.mem")) core(
         .clk(clk),
         .rst(rst),
         .led(led));
@@ -33,9 +33,7 @@ module tb_riscv_core
     initial begin
         @(negedge rst);
         
-        @(negedge clk);
-
-        repeat(3000) @(negedge clk);
+        repeat(40) @(posedge clk);
 
         $finish;
     end
