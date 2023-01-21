@@ -1,38 +1,35 @@
 `include "defines.svh"
 
+import defines::*;
+
 module exe_alu
 (
-    input logic                 clk, rst,
-    // To Core
-    output logic                branch_taken,
-    output logic[31:0]          branch_target,
-    // From Dispatcher
-    input dispatcher_alu_inf_t  dispatcher_alu_inf,
-    // To WB
-    output exe_wb_inf_t         alu_wb_inf
+    input logic         clk, rst,
+    input logic         wb_do_branch,
+    // IX -> ALU
+    input logic         ix_alu_valid,
+    input ix_alu_inf_t  ix_alu_inf,
+    // ALU -> WB
+    output logic        alu_valid,
+    output alu_wb_inf_t alu_wb_inf
 );
-    logic[31:0] add_result, sub_result;
-    logic[31:0] and_result, or_result, xor_result;
-    logic[31:0] sll_result, srl_result;
-    logic[31:0] sra_result;
-    logic       lt_result, ltu_result;
-    logic[31:0] lui_result;
-    logic[31:0] auipc_result;
+    logic[31:0]     add_result, sub_result;
+    logic[31:0]     and_result, or_result, xor_result;
+    logic[31:0]     sll_result, srl_result;
+    logic[31:0]     sra_result;
+    logic           lt_result, ltu_result;
+    logic[31:0]     lui_result;
+    logic[31:0]     auipc_result;
 
-    logic[4:0]  shtamt;
-    logic[31:0] src_a, src_b;
-    logic[31:0] alu_result;
+    logic[4:0]      shtamt;
+    logic[31:0]     src_a, src_b;
+    logic[31:0]     alu_result;
 
-    // ALU payload
-    always_ff @(posedge clk) begin
-        alu_wb_inf.instruction_valid <= dispatcher_alu_inf.ctrl.instruction_valid;
-        alu_wb_inf.register_write <= dispatcher_alu_inf.ctrl.register_write;
-        alu_wb_inf.rd <= dispatcher_alu_inf.rd;
-        alu_wb_inf.exe_result <= dispatcher_alu_inf.ctrl.result_src ? dispatcher_alu_inf.pc_inc : alu_result;
-    end
+    logic           branch_taken;
+    logic[31:0]     branch_target;
 
-    assign src_a = dispatcher_alu_inf.rs1;
-    assign src_b = dispatcher_alu_inf.rs2; // MUX for imm_ext by Dispatcher unit already
+    assign src_a = ix_alu_inf.rs1;
+    assign src_b = ix_alu_inf.rs2; // MUX for imm_ext by IX already
 
     // ADD operation
     assign add_result = src_a + src_b;
@@ -61,11 +58,11 @@ module exe_alu
     assign ltu_result = src_a < src_b; // unsigned
 
     // LUI and AUIPC operations
-    assign lui_result = {dispatcher_alu_inf.imm_ext[31:12], 12'b0};
-    assign auipc_result = dispatcher_alu_inf.pc + dispatcher_alu_inf.imm_ext;
+    assign lui_result = {ix_alu_inf.imm_ext[31:12], 12'b0};
+    assign auipc_result = ix_alu_inf.pc + ix_alu_inf.imm_ext;
 
     always_comb begin
-        unique case (dispatcher_alu_inf.ctrl.alu_control)
+        unique case (ix_alu_inf.alu_control)
             ALU_OP_ADD: alu_result = add_result;
             ALU_OP_SUB: alu_result = sub_result;
             ALU_OP_SLL: alu_result = sll_result;
@@ -82,23 +79,35 @@ module exe_alu
     end
 
     // Calculate branch target
-    assign branch_target = dispatcher_alu_inf.pc_base + dispatcher_alu_inf.imm_ext;
+    assign branch_target = ix_alu_inf.pc_base + ix_alu_inf.imm_ext;
 
     // Resolve branch/jump
     always_comb begin
-        branch_taken = `FALSE;
+        branch_taken = 1'b0;
 
-        if (dispatcher_alu_inf.ctrl.jump)
-            branch_taken = `TRUE;
-        else if (dispatcher_alu_inf.ctrl.branch) begin
-            unique case (dispatcher_alu_inf.ctrl.branch_op)
-                BRANCH_OP_BEQ:     branch_taken = ~(|sub_result);
-                BRANCH_OP_BNE:     branch_taken = |sub_result;
-                BRANCH_OP_BLT:     branch_taken = lt_result;
-                BRANCH_OP_BLTU:    branch_taken = ltu_result;
-                BRANCH_OP_BGE:     branch_taken = ~lt_result;
+        if (ix_alu_inf.jump)
+            branch_taken = 1'b1;
+        else if (ix_alu_inf.branch) begin
+            unique case (ix_alu_inf.branch_op)
+                BRANCH_OP_BEQ:  branch_taken = ~(|sub_result);
+                BRANCH_OP_BNE:  branch_taken = |sub_result;
+                BRANCH_OP_BLT:  branch_taken = lt_result;
+                BRANCH_OP_BLTU: branch_taken = ltu_result;
+                BRANCH_OP_BGE:  branch_taken = ~lt_result;
                 default: branch_taken = ~ltu_result; // BGEU
             endcase
         end
+    end
+
+    always_ff @(posedge clk) alu_valid <= ix_alu_valid && !wb_do_branch;
+
+    // Outputs to WB
+    always_ff @(posedge clk) begin
+        alu_wb_inf.do_branch <= (ix_alu_inf.icache_invalidate || branch_taken) && (ix_alu_valid && !wb_do_branch);
+        alu_wb_inf.branch_target <= ix_alu_inf.icache_invalidate ? ix_alu_inf.pc_inc : branch_target; // If I$ invalidation request (fence.i), branch off to PC+4 or else the computed branch target
+        alu_wb_inf.icache_invalidate <= ix_alu_inf.icache_invalidate;
+        alu_wb_inf.register_write <= ix_alu_inf.register_write;
+        alu_wb_inf.rd <= ix_alu_inf.rd;
+        alu_wb_inf.exe_result <= ix_alu_inf.result_src ? ix_alu_inf.pc_inc : alu_result;
     end
 endmodule

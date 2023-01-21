@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 
-module tb_riscv_core
+module tb_accellant_soc
 (
 );
     // Clock period
@@ -25,15 +25,15 @@ module tb_riscv_core
         rst = 1'b0;
     end
 
-    riscv_core core(
+    accellant_soc soc(
         .clk(clk),
         .rst(rst),
         .led(led));
 
     initial begin
         @(negedge rst);
-        
-        repeat(3800) @(posedge clk);
+
+        repeat(5000) @(posedge clk);
 
         $finish;
     end

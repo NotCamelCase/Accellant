@@ -1,0 +1,62 @@
+
+boot.elf:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+10000000 <_start>:
+10000000:	7f000113          	li	sp,2032
+10000004:	05c000ef          	jal	ra,10000060 <main>
+10000008:	0000                	.2byte	0x0
+1000000a:	0000                	.2byte	0x0
+1000000c:	0000                	.2byte	0x0
+1000000e:	0000                	.2byte	0x0
+
+10000010 <time_ms>:
+10000010:	ff0007b7          	lui	a5,0xff000
+10000014:	1007a503          	lw	a0,256(a5) # ff000100 <main+0xef0000a0>
+10000018:	000187b7          	lui	a5,0x18
+1000001c:	6a078793          	addi	a5,a5,1696 # 186a0 <STACK_SIZE+0x17ea0>
+10000020:	02f55533          	divu	a0,a0,a5
+10000024:	00008067          	ret
+
+10000028 <Sleep>:
+10000028:	ff0007b7          	lui	a5,0xff000
+1000002c:	1007a683          	lw	a3,256(a5) # ff000100 <main+0xef0000a0>
+10000030:	00018737          	lui	a4,0x18
+10000034:	6a070713          	addi	a4,a4,1696 # 186a0 <STACK_SIZE+0x17ea0>
+10000038:	02e6d6b3          	divu	a3,a3,a4
+1000003c:	ff000637          	lui	a2,0xff000
+10000040:	10062783          	lw	a5,256(a2) # ff000100 <main+0xef0000a0>
+10000044:	02e7d7b3          	divu	a5,a5,a4
+10000048:	40d787b3          	sub	a5,a5,a3
+1000004c:	fea7eae3          	bltu	a5,a0,10000040 <Sleep+0x18>
+10000050:	00008067          	ret
+
+10000054 <SetLed>:
+10000054:	ff0007b7          	lui	a5,0xff000
+10000058:	00a7a023          	sw	a0,0(a5) # ff000000 <main+0xeeffffa0>
+1000005c:	00008067          	ret
+
+10000060 <main>:
+10000060:	000186b7          	lui	a3,0x18
+10000064:	00000513          	li	a0,0
+10000068:	ff000737          	lui	a4,0xff000
+1000006c:	6a068693          	addi	a3,a3,1696 # 186a0 <STACK_SIZE+0x17ea0>
+10000070:	1f300613          	li	a2,499
+10000074:	00a72023          	sw	a0,0(a4) # ff000000 <main+0xeeffffa0>
+10000078:	10072583          	lw	a1,256(a4)
+1000007c:	00150513          	addi	a0,a0,1
+10000080:	02d5d5b3          	divu	a1,a1,a3
+10000084:	10072783          	lw	a5,256(a4)
+10000088:	02d7d7b3          	divu	a5,a5,a3
+1000008c:	40b787b3          	sub	a5,a5,a1
+10000090:	fef67ae3          	bgeu	a2,a5,10000084 <main+0x24>
+10000094:	00072023          	sw	zero,0(a4)
+10000098:	10072583          	lw	a1,256(a4)
+1000009c:	02d5d5b3          	divu	a1,a1,a3
+100000a0:	10072783          	lw	a5,256(a4)
+100000a4:	02d7d7b3          	divu	a5,a5,a3
+100000a8:	40b787b3          	sub	a5,a5,a1
+100000ac:	fef67ae3          	bgeu	a2,a5,100000a0 <main+0x40>
+100000b0:	fc5ff06f          	j	10000074 <main+0x14>

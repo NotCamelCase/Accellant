@@ -1,54 +1,56 @@
 `include "defines.svh"
 
+import defines::*;
+
 module exe_mul
 (
-    input logic                 clk, rst,
-    // From DISPATCHER
-    input dispatcher_mul_inf_t  dispatcher_mul_inf,
-    // To WB
-    output exe_wb_inf_t         mul_wb_inf
+    input logic         clk, rst,
+    // WB -> ALU
+    input logic         wb_do_branch,
+    // IX -> MUL
+    input logic         ix_mul_valid,
+    input ix_mul_inf_t  ix_mul_inf,
+    // MUL -> WB
+    output logic        mul_valid,
+    output mul_wb_inf_t mul_wb_inf
 );
-    typedef struct packed {
-        logic       valid;        // Also register_write, which is on for all MUL ops
-        logic       output_lower; // Select upper or lower word as output
-        logic[4:0]  rd;           // Only scalar registers, hence range [4:0]
-    } mul_input_t;
+    logic       s1_valid_reg;
+    logic       s1_output_lower_reg;
+    logic[4:0]  s1_rd_reg;
+    logic[32:0] s1_a_reg, s1_b_reg;
 
-    logic[32:0] mul_src_a, mul_src_b;
-    logic[65:0] mul_result;
+    logic       s2_valid_reg;
+    logic       s2_output_lower_reg;
+    logic[4:0]  s2_rd_reg;
+    logic[65:0] s2_result_reg;
 
-    mul_input_t mul_input, mul_input_dly;
-
-    assign mul_src_a = ((dispatcher_mul_inf.ctrl.mul_control == MUL_OP_MUL) ||
-                       (dispatcher_mul_inf.ctrl.mul_control == MUL_OP_MULHU)) ? {1'b0, dispatcher_mul_inf.rs1} :
-                       {dispatcher_mul_inf.rs1[31], dispatcher_mul_inf.rs1};
-
-    assign mul_src_b = (dispatcher_mul_inf.ctrl.mul_control == MUL_OP_MULH) ? {dispatcher_mul_inf.rs2[31], dispatcher_mul_inf.rs2} :
-                       {1'b0, dispatcher_mul_inf.rs2};
-
-    // Gather inputs to MUL op
-    assign mul_input.valid = dispatcher_mul_inf.ctrl.instruction_valid;
-    assign mul_input.output_lower = dispatcher_mul_inf.ctrl.mul_control == MUL_OP_MUL;
-    assign mul_input.rd = dispatcher_mul_inf.rd[4:0]; // x0-x32
-
-    // Delay MUL inputs toward valid output
-    shift_register #(.WIDTH($bits(mul_input_t)), .DELAY_COUNT(LATENCY_MUL_OP)) dly_mul_input(
-        .clk(clk),
-        .d(mul_input),
-        .q(mul_input_dly));
-
-    // Signed integer multiplier
-    core_int32_mul_dsp multiplier(
-        .CLK(clk),
-        .A(mul_src_a),
-        .B(mul_src_b),
-        .P(mul_result));
-
-    // MUL payload
+    // Stage 1: Gather inputs to MUL op aligned to 33x33 bit signed/unsigned multiplication
     always_ff @(posedge clk) begin
-        mul_wb_inf.instruction_valid <= mul_input_dly.valid;
-        mul_wb_inf.register_write <= `TRUE;
-        mul_wb_inf.rd <= REG_WIDTH'(mul_input_dly.rd);
-        mul_wb_inf.exe_result <= mul_input_dly.output_lower ? mul_result[31:0] : mul_result[63:32];
+        if (rst || wb_do_branch)
+            s1_valid_reg <= 1'b0;
+        else
+            s1_valid_reg <= ix_mul_valid;
+    end
+
+    always_ff @(posedge clk) begin
+        s1_output_lower_reg <= ix_mul_inf.mul_control == MUL_OP_MUL;
+        s1_a_reg <= {((ix_mul_inf.mul_control == MUL_OP_MUL) || (ix_mul_inf.mul_control == MUL_OP_MULHU)) ? 1'b0 : ix_mul_inf.rs1[31], ix_mul_inf.rs1};;
+        s1_b_reg <= {(ix_mul_inf.mul_control == MUL_OP_MULH) ? ix_mul_inf.rs2[31] : 1'b0, ix_mul_inf.rs2};
+        s1_rd_reg <= ix_mul_inf.rd[4:0]; // x0-x32
+    end
+
+    // Stage 2: Do the product
+    always_ff @(posedge clk) begin
+        s2_valid_reg <= s1_valid_reg;
+        s2_output_lower_reg <= s1_output_lower_reg;
+        s2_rd_reg <= s1_rd_reg;
+        s2_result_reg <= s1_a_reg * s1_b_reg;
+    end
+
+    // Stage 3: Outputs to WB
+    always_ff @(posedge clk) begin
+        mul_valid <= s2_valid_reg;
+        mul_wb_inf.rd <= s2_rd_reg;
+        mul_wb_inf.result <= s2_output_lower_reg ? s2_result_reg[31:0] : s2_result_reg[63:32];
     end
 endmodule

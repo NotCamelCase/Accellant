@@ -1,66 +1,71 @@
 `ifndef __DEFINES_SVH__
 `define __DEFINES_SVH__
 
-`define TRUE    1'b1
-`define FALSE   1'b0
+package defines;
 
 // Number of scalar registers
-parameter   XLEN            = 32;
+localparam  XLEN                    = 32;
 
 // Number of floating-point registers
-parameter   FLEN            = 32;
+localparam  FLEN                    = 32;
 
 // Total number of GPRs
 //TODO: + FLEN for FPU!
-parameter   NUM_REGS        = XLEN;
-parameter   REG_WIDTH       = $clog2(NUM_REGS);
+localparam  NUM_REGS                = XLEN;
+localparam  REG_WIDTH               = $clog2(NUM_REGS);
 
 // Number of execution pipes
 //TODO: FPU + CSR?!
-parameter   NUM_EXE_PIPES   = 4; // ALU + LSU + MUL + DIV
+localparam   NUM_EXE_PIPES          = 4; // ALU + LSU + MUL + DIV
 
-`define EXE_PIPE_ID_ALU 0
-`define EXE_PIPE_ID_LSU 1
-`define EXE_PIPE_ID_MUL 2
-`define EXE_PIPE_ID_DIV 3
+// EXE pipe IDs, which also designate fixed arbitration priority at WB
+localparam  EXE_PIPE_ID_ALU         = 0;
+localparam  EXE_PIPE_ID_LSU         = 1;
+localparam  EXE_PIPE_ID_MUL         = 2;
+localparam  EXE_PIPE_ID_DIV         = 3;
 
-// Latency of simple ALU
-parameter   LATENCY_ALU_OP  = 1;
+// I$ - 4k
+localparam  ICACHE_NUM_WAYS         = 4;
+localparam  ICACHE_NUM_SETS         = 16;
+localparam  ICACHE_CL_SIZE          = 64; // In bytes
 
-// Latency of LSU
-parameter   LATENCY_LSU_OP  = 1;
+localparam  ICACHE_NUM_BLOCK_BITS   = $clog2(ICACHE_CL_SIZE);
+localparam  ICACHE_NUM_SET_BITS     = $clog2(ICACHE_NUM_SETS);
+localparam  ICACHE_NUM_TAG_BITS     = 32 - (ICACHE_NUM_BLOCK_BITS + ICACHE_NUM_SET_BITS);
+localparam  ICACHE_NUM_WAY_BITS     = $clog2(ICACHE_NUM_WAYS);
 
-// Latency of MUL
-parameter   LATENCY_MUL_OP  = 3;
+// D$ - 16k
+localparam  DCACHE_NUM_WAYS         = 4;
+localparam  DCACHE_NUM_SETS         = 64;
+localparam  DCACHE_CL_SIZE          = 64; // In bytes
 
-// Toggle forwarding result from WB stage to save one cycle during Dispatch
-parameter   ENABLE_BYPASS_WB    = 1'b0;
-
-// Instruction Cache params
-parameter   ICACHE_NUM_WAYS = 4;
-parameter   ICACHE_NUM_SETS = 64; // 16K
-parameter   ICACHE_CL_SIZE  = 64; // In bytes
-
-parameter   ICACHE_NUM_BLOCK_BITS   = $clog2(ICACHE_CL_SIZE);
-parameter   ICACHE_NUM_SET_BITS     = $clog2(ICACHE_NUM_SETS);
-parameter   ICACHE_NUM_TAG_BITS     = 32 - (ICACHE_NUM_BLOCK_BITS + ICACHE_NUM_SET_BITS);
-parameter   ICACHE_NUM_WAY_BITS     = $clog2(ICACHE_NUM_WAYS);
+localparam  DCACHE_NUM_BLOCK_BITS   = $clog2(DCACHE_CL_SIZE);
+localparam  DCACHE_NUM_SET_BITS     = $clog2(DCACHE_NUM_SETS);
+localparam  DCACHE_NUM_TAG_BITS     = 32 - (DCACHE_NUM_BLOCK_BITS + DCACHE_NUM_SET_BITS);
+localparam  DCACHE_NUM_WAY_BITS     = $clog2(DCACHE_NUM_WAYS);
 
 typedef struct packed {
     logic[ICACHE_NUM_TAG_BITS-1:0]      tag_idx;
     logic[ICACHE_NUM_SET_BITS-1:0]      set_idx;
     logic[ICACHE_NUM_BLOCK_BITS-1:0]    block_idx;
-} instr_pc_t;
+} ifu_address_t;
 
-typedef logic[ICACHE_NUM_TAG_BITS-1:0] icache_tag_t;
+typedef struct packed {
+    logic[DCACHE_NUM_TAG_BITS-1:0]      tag_idx;
+    logic[DCACHE_NUM_SET_BITS-1:0]      set_idx;
+    logic[DCACHE_NUM_BLOCK_BITS-1:0]    block_idx;
+} lsu_address_t;
+
+typedef logic[ICACHE_NUM_TAG_BITS-1:0]  icache_tag_t;
+typedef logic[DCACHE_NUM_TAG_BITS-1:0]  dcache_tag_t;
 
 // Parallel execution units
 typedef enum logic[NUM_EXE_PIPES-1:0] {
     EXE_PIPE_INVALID    = 0,
-    EXE_PIPE_ALU        = 1 << `EXE_PIPE_ID_ALU,
-    EXE_PIPE_LSU        = 1 << `EXE_PIPE_ID_LSU,
-    EXE_PIPE_MUL        = 1 << `EXE_PIPE_ID_MUL,
-    EXE_PIPE_DIV        = 1 << `EXE_PIPE_ID_DIV
+    EXE_PIPE_ALU        = 1 << EXE_PIPE_ID_ALU,
+    EXE_PIPE_LSU        = 1 << EXE_PIPE_ID_LSU,
+    EXE_PIPE_MUL        = 1 << EXE_PIPE_ID_MUL,
+    EXE_PIPE_DIV        = 1 << EXE_PIPE_ID_DIV
 } exe_pipe_e;
 
 // RV32I opcodes
@@ -75,8 +80,8 @@ typedef enum logic[6:0] {
     INSTR_OPCODE_ALU_AUIPC      = 7'b0010111,   // AUIPC
     // LSU opcodes
     INSTR_OPCODE_LSU_LOAD       = 7'b0000011,   // Memory load ops
-    INSTR_OPCODE_LSU_STORE      = 7'b0100011    // Memory store ops
-    // 7'b0001111 -> FENCE
+    INSTR_OPCODE_LSU_STORE      = 7'b0100011,   // Memory store ops
+    INSTR_OPCODE_FENCE          = 7'b0001111    // fence.i
     // 7'b1110011 -> ECALL/EBREAK
 } instr_opcode_e;
 
@@ -148,58 +153,30 @@ typedef enum logic[1:0] {
     STORE_OP_SW = 2'b10
 } store_op_e;
 
-// IFT -> IFD control signals
-typedef struct packed {
-    logic   instruction_valid;
-} ift_ctrl_t;
-
 // IFT -> IFD
 typedef struct packed {
-    instr_pc_t                          fetched_pc;
+    ifu_address_t                       fetched_pc;
     logic[ICACHE_NUM_WAYS-1:0]          valid_bits;
     icache_tag_t[ICACHE_NUM_WAYS-1:0]   tags_read;
-    ift_ctrl_t                          ctrl;
 } ift_ifd_inf_t;
 
 // IFD -> IFT
 typedef struct packed {
     logic                           cache_miss;
+    logic                           resume_fetch;
     logic[ICACHE_NUM_WAYS-1:0]      update_tag_en;
     logic[ICACHE_NUM_SET_BITS-1:0]  update_tag_set;
     icache_tag_t                    update_tag;
 } ifd_ift_inf_t;
-
-// IFD -> ID control signals
-typedef struct packed {
-    logic   instruction_valid;
-} ifd_ctrl_t;
 
 // IFD -> ID
 typedef struct packed {
     logic[31:0] pc;
     logic[31:0] pc_inc;
     logic[31:0] instr;
-    ifd_ctrl_t  ctrl;
 } ifd_id_inf_t;
 
-// ID -> DISPATCHER control signals
-typedef struct packed {
-    logic       instruction_valid;
-    logic       register_write;
-    logic       branch, jal, jalr;
-    branch_op_e branch_op;
-    logic       result_src;
-    logic       mem_store;
-    logic       mem_load;
-    alu_op_e    alu_control;
-    mul_op_e    mul_control;
-    div_op_e    div_control;
-    logic[2:0]  lsu_control;
-    logic       alu_src;
-    exe_pipe_e  exe_pipe;
-} dispatcher_ctrl_t;
-
-// ID -> DISPATCHER
+// ID -> IX
 typedef struct packed {
     logic[REG_WIDTH-1:0]    a1;
     logic[REG_WIDTH-1:0]    a2;
@@ -207,21 +184,29 @@ typedef struct packed {
     logic[31:0]             pc;
     logic[31:0]             pc_inc;
     logic[31:0]             imm_ext;
-    dispatcher_ctrl_t       ctrl;
-} id_dispatcher_inf_t;
+    logic                   register_write;
+    logic                   branch, jal, jalr;
+    branch_op_e             branch_op;
+    logic                   result_src;
+    logic                   mem_store;
+    logic                   mem_load;
+    logic                   icache_invalidate;
+    alu_op_e                alu_control;
+    mul_op_e                mul_control;
+    div_op_e                div_control;
+    logic[2:0]              lsu_control;
+    logic                   alu_src;
+    exe_pipe_e              exe_pipe;
+} id_ix_inf_t;
 
-// DISPATCHER -> ALU control signals
+// IX -> ALU
 typedef struct packed {
-    logic       instruction_valid;
-    logic       register_write;
-    logic       branch, jump;
-    branch_op_e branch_op;
-    logic       result_src;
-    alu_op_e    alu_control;
-} alu_ctrl_t;
-
-// DISPATCHER -> ALU
-typedef struct packed {
+    logic                   icache_invalidate;
+    logic                   register_write;
+    logic                   branch, jump;
+    branch_op_e             branch_op;
+    logic                   result_src;
+    alu_op_e                alu_control;
     logic[REG_WIDTH-1:0]    rd;
     logic[31:0]             pc;
     logic[31:0]             pc_inc;
@@ -229,68 +214,107 @@ typedef struct packed {
     logic[31:0]             rs1;
     logic[31:0]             rs2;
     logic[31:0]             imm_ext;
-    alu_ctrl_t              ctrl;
-} dispatcher_alu_inf_t;
+} ix_alu_inf_t;
 
-// DISPATCHER -> MEM control signals
-typedef struct packed {
-    logic       instruction_valid;
-    logic       register_write;
-    logic       mem_store;
-    logic       mem_load;
-    logic[2:0]  lsu_control;
-} mem_ctrl_t;
-
-// DISPATCHER -> LSU
+// IX -> LST
 typedef struct packed {
     logic[REG_WIDTH-1:0]    rd;
+    logic                   register_write;
+    logic                   mem_store;
+    logic                   mem_load;
+    logic                   dcache_flush;
+    logic                   dcache_invalidate;
+    logic[2:0]              lsu_control;
+    logic[31:0]             write_data;
     logic[31:0]             rs1;
     logic[31:0]             imm_ext;
-    logic[31:0]             write_data;
-    mem_ctrl_t              ctrl;
-} dispatcher_lsu_inf_t;
+    logic[31:0]             pc;
+} ix_lst_inf_t;
 
-// DISPATCHER -> MUL control signals
+// LST -> LSD
 typedef struct packed {
-    logic       instruction_valid;
-    mul_op_e    mul_control;
-} mul_ctrl_t;
+    logic                               register_write;
+    logic                               mem_store;
+    logic                               mem_load;
+    logic                               dcache_flush;
+    logic                               dcache_invalidate;
+    logic                               cacheable_mem_access;
+    logic[REG_WIDTH-1:0]                rd;
+    lsu_address_t                       mem_addr;
+    load_op_e                           mem_load_op;
+    logic[3:0]                          write_strobe;
+    logic[31:0]                         write_data;
+    logic[31:0]                         pc;
+    logic[DCACHE_NUM_WAYS-1:0]          valid_bits;
+    dcache_tag_t[DCACHE_NUM_WAYS-1:0]   tags_read;
+    logic                               io_rd_en;
+    logic                               io_wr_en;
+} lst_lsd_inf_t;
 
-// DISPATCHER -> MUL
+// LSD -> LST
+typedef struct packed {
+    logic[DCACHE_NUM_WAYS-1:0]      update_tag_en;
+    logic[DCACHE_NUM_SET_BITS-1:0]  update_tag_set;
+    logic[DCACHE_NUM_SET_BITS-1:0]  evict_set;
+    dcache_tag_t                    update_tag;
+} lsd_lst_inf_t;
+
+// IX -> MUL
 typedef struct packed {
     logic[REG_WIDTH-1:0]    rd;
     logic[31:0]             rs1;
     logic[31:0]             rs2;
-    mul_ctrl_t              ctrl;
-} dispatcher_mul_inf_t;
+    mul_op_e                mul_control;
+} ix_mul_inf_t;
 
-// DISPATCHER -> DIV control signals
-typedef struct packed {
-    logic       instruction_valid;
-    div_op_e    div_control;
-} div_ctrl_t;
-
-// DISPATCHER -> DIV
+// IX -> DIV
 typedef struct packed {
     logic[REG_WIDTH-1:0]    rd;
     logic[31:0]             rs1;
     logic[31:0]             rs2;
-    div_ctrl_t              ctrl;
-} dispatcher_div_inf_t;
+    div_op_e                div_control;
+} ix_div_inf_t;
 
-// EXE -> WB
+// ALU -> WB
 typedef struct packed {
-    logic                   instruction_valid;
+    logic                   do_branch;
+    logic                   icache_invalidate;
+    logic[31:0]             branch_target;
     logic                   register_write;
     logic[REG_WIDTH-1:0]    rd;
     logic[31:0]             exe_result;
-} exe_wb_inf_t;
+} alu_wb_inf_t;
 
-// WB -> DISPATCHER
+// LSD -> WB
+typedef struct packed {
+    logic                   do_branch;
+    logic                   register_write;
+    logic[1:0]              load_selector;
+    load_op_e               load_control;
+    logic[REG_WIDTH-1:0]    rd;
+    logic[31:0]             load_result;
+    logic[31:0]             branch_target;
+} lsd_wb_inf_t;
+
+// MUL -> WB
+typedef struct packed {
+    logic[4:0]  rd;
+    logic[31:0] result;
+} mul_wb_inf_t;
+
+// DIV -> WB
+typedef struct packed {
+    logic[4:0]  rd;
+    logic[31:0] result;
+} div_wb_inf_t;
+
+// WB -> IX
 typedef struct packed {
     logic                   wr_en;
     logic[REG_WIDTH-1:0]    rd;
     logic[31:0]             wr_data;
-} wb_dispatcher_inf_t;
+} wb_ix_inf_t;
+
+endpackage
 
 `endif
