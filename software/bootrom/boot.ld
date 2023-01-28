@@ -1,34 +1,37 @@
+OUTPUT_FORMAT("elf32-littleriscv", "elf32-littleriscv", "elf32-littleriscv")
+OUTPUT_ARCH(riscv)
 ENTRY(_start)
 
 MEMORY
 {
-    rom (rx)    : ORIGIN = 0x10000000,  LENGTH = 0x2000
-    ram (rwx)   : ORIGIN = 0x00000000,  LENGTH = 0x4000
+    rom (rx)    : ORIGIN = 0x10000000,  LENGTH = 0x4000
+    ram (rwx)   : ORIGIN = 0x00000000,  LENGTH = 0x10000
 }
 
 STACK_SIZE  = 0x800; /* 2 kB*/
 
 SECTIONS
 {
-   .text :
+    .text : ALIGN(4)
     {
         *(.text*)
-        *(.rodata)
-        *(.eh_frame)
+        _etext = . ;
     } > rom
 
-    .bss (NOLOAD) :
+    .rodata :
     {
-        *(.bss)
-    } > ram AT >rom
+        _srodata = . ;
+        . = ALIGN(4);
+        *(.rodata*)
+        . = ALIGN(4);
+        _erodata = . ;
+    } > ram AT > rom
 
-    .data : { *(.data) }
-
-    .stack (NOLOAD):
+    .stack (NOLOAD) :
     {
-        . = ALIGN(8);
+        . = ALIGN(4);
         . = . + STACK_SIZE;
-        . = ALIGN(8);
+        . = ALIGN(4);
         _sp = . -16;
     } > ram
 }

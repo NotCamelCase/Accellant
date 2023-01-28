@@ -12,7 +12,7 @@ localparam  RAM_SIZE                    = 32'h1000_0000; // 256 MB
 localparam  INSTR_ROM_BASE_ADDRESS      = RAM_BASE_ADDRESS + RAM_SIZE;
 localparam  INSTR_ROM_SIZE              = 32'h10000; // 64 KB
 
-localparam  NUM_IO_CORES                = 2; // LED + Timer
+localparam  NUM_IO_CORES                = 3; // LED + Timer + UART
 
 localparam  MMIO_BASE_ADDRESS           = 32'hff00_0000;
 
@@ -21,5 +21,11 @@ localparam  MMIO_LED_REG_SET_LED        = 'h0;
 
 localparam  MMIO_TIMER_BASE_ADDRESS     = MMIO_BASE_ADDRESS + 'h100; // Slot #1
 localparam  MMIO_TIMER_GET_CYCLE_CTR    = 'h0;
+
+localparam  MMIO_UART_BASE_ADDRESS      = MMIO_BASE_ADDRESS + 'h200; // Slot #2
+localparam  MMIO_UART_GET_DATA          = 'h0;
+localparam  MMIO_UART_SET_BAUD_RATE     = 'h4;
+localparam  MMIO_UART_GET_STATUS        = 'h8;
+localparam  MMIO_UART_WRITE_DATA        = 'hc;
 
 `endif

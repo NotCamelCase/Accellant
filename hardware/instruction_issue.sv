@@ -67,6 +67,11 @@ module instruction_issue
     logic                           div_pending_op_reg;
     logic                           dcache_flush_pending_op_reg;
 
+    initial begin
+        // Zero out x0
+        reg_file[0] = '0;
+    end
+
     basic_fifo #(.ADDR_WIDTH($clog2(IQ_LENGTH)), .DATA_WIDTH($bits(id_ix_inf_t)), .ALMOST_FULL_THRESHOLD(IQ_STALL_IF_THRESHOLD)) iq(
         .clk(clk),
         .rst(rst),

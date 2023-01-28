@@ -6,6 +6,8 @@ import defines::*;
 module accellant_soc
 (
     input logic         clk, rst,
+    input logic         uart_tx,
+    output logic        uart_rx,
     output logic[3:0]   led
 );
     // AXI ibus master
@@ -128,8 +130,10 @@ module accellant_soc
     logic           io_bus_s_wr_en;
     logic[31:0]     io_bus_s_address;
     logic[31:0]     io_bus_s_wr_data;
+    // I/O bus read data
     logic[31:0]     io_bus_led_rd_data;
     logic[31:0]     io_bus_timer_rd_data;
+    logic[31:0]     io_bus_uart_rd_data;
 
     riscv_core core(
     	.clk(clk),
@@ -199,6 +203,7 @@ module accellant_soc
         .io_bus_m_wr_data(io_bus_m_wr_data),
         .io_bus_m_rd_data(io_bus_m_rd_data),
         .io_bus_timer_rd_data(io_bus_timer_rd_data),
+        .io_bus_uart_rd_data(io_bus_uart_rd_data),
         .io_bus_s_rd_en(io_bus_s_rd_en),
         .io_bus_s_wr_en(io_bus_s_wr_en),
         .io_bus_s_address(io_bus_s_address),
@@ -222,6 +227,17 @@ module accellant_soc
         .io_bus_s_wr_data(io_bus_s_wr_data),
         .rd_data(io_bus_timer_rd_data));
 
+    uart_core uart(
+        .clk(clk),
+        .rst(rst),
+        .io_bus_s_rd_en(io_bus_s_rd_en),
+        .io_bus_s_wr_en(io_bus_s_wr_en),
+        .io_bus_s_address(io_bus_s_address),
+        .io_bus_s_wr_data(io_bus_s_wr_data),
+        .uart_rx(uart_tx),
+        .uart_tx(uart_rx),
+        .rd_data(io_bus_uart_rd_data));
+
     axi_interconnect #(
         .S_COUNT(AXI_XBAR_NUM_SLAVES),
         .M_COUNT(AXI_XBAR_NUM_MASTERS),
@@ -230,7 +246,7 @@ module accellant_soc
         .M_BASE_ADDR({INSTR_ROM_BASE_ADDRESS, RAM_BASE_ADDRESS}),
         .M_ADDR_WIDTH({$clog2(INSTR_ROM_SIZE), $clog2(RAM_SIZE)}),
         // AXI Master-Slave read/write connections
-        .M_CONNECT_READ({2'b10, 2'b11}),
+        .M_CONNECT_READ({2'b11, 2'b11}),
         .M_CONNECT_WRITE({2'b00, 2'b01})) axi_crossbar(
             .clk(clk),
             .rst(rst),

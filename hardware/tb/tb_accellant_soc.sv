@@ -9,8 +9,10 @@ module tb_accellant_soc
     // Inputs
     logic       clk; // 10 ns
     logic       rst; // Sync reset active-high
+    logic       uart_tx;
     // Outputs
     logic[3:0]  led;
+    logic       uart_rx;
 
     always begin
         clk = 1'b1;
@@ -25,15 +27,13 @@ module tb_accellant_soc
         rst = 1'b0;
     end
 
-    accellant_soc soc(
-        .clk(clk),
-        .rst(rst),
-        .led(led));
+    accellant_soc soc(.*);
 
     initial begin
+        uart_tx <= 1'b1;
         @(negedge rst);
 
-        repeat(5000) @(posedge clk);
+        repeat(10000) @(posedge clk);
 
         $finish;
     end

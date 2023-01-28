@@ -1,0 +1,69 @@
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+rom              0x0000000010000000 0x0000000000004000 xr
+ram              0x0000000000000000 0x0000000000010000 xrw
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+LOAD /tmp/cc4dEYiW.o
+LOAD /tmp/ccH9iGYI.o
+                0x0000000000000800                STACK_SIZE = 0x800
+
+.text           0x0000000010000000      0x194
+ *(.text*)
+ .text          0x0000000010000000       0x14 /tmp/cc4dEYiW.o
+                0x0000000010000000                _start
+ .text          0x0000000010000014       0x90 /tmp/ccH9iGYI.o
+                0x0000000010000014                time_ms
+                0x000000001000002c                Sleep
+                0x0000000010000058                SetLed
+                0x0000000010000064                write_serial_byte
+                0x000000001000007c                str_len
+ .text.startup  0x00000000100000a4       0xf0 /tmp/ccH9iGYI.o
+                0x00000000100000a4                main
+                0x0000000010000194                _etext = .
+
+.rodata         0x0000000000000000       0x10 load address 0x0000000010000194
+                0x0000000000000000                _srodata = .
+                0x0000000000000000                . = ALIGN (0x4)
+ *(.rodata*)
+ .rodata.str1.4
+                0x0000000000000000        0xf /tmp/ccH9iGYI.o
+                0x0000000000000010                . = ALIGN (0x4)
+ *fill*         0x000000000000000f        0x1 
+                0x0000000000000010                _erodata = .
+
+.rela.dyn       0x0000000000000010        0x0 load address 0x00000000100001a4
+ .rela.text     0x0000000000000010        0x0 /tmp/cc4dEYiW.o
+ .rela.text.startup
+                0x0000000000000010        0x0 /tmp/cc4dEYiW.o
+
+.data           0x0000000000000010        0x0 load address 0x00000000100001a4
+ .data          0x0000000000000010        0x0 /tmp/cc4dEYiW.o
+ .data          0x0000000000000010        0x0 /tmp/ccH9iGYI.o
+
+.bss            0x0000000000000010        0x0 load address 0x00000000100001a4
+ .bss           0x0000000000000010        0x0 /tmp/cc4dEYiW.o
+ .bss           0x0000000000000010        0x0 /tmp/ccH9iGYI.o
+
+.stack          0x0000000000000010      0x800 load address 0x00000000100001a4
+                0x0000000000000010                . = ALIGN (0x4)
+                0x0000000000000810                . = (. + STACK_SIZE)
+ *fill*         0x0000000000000010      0x800 
+                0x0000000000000810                . = ALIGN (0x4)
+                0x0000000000000800                _sp = (. - 0x10)
+OUTPUT(boot.elf elf32-littleriscv)
+
+.riscv.attributes
+                0x0000000000000000       0x21
+ .riscv.attributes
+                0x0000000000000000       0x1f /tmp/cc4dEYiW.o
+ .riscv.attributes
+                0x000000000000001f       0x21 /tmp/ccH9iGYI.o
+
+.comment        0x0000000000000000       0x24
+ .comment       0x0000000000000000       0x24 /tmp/ccH9iGYI.o
+                                         0x25 (size before relaxing)
