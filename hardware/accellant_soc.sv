@@ -11,135 +11,138 @@ module accellant_soc
     output logic[3:0]   led
 );
     // AXI ibus master
-    logic[31:0]     axi_ibus_m_awaddr;
-    logic[1:0]      axi_ibus_m_awburst;
-    logic[7:0]      axi_ibus_m_awlen;
-    logic[2:0]      axi_ibus_m_awsize;
-    logic           axi_ibus_m_awvalid;
-    logic           axi_ibus_m_awready;
-    logic[31:0]     axi_ibus_m_wdata;
-    logic[3:0]      axi_ibus_m_wstrb;
-    logic           axi_ibus_m_wlast;
-    logic           axi_ibus_m_wvalid;
-    logic           axi_ibus_m_wready;
-    logic[1:0]      axi_ibus_m_bresp;
-    logic           axi_ibus_m_bvalid;
-    logic           axi_ibus_m_bready;
-    logic[31:0]     axi_ibus_m_araddr;
-    logic[7:0]      axi_ibus_m_arlen;
-    logic[2:0]      axi_ibus_m_arsize;
-    logic[1:0]      axi_ibus_m_arburst;
-    logic           axi_ibus_m_arvalid;
-    logic           axi_ibus_m_arready;
-    logic[31:0]     axi_ibus_m_rdata;
-    logic[1:0]      axi_ibus_m_rresp;
-    logic           axi_ibus_m_rvalid;
-    logic           axi_ibus_m_rlast;
-    logic           axi_ibus_m_rready;
+    logic[31:0]             axi_ibus_m_awaddr;
+    logic[1:0]              axi_ibus_m_awburst;
+    logic[7:0]              axi_ibus_m_awlen;
+    logic[2:0]              axi_ibus_m_awsize;
+    logic                   axi_ibus_m_awvalid;
+    logic                   axi_ibus_m_awready;
+    logic[31:0]             axi_ibus_m_wdata;
+    logic[3:0]              axi_ibus_m_wstrb;
+    logic                   axi_ibus_m_wlast;
+    logic                   axi_ibus_m_wvalid;
+    logic                   axi_ibus_m_wready;
+    logic[1:0]              axi_ibus_m_bresp;
+    logic                   axi_ibus_m_bvalid;
+    logic                   axi_ibus_m_bready;
+    logic[31:0]             axi_ibus_m_araddr;
+    logic[7:0]              axi_ibus_m_arlen;
+    logic[2:0]              axi_ibus_m_arsize;
+    logic[1:0]              axi_ibus_m_arburst;
+    logic                   axi_ibus_m_arvalid;
+    logic                   axi_ibus_m_arready;
+    logic[31:0]             axi_ibus_m_rdata;
+    logic[1:0]              axi_ibus_m_rresp;
+    logic                   axi_ibus_m_rvalid;
+    logic                   axi_ibus_m_rlast;
+    logic                   axi_ibus_m_rready;
 
     // AXI ibus slave
-    logic[31:0]     axi_ibus_s_awaddr;
-    logic[1:0]      axi_ibus_s_awburst;
-    logic[7:0]      axi_ibus_s_awlen;
-    logic[2:0]      axi_ibus_s_awsize;
-    logic           axi_ibus_s_awvalid;
-    logic           axi_ibus_s_awready;
-    logic[31:0]     axi_ibus_s_wdata;
-    logic[3:0]      axi_ibus_s_wstrb;
-    logic           axi_ibus_s_wlast;
-    logic           axi_ibus_s_wvalid;
-    logic           axi_ibus_s_wready;
-    logic[1:0]      axi_ibus_s_bresp;
-    logic           axi_ibus_s_bvalid;
-    logic           axi_ibus_s_bready;
-    logic[31:0]     axi_ibus_s_araddr;
-    logic[7:0]      axi_ibus_s_arlen;
-    logic[2:0]      axi_ibus_s_arsize;
-    logic[1:0]      axi_ibus_s_arburst;
-    logic           axi_ibus_s_arvalid;
-    logic           axi_ibus_s_arready;
-    logic[31:0]     axi_ibus_s_rdata;
-    logic[1:0]      axi_ibus_s_rresp;
-    logic           axi_ibus_s_rvalid;
-    logic           axi_ibus_s_rlast;
-    logic           axi_ibus_s_rready;
+    logic[31:0]             axi_ibus_s_awaddr;
+    logic[1:0]              axi_ibus_s_awburst;
+    logic[7:0]              axi_ibus_s_awlen;
+    logic[2:0]              axi_ibus_s_awsize;
+    logic                   axi_ibus_s_awvalid;
+    logic                   axi_ibus_s_awready;
+    logic[31:0]             axi_ibus_s_wdata;
+    logic[3:0]              axi_ibus_s_wstrb;
+    logic                   axi_ibus_s_wlast;
+    logic                   axi_ibus_s_wvalid;
+    logic                   axi_ibus_s_wready;
+    logic[1:0]              axi_ibus_s_bresp;
+    logic                   axi_ibus_s_bvalid;
+    logic                   axi_ibus_s_bready;
+    logic[31:0]             axi_ibus_s_araddr;
+    logic[7:0]              axi_ibus_s_arlen;
+    logic[2:0]              axi_ibus_s_arsize;
+    logic[1:0]              axi_ibus_s_arburst;
+    logic                   axi_ibus_s_arvalid;
+    logic                   axi_ibus_s_arready;
+    logic[31:0]             axi_ibus_s_rdata;
+    logic[1:0]              axi_ibus_s_rresp;
+    logic                   axi_ibus_s_rvalid;
+    logic                   axi_ibus_s_rlast;
+    logic                   axi_ibus_s_rready;
 
     // AXI dbus master
-    logic[31:0]     axi_dbus_m_awaddr;
-    logic[1:0]      axi_dbus_m_awburst;
-    logic[7:0]      axi_dbus_m_awlen;
-    logic[2:0]      axi_dbus_m_awsize;
-    logic           axi_dbus_m_awvalid;
-    logic           axi_dbus_m_awready;
-    logic[31:0]     axi_dbus_m_wdata;
-    logic[3:0]      axi_dbus_m_wstrb;
-    logic           axi_dbus_m_wlast;
-    logic           axi_dbus_m_wvalid;
-    logic           axi_dbus_m_wready;
-    logic[1:0]      axi_dbus_m_bresp;
-    logic           axi_dbus_m_bvalid;
-    logic           axi_dbus_m_bready;
-    logic[31:0]     axi_dbus_m_araddr;
-    logic[7:0]      axi_dbus_m_arlen;
-    logic[2:0]      axi_dbus_m_arsize;
-    logic[1:0]      axi_dbus_m_arburst;
-    logic           axi_dbus_m_arvalid;
-    logic           axi_dbus_m_arready;
-    logic[31:0]     axi_dbus_m_rdata;
-    logic[1:0]      axi_dbus_m_rresp;
-    logic           axi_dbus_m_rvalid;
-    logic           axi_dbus_m_rlast;
-    logic           axi_dbus_m_rready;
+    logic[31:0]             axi_dbus_m_awaddr;
+    logic[1:0]              axi_dbus_m_awburst;
+    logic[7:0]              axi_dbus_m_awlen;
+    logic[2:0]              axi_dbus_m_awsize;
+    logic                   axi_dbus_m_awvalid;
+    logic                   axi_dbus_m_awready;
+    logic[31:0]             axi_dbus_m_wdata;
+    logic[3:0]              axi_dbus_m_wstrb;
+    logic                   axi_dbus_m_wlast;
+    logic                   axi_dbus_m_wvalid;
+    logic                   axi_dbus_m_wready;
+    logic[1:0]              axi_dbus_m_bresp;
+    logic                   axi_dbus_m_bvalid;
+    logic                   axi_dbus_m_bready;
+    logic[31:0]             axi_dbus_m_araddr;
+    logic[7:0]              axi_dbus_m_arlen;
+    logic[2:0]              axi_dbus_m_arsize;
+    logic[1:0]              axi_dbus_m_arburst;
+    logic                   axi_dbus_m_arvalid;
+    logic                   axi_dbus_m_arready;
+    logic[31:0]             axi_dbus_m_rdata;
+    logic[1:0]              axi_dbus_m_rresp;
+    logic                   axi_dbus_m_rvalid;
+    logic                   axi_dbus_m_rlast;
+    logic                   axi_dbus_m_rready;
 
     // AXI dbus slave
-    logic[31:0]     axi_dbus_s_awaddr;
-    logic[1:0]      axi_dbus_s_awburst;
-    logic[7:0]      axi_dbus_s_awlen;
-    logic[2:0]      axi_dbus_s_awsize;
-    logic           axi_dbus_s_awvalid;
-    logic           axi_dbus_s_awready;
-    logic[31:0]     axi_dbus_s_wdata;
-    logic[3:0]      axi_dbus_s_wstrb;
-    logic           axi_dbus_s_wlast;
-    logic           axi_dbus_s_wvalid;
-    logic           axi_dbus_s_wready;
-    logic[1:0]      axi_dbus_s_bresp;
-    logic           axi_dbus_s_bvalid;
-    logic           axi_dbus_s_bready;
-    logic[31:0]     axi_dbus_s_araddr;
-    logic[7:0]      axi_dbus_s_arlen;
-    logic[2:0]      axi_dbus_s_arsize;
-    logic[1:0]      axi_dbus_s_arburst;
-    logic           axi_dbus_s_arvalid;
-    logic           axi_dbus_s_arready;
-    logic[31:0]     axi_dbus_s_rdata;
-    logic[1:0]      axi_dbus_s_rresp;
-    logic           axi_dbus_s_rvalid;
-    logic           axi_dbus_s_rlast;
-    logic           axi_dbus_s_rready;
+    logic[31:0]             axi_dbus_s_awaddr;
+    logic[1:0]              axi_dbus_s_awburst;
+    logic[7:0]              axi_dbus_s_awlen;
+    logic[2:0]              axi_dbus_s_awsize;
+    logic                   axi_dbus_s_awvalid;
+    logic                   axi_dbus_s_awready;
+    logic[31:0]             axi_dbus_s_wdata;
+    logic[3:0]              axi_dbus_s_wstrb;
+    logic                   axi_dbus_s_wlast;
+    logic                   axi_dbus_s_wvalid;
+    logic                   axi_dbus_s_wready;
+    logic[1:0]              axi_dbus_s_bresp;
+    logic                   axi_dbus_s_bvalid;
+    logic                   axi_dbus_s_bready;
+    logic[31:0]             axi_dbus_s_araddr;
+    logic[7:0]              axi_dbus_s_arlen;
+    logic[2:0]              axi_dbus_s_arsize;
+    logic[1:0]              axi_dbus_s_arburst;
+    logic                   axi_dbus_s_arvalid;
+    logic                   axi_dbus_s_arready;
+    logic[31:0]             axi_dbus_s_rdata;
+    logic[1:0]              axi_dbus_s_rresp;
+    logic                   axi_dbus_s_rvalid;
+    logic                   axi_dbus_s_rlast;
+    logic                   axi_dbus_s_rready;
 
     // I/O bus master
-    logic           io_bus_m_rd_en;
-    logic           io_bus_m_wr_en;
-    logic[31:0]     io_bus_m_address;
-    logic[31:0]     io_bus_m_wr_data;
-    logic[31:0]     io_bus_m_rd_data;
+    logic                   io_bus_m_rd_en;
+    logic                   io_bus_m_wr_en;
+    logic[NUM_IO_CORES-1:0] io_bus_m_cs;
+    logic[31:0]             io_bus_m_address;
+    logic[31:0]             io_bus_m_wr_data;
+    logic[31:0]             io_bus_m_rd_data;
 
     // I/O bus slaves
-    logic           io_bus_s_rd_en;
-    logic           io_bus_s_wr_en;
-    logic[31:0]     io_bus_s_address;
-    logic[31:0]     io_bus_s_wr_data;
+    logic                   io_bus_s_rd_en;
+    logic                   io_bus_s_wr_en;
+    logic[NUM_IO_CORES-1:0] io_bus_s_cs;
+    logic[31:0]             io_bus_s_address;
+    logic[31:0]             io_bus_s_wr_data;
     // I/O bus read data
-    logic[31:0]     io_bus_led_rd_data;
-    logic[31:0]     io_bus_timer_rd_data;
-    logic[31:0]     io_bus_uart_rd_data;
+    logic[31:0]             io_bus_led_rd_data;
+    logic[31:0]             io_bus_timer_rd_data;
+    logic[31:0]             io_bus_uart_rd_data;
 
     riscv_core core(
     	.clk(clk),
         .rst(rst),
         .io_bus_rd_en(io_bus_m_rd_en),
         .io_bus_wr_en(io_bus_m_wr_en),
+        .io_bus_cs(io_bus_m_cs),
         .io_bus_address(io_bus_m_address),
         .io_bus_wr_data(io_bus_m_wr_data),
         .io_bus_rd_data(io_bus_m_rd_data),
@@ -199,6 +202,7 @@ module accellant_soc
         .rst(rst),
         .io_bus_m_rd_en(io_bus_m_rd_en),
         .io_bus_m_wr_en(io_bus_m_wr_en),
+        .io_bus_m_cs(io_bus_m_cs),
         .io_bus_m_address(io_bus_m_address),
         .io_bus_m_wr_data(io_bus_m_wr_data),
         .io_bus_m_rd_data(io_bus_m_rd_data),
@@ -206,32 +210,39 @@ module accellant_soc
         .io_bus_uart_rd_data(io_bus_uart_rd_data),
         .io_bus_s_rd_en(io_bus_s_rd_en),
         .io_bus_s_wr_en(io_bus_s_wr_en),
+        .io_bus_s_cs(io_bus_s_cs),
         .io_bus_s_address(io_bus_s_address),
         .io_bus_s_wr_data(io_bus_s_wr_data));
 
+    // Slot #0
     led_core #(.NUM_LEDS(4)) ledc(
         .clk(clk),
         .rst(rst),
         .led(led),
+        .io_bus_s_cs(io_bus_s_cs[0]),
         .io_bus_s_rd_en(io_bus_s_rd_en),
         .io_bus_s_wr_en(io_bus_s_wr_en),
         .io_bus_s_address(io_bus_s_address),
         .io_bus_s_wr_data(io_bus_s_wr_data));
 
+    // Slot #1
     timer_core timer(
         .clk(clk),
         .rst(rst),
         .io_bus_s_rd_en(io_bus_s_rd_en),
+        .io_bus_s_cs(io_bus_s_cs[1]),
         .io_bus_s_wr_en(io_bus_s_wr_en),
         .io_bus_s_address(io_bus_s_address),
         .io_bus_s_wr_data(io_bus_s_wr_data),
         .rd_data(io_bus_timer_rd_data));
 
+    // Slot #2
     uart_core uart(
         .clk(clk),
         .rst(rst),
         .io_bus_s_rd_en(io_bus_s_rd_en),
         .io_bus_s_wr_en(io_bus_s_wr_en),
+        .io_bus_s_cs(io_bus_s_cs[2]),
         .io_bus_s_address(io_bus_s_address),
         .io_bus_s_wr_data(io_bus_s_wr_data),
         .uart_rx(uart_tx),

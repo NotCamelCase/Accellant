@@ -9,6 +9,7 @@ module timer_core
     // IO Interconnect -> Timer
     input logic         io_bus_s_rd_en,
     input logic         io_bus_s_wr_en,
+    input logic         io_bus_s_cs,
     input logic[31:0]   io_bus_s_address,
     input logic[31:0]   io_bus_s_wr_data,
     // Timer -> IO Interconnect

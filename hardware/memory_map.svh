@@ -12,8 +12,6 @@ localparam  RAM_SIZE                    = 32'h1000_0000; // 256 MB
 localparam  INSTR_ROM_BASE_ADDRESS      = RAM_BASE_ADDRESS + RAM_SIZE;
 localparam  INSTR_ROM_SIZE              = 32'h10000; // 64 KB
 
-localparam  NUM_IO_CORES                = 3; // LED + Timer + UART
-
 localparam  MMIO_BASE_ADDRESS           = 32'hff00_0000;
 
 localparam  MMIO_LED_BASE_ADDRESS       =  MMIO_BASE_ADDRESS + 'h0;   // Slot #0

@@ -31,13 +31,14 @@ module load_store_tag
     logic[31:0]                 write_data;
 
     logic                       io_access, cache_mem_access;
+    logic[NUM_IO_CORES-1:0]     io_cs;
 
     // Compute memory location to be accessed
     assign mem_addr = ix_lst_inf.rs1 + ix_lst_inf.imm_ext;
     assign mem_addr_packed = lsu_address_t'(mem_addr);
 
     // True if the memory location is accessed within the uncacheable I/O address space
-    assign io_access = ((mem_addr & MMIO_BASE_ADDRESS) == MMIO_BASE_ADDRESS) && !(ix_lst_inf.dcache_flush || ix_lst_inf.dcache_invalidate);
+    assign io_access = ((mem_addr & MMIO_BASE_ADDRESS) == MMIO_BASE_ADDRESS);
     // Let all non-I/O accesses go thru D$ (neglecting PFs!)
     assign cache_mem_access = !io_access && !(ix_lst_inf.dcache_flush || ix_lst_inf.dcache_invalidate);
 
@@ -72,6 +73,19 @@ module load_store_tag
             assign valid_bits[way_idx] = valid_bits_reg[mem_addr_packed.set_idx];
         end
     endgenerate
+
+    // I/O cores cs signals
+    generate
+        for (genvar core_idx = 0; core_idx < NUM_IO_CORES; core_idx++)
+            assign io_cs[core_idx] = (mem_addr & (MMIO_BASE_ADDRESS + (core_idx * 32'h100))) == (MMIO_BASE_ADDRESS + (core_idx * 32'h100));
+    endgenerate
+
+    // I/O signals
+    always_ff @(posedge clk) begin
+        lst_lsd_inf.io_rd_en <= ix_lst_valid && !wb_do_branch && ix_lst_inf.mem_load;
+        lst_lsd_inf.io_wr_en <= ix_lst_valid && !wb_do_branch && ix_lst_inf.mem_store;
+        lst_lsd_inf.io_cs <= io_cs & {NUM_IO_CORES{!(ix_lst_inf.dcache_flush || ix_lst_inf.dcache_invalidate)}};
+    end
 
     // Align write data for SB/SH/SW
     always_comb begin
@@ -123,7 +137,5 @@ module load_store_tag
         lst_lsd_inf.write_strobe <= store_byte_en;
         lst_lsd_inf.write_data <= write_data;
         lst_lsd_inf.pc <= ix_lst_inf.pc;
-        lst_lsd_inf.io_rd_en <= ix_lst_valid && !wb_do_branch && io_access && ix_lst_inf.mem_load;
-        lst_lsd_inf.io_wr_en <= ix_lst_valid && !wb_do_branch && io_access && ix_lst_inf.mem_store;
     end
 endmodule

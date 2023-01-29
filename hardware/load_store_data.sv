@@ -12,6 +12,7 @@ module load_store_data
     // LSD -> Core
     output logic                            io_bus_rd_en,
     output logic                            io_bus_wr_en,
+    output logic[NUM_IO_CORES-1:0]          io_bus_cs,
     output logic[31:0]                      io_bus_address,
     output logic[31:0]                      io_bus_wr_data,
     input logic[31:0]                       io_bus_rd_data,
@@ -111,7 +112,7 @@ module load_store_data
     lsu_address_t                       writeback_address_reg; // Memory address the evicted dirty CL should be written at
 
     // Pending store data to be registered before realizing a write hit
-    logic                               pending_store_reg, io_access_reg;
+    logic                               pending_store_reg, mem_access_reg;
     logic[3:0]                          pending_store_wstrb_reg;
     logic[DCACHE_NUM_WAY_BITS-1:0]      pending_store_way_reg;
     logic[DCACHE_NUM_SET_BITS-1:0]      pending_store_set_idx_reg;
@@ -467,7 +468,7 @@ module load_store_data
         if (rst)
             lsd_valid <= 1'b0;
         else
-            lsd_valid <= (lst_valid && cache_hit && lst_lsd_inf.cacheable_mem_access) || (lst_lsd_inf.io_rd_en || lst_lsd_inf.io_wr_en);
+            lsd_valid <= (lst_valid && cache_hit && lst_lsd_inf.cacheable_mem_access) || ((|lst_lsd_inf.io_cs) && (lst_lsd_inf.io_rd_en || lst_lsd_inf.io_wr_en));
     end
 
     // Outputs to WB
@@ -478,15 +479,16 @@ module load_store_data
         lsd_wb_inf.load_control <= lst_lsd_inf.mem_load_op;
     end
 
-    // Register if the last access was an I/O or cacheable memory access
-    always_ff @(posedge clk) io_access_reg <= lst_lsd_inf.io_rd_en;
+    // Register if the last access was a memory access or a non-cacheable I/O access
+    always_ff @(posedge clk) mem_access_reg <= lst_lsd_inf.cacheable_mem_access;
 
     // IO data
     assign io_bus_rd_en = lst_lsd_inf.io_rd_en;
     assign io_bus_wr_en = lst_lsd_inf.io_wr_en;
+    assign io_bus_cs = lst_lsd_inf.io_cs;
     assign io_bus_address = lst_lsd_inf.mem_addr;
     assign io_bus_wr_data = lst_lsd_inf.write_data;
 
     // Route read data from CL or I/O interconnect to WB
-    assign lsd_wb_inf.load_result = io_access_reg ? io_bus_rd_data : fetched_word;
+    assign lsd_wb_inf.load_result = mem_access_reg ? fetched_word : io_bus_rd_data;
 endmodule

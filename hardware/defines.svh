@@ -16,7 +16,10 @@ localparam  REG_WIDTH               = $clog2(NUM_REGS);
 
 // Number of execution pipes
 //TODO: FPU + CSR?!
-localparam   NUM_EXE_PIPES          = 4; // ALU + LSU + MUL + DIV
+localparam  NUM_EXE_PIPES           = 4; // ALU + LSU + MUL + DIV
+
+// Number of IO cores
+localparam  NUM_IO_CORES            = 3; // LED + Timer + UART
 
 // EXE pipe IDs, which also designate fixed arbitration priority at WB
 localparam  EXE_PIPE_ID_ALU         = 0;
@@ -249,6 +252,7 @@ typedef struct packed {
     dcache_tag_t[DCACHE_NUM_WAYS-1:0]   tags_read;
     logic                               io_rd_en;
     logic                               io_wr_en;
+    logic[NUM_IO_CORES-1:0]             io_cs;
 } lst_lsd_inf_t;
 
 // LSD -> LST
