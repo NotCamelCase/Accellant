@@ -1,5 +1,4 @@
 `include "defines.svh"
-`include "memory_map.svh"
 
 import defines::*;
 

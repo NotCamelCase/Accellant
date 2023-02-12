@@ -5,7 +5,7 @@
 .type _start,@function
 
 _start:
-    # Setup stack pointer
+    # Set up stack pointer
     lui sp, %hi(_sp)
     add sp, sp, %lo(_sp)
 

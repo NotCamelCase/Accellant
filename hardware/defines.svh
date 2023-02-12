@@ -84,8 +84,8 @@ typedef enum logic[6:0] {
     // LSU opcodes
     INSTR_OPCODE_LSU_LOAD       = 7'b0000011,   // Memory load ops
     INSTR_OPCODE_LSU_STORE      = 7'b0100011,   // Memory store ops
-    INSTR_OPCODE_FENCE          = 7'b0001111    // fence.i
-    // 7'b1110011 -> ECALL/EBREAK
+    INSTR_OPCODE_FENCE          = 7'b0001111,   // fence.i
+    INSTR_OPCODE_CSR            = 7'b1110011    // CSR
 } instr_opcode_e;
 
 // ALU ops
@@ -156,6 +156,22 @@ typedef enum logic[1:0] {
     STORE_OP_SW = 2'b10
 } store_op_e;
 
+// CSR ops
+typedef enum logic[2:0] {
+    CSR_OP_RW   = 3'b001,
+    CSR_OP_RS   = 3'b010,
+    CSR_OP_RC   = 3'b011,
+    CSR_OP_RWI  = 3'b101,
+    CSR_OP_RSI  = 3'b110,
+    CSR_OP_RCI  = 3'b111
+} csr_op_e;
+
+// CSR specifiers
+typedef enum logic[11:0] {
+    CSR_REG_DCACHE_INV      = 12'h03a0,
+    CSR_REG_DCACHE_FLUSH    = 12'h03a1
+} csr_reg_e;
+
 // IFT -> IFD
 typedef struct packed {
     ifu_address_t                       fetched_pc;
@@ -194,6 +210,8 @@ typedef struct packed {
     logic                   mem_store;
     logic                   mem_load;
     logic                   icache_invalidate;
+    logic                   dcache_invalidate;
+    logic                   dcache_flush;
     alu_op_e                alu_control;
     mul_op_e                mul_control;
     div_op_e                div_control;

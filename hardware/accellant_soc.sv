@@ -4,11 +4,12 @@
 import defines::*;
 
 module accellant_soc
+#(LED_COUNT = 4)
 (
-    input logic         clk, rst,
-    input logic         uart_tx,
-    output logic        uart_rx,
-    output logic[3:0]   led
+    input logic                 clk, rst,
+    input logic                 uart_tx,
+    output logic                uart_rx,
+    output logic[LED_COUNT-1:0] led
 );
     // AXI ibus master
     logic[31:0]             axi_ibus_m_awaddr;
@@ -215,7 +216,7 @@ module accellant_soc
         .io_bus_s_wr_data(io_bus_s_wr_data));
 
     // Slot #0
-    led_core #(.NUM_LEDS(4)) ledc(
+    led_core #(.NUM_LEDS(LED_COUNT)) ledc(
         .clk(clk),
         .rst(rst),
         .led(led),

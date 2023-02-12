@@ -1,93 +1,138 @@
 #include <stdint.h>
+#include <stdbool.h>
 
 #define LED_REG     0xff000000
 #define TIMER_REG   0xff000100
 #define UART_REG    0xff000200
 
 #define CPU_CLOCK_FREQ_MHZ  100
+#define LOADER_BAUD_RATE    460800
 
 #define READ_BIT(x, n) ((x >> n) & 0x1)
 #define SET_BIT(x, n) (x |= (1 << n))
 
-extern int* _etext;
-extern int* _srodata;
-extern int* _erodata;
+#define SDRAM_BASE_ADDRESS  0x0
 
-uint32_t time_ms(void)
+#define CMD_PING    0x11
+#define CMD_ACK     0x22
+
+void set_baud_rate(int rate)
 {
-    volatile uint32_t* pTimerBase = (volatile uint32_t*)TIMER_REG;
-    return *pTimerBase / (CPU_CLOCK_FREQ_MHZ * 1000);
+    volatile uint32_t* pUART = (volatile uint32_t*)UART_REG;
+
+    int crate = ((CPU_CLOCK_FREQ_MHZ * 1000000) / (16 * rate)) - 1;
+    pUART[1] = crate;
 }
 
-void Sleep(uint32_t val)
+bool rx_empty(void)
 {
-    uint32_t start = time_ms();
-    uint32_t now = 0;
-
-    do
-    {
-        now = time_ms();
-    } while ((now - start) < val);
+    volatile uint32_t* pUART = (volatile uint32_t*)UART_REG;
+    return READ_BIT(pUART[2], 0);
 }
 
-void SetLed(uint32_t val)
+bool rx_full(void)
 {
-    volatile uint32_t* pLedBase = (volatile uint32_t*)LED_REG;
-    *pLedBase = val;
+    volatile uint32_t* pUART = (volatile uint32_t*)UART_REG;
+    return READ_BIT(pUART[2], 1);
+}
+
+bool tx_empty(void)
+{
+    volatile uint32_t* pUART = (volatile uint32_t*)UART_REG;
+    return READ_BIT(pUART[2], 2);
+}
+
+bool tx_full(void)
+{
+    volatile uint32_t* pUART = (volatile uint32_t*)UART_REG;
+    return READ_BIT(pUART[2], 3);
 }
 
 void write_serial_byte(unsigned char c)
 {
     volatile uint32_t* pUART = (volatile uint32_t*)UART_REG;
-    while (READ_BIT(pUART[2], 3)) {};
+    while (tx_full()) {} // Wait idle for space
     pUART[3] = c;
 }
 
-uint32_t str_len(const char* word)
+void write_serial_integer(uint32_t val)
 {
-    const char* pStart = word;
-    uint32_t i = 0;
-
-    while (*pStart++ != '\0')
+    for (int i = 0; i < 4; i++)
     {
-        ++i;
-    }
+        unsigned char t = val & 0xff;
+        val >>= 8;
 
-    return i;
+        write_serial_byte(t);
+    }
+}
+
+unsigned char read_serial_byte(void)
+{
+    while (rx_empty()) ; // Wait idle for data
+    volatile uint32_t* pUART = (volatile uint32_t*)UART_REG;
+    return pUART[0];
+}
+
+uint32_t read_serial_int(void)
+{
+    uint32_t b0 = read_serial_byte();
+    uint32_t b1 = read_serial_byte();
+    uint32_t b2 = read_serial_byte();
+    uint32_t b3 = read_serial_byte();
+
+    return (b3 << 24) | (b2 << 16) | (b1 << 8) | b0;
+}
+
+void set_led(uint32_t val)
+{
+    volatile uint32_t* pLedBase = (volatile uint32_t*)LED_REG;
+    *pLedBase = val;
+}
+
+void transfer_data()
+{
+    uint8_t* pDataPtr = (uint8_t*)SDRAM_BASE_ADDRESS;
+    uint32_t programSize = read_serial_int();
+
+    for (uint32_t i = 0; i < programSize; i++)
+    {
+        *pDataPtr++ = read_serial_byte();
+    }
+}
+
+void execute_app(uint32_t baseAddress)
+{
+    asm volatile ("jalr %0" : : "r" (baseAddress));
 }
 
 int main(void)
 {
-    SetLed(0xf);
+    set_led(0b0);
 
-    int *src = (int*)(&_etext);
-    int *dst = (int*)(&_srodata);
-    int *end = (int*)(&_erodata);
+    set_baud_rate(LOADER_BAUD_RATE);
 
-    // Copy read-only data from ROM to RAM prior to execution
-    while (dst < end)
-        *dst++ = *src++;
+    set_led(0b1111);
 
-    uint32_t ctr = 0;
-
-    while (1)
+    while (read_serial_byte() != CMD_PING)
     {
-        SetLed(0x0);
-
-        Sleep(500);
-
-        const char* helloWorld = "Hello, World!\n";
-        const uint32_t length = str_len(helloWorld);
-
-        for (uint32_t i = 0; i < length; i++)
-        {
-            char nextChar = helloWorld[i];
-            write_serial_byte(nextChar);
-        }
-
-        SetLed(ctr++);
-
-        // Sleep for 500 ms
-        Sleep(500);
+        // Wait for a ping from the loader
     }
+
+    set_led(0b1100);
+
+    // Send ACK to accept incoming data
+    write_serial_byte(CMD_ACK);
+    set_led(0b0011);
+
+    // Read program data into RAM
+    transfer_data();
+    set_led(0b1010);
+
+    // Commit entire D$ to main memory so that the newly copied program data (instructions & data) are made visible to I$
+    asm volatile ("csrw pmpcfg1, x0");
+
+    // Jump to the beginning of SDRAM where app instructions & data have just been copied to
+    execute_app(SDRAM_BASE_ADDRESS);
+
+    return 0;
 }

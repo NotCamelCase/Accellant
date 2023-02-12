@@ -50,10 +50,10 @@ module load_store_data
     output logic                            lsd_valid,
     output lsd_wb_inf_t                     lsd_wb_inf
 );
-    localparam  CL_DATA_WIDTH   = DCACHE_CL_SIZE * 8; // CL size in bits
-    localparam  CL_NUM_WORDS    = CL_DATA_WIDTH / 32; // CL size in WORDs
-    localparam  CL_SIZE_BITS    = $clog2(DCACHE_CL_SIZE);
-    localparam  CL_FETCH_BITS   = $clog2(CL_NUM_WORDS);
+    localparam  CL_DATA_WIDTH           = DCACHE_CL_SIZE * 8; // CL size in bits
+    localparam  CL_NUM_WORDS            = CL_DATA_WIDTH / 32; // CL size in WORDs
+    localparam  CL_SIZE_BITS            = $clog2(DCACHE_CL_SIZE);
+    localparam  CL_FETCH_BITS           = $clog2(CL_NUM_WORDS);
 
     // Cache fetch state machine
     typedef enum {
@@ -102,13 +102,11 @@ module load_store_data
 
     // Writeback state machine
     logic                               writeback_clear_cl_dirty_reg;
-    logic                               writeback_burst_started_reg;
-    logic                               writeback_burst_stalled_reg;
     logic                               writeback_dcache_flush_reg;
     logic                               writeback_pending_dcache_flush_reg;
-    logic[31:0]                         writeback_write_data_reg;
+    logic[31:0]                         writeback_wr_data_reg;
     writeback_state_t                   writeback_state_reg;
-    logic[CL_FETCH_BITS-1:0]            writeback_send_ctr_reg, writeback_send_ctr_inc;
+    logic[CL_FETCH_BITS-1:0]            writeback_send_ctr_reg, writeback_send_ctr_nxt;
     lsu_address_t                       writeback_address_reg; // Memory address the evicted dirty CL should be written at
 
     // Pending store data to be registered before realizing a write hit
@@ -199,32 +197,17 @@ module load_store_data
     assign axi_dbus_wstrb = 4'b1111;
     assign axi_dbus_awlen = CL_NUM_WORDS - 1; // AXI write burst length
     assign axi_dbus_awsize = 3'b010; // 32-bit write access
-    assign axi_dbus_wdata = writeback_write_data_reg;
+    assign axi_dbus_wdata = writeback_wr_data_reg;
     assign axi_dbus_bready = 1'b1;
 
-    // Track AXI write burst
-    always_ff @(posedge clk) begin
-        if (axi_dbus_wvalid) begin
-            if (!axi_dbus_wready)
-                writeback_burst_stalled_reg <= 1'b1;
-            else
-                writeback_burst_stalled_reg <= 1'b0;
-        end else begin
-                writeback_burst_stalled_reg <= 1'b0;
-        end
-    end
+    assign writeback_send_ctr_nxt = writeback_send_ctr_reg + CL_FETCH_BITS'(1);
 
-    //TODO: Re-work w/ a generic AXI skid buffer design
     always_ff @(posedge clk) begin
-        if (writeback_burst_started_reg || (axi_dbus_wvalid && axi_dbus_wready)) begin
-            if (!writeback_burst_stalled_reg || (axi_dbus_wvalid && axi_dbus_wready))
-                writeback_write_data_reg <= writeback_cache_line[writeback_send_ctr_inc*32 +: 32];
-        end else begin
-                writeback_write_data_reg <= writeback_cache_line[31:0];
-        end
+        if (axi_dbus_wvalid && axi_dbus_wready) // Burst ongoing, register next data to be written back
+            writeback_wr_data_reg <= writeback_cache_line[writeback_send_ctr_nxt*32 +: 32];
+        else // Burst stalled, retain data at current counter
+            writeback_wr_data_reg <= writeback_cache_line[writeback_send_ctr_reg*32 +: 32];
     end
-
-    assign writeback_send_ctr_inc = writeback_send_ctr_reg + CL_FETCH_BITS'(1);
 
     // If D$ flush request arrives while writeback of an evicted CL is ongoing,
     // store this information to handle D$ flush post-eviction
@@ -242,7 +225,6 @@ module load_store_data
         if (rst) begin
             writeback_state_reg <= WRITEBACK_IDLE;
             writeback_clear_cl_dirty_reg <= 1'b0;
-            writeback_burst_started_reg <= 1'b0;
             axi_dbus_awvalid <= 1'b0;
             axi_dbus_wvalid <= 1'b0;
             axi_dbus_wlast <= 1'b0;
@@ -250,7 +232,6 @@ module load_store_data
             unique case (writeback_state_reg)
                 WRITEBACK_IDLE: begin
                     writeback_clear_cl_dirty_reg <= 1'b0;
-                    writeback_burst_started_reg <= 1'b0;
 
                     // Register CL writeback address before issueing AXI write address
                     // For single-CL writeback, tags are read during refill, before new tag is inserted
@@ -302,8 +283,6 @@ module load_store_data
 
                 WRITEBACK_CL: begin
                     if (axi_dbus_wready) begin
-                        writeback_burst_started_reg <= 1'b1;
-
                         if (writeback_send_ctr_reg == CL_FETCH_BITS'(CL_NUM_WORDS-1)) begin
                             // End of write burst
                             axi_dbus_wvalid <= 1'b0;
@@ -315,7 +294,7 @@ module load_store_data
                             else
                                 writeback_state_reg <= WRITEBACK_IDLE;
                         end else begin
-                            writeback_send_ctr_reg <= writeback_send_ctr_inc;
+                            writeback_send_ctr_reg <= writeback_send_ctr_nxt;
 
                             if (writeback_send_ctr_reg == CL_FETCH_BITS'(CL_NUM_WORDS-2))
                                 axi_dbus_wlast <= 1'b1;

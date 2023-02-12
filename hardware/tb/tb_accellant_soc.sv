@@ -4,15 +4,17 @@ module tb_accellant_soc
 (
 );
     // Clock period
-    localparam T = 10;
+    localparam  T = 10;
+
+    localparam  LED_COUNT   = 4;
 
     // Inputs
-    logic       clk; // 10 ns
-    logic       rst; // Sync reset active-high
-    logic       uart_tx;
+    logic                   clk; // 10 ns
+    logic                   rst; // Sync reset active-high
+    logic                   uart_tx;
     // Outputs
-    logic[3:0]  led;
-    logic       uart_rx;
+    logic[LED_COUNT-1:0]    led;
+    logic                   uart_rx;
 
     always begin
         clk = 1'b1;
@@ -33,7 +35,7 @@ module tb_accellant_soc
         uart_tx <= 1'b1;
         @(negedge rst);
 
-        repeat(10000) @(posedge clk);
+        repeat(5000) @(posedge clk);
 
         $finish;
     end

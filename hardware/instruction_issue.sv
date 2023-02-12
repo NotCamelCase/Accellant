@@ -63,9 +63,8 @@ module instruction_issue
     logic[EXE_LSU_LATENCY-1:0]      wb_lsu_latency_reg;
     logic[EXE_MUL_LATENCY-1:0]      wb_mul_latency_reg;
 
-    logic                           issue_div_op, do_dcache_flush, do_dcache_inv;
-    logic                           div_pending_op_reg;
-    logic                           dcache_flush_pending_op_reg;
+    logic                           issue_div_op, issue_lsu_op;
+    logic                           div_pending_op_reg, dcache_flush_pending_op_reg;
 
     initial begin
         // Zero out x0
@@ -172,11 +171,7 @@ module instruction_issue
                          (mul_instr && wb_mul_conflict);
 
     assign issue_div_op = div_instr && next_instruction_valid && !wb_do_branch && fire_instruction;
-
-    //TODO: Determine if CSR request is for D$ control
-    //TODO: This should also take into account valid & branch signals
-    assign do_dcache_flush = 1'b0;
-    assign do_dcache_inv = 1'b0;
+    assign issue_lsu_op = lsu_instr && next_instruction_valid && !wb_do_branch && fire_instruction;
 
     // Track pending DIV ops
     always_ff @(posedge clk) begin
@@ -193,7 +188,7 @@ module instruction_issue
         if (rst)
             dcache_flush_pending_op_reg <= 1'b0;
         else if (!dcache_flush_pending_op_reg)
-            dcache_flush_pending_op_reg <= do_dcache_flush;
+            dcache_flush_pending_op_reg <= issue_lsu_op && next_instruction.dcache_flush;
         else if (lsd_dcache_flush_done || wb_do_branch)
             dcache_flush_pending_op_reg <= 1'b0;
     end
@@ -224,7 +219,7 @@ module instruction_issue
         ix_alu_inf.imm_ext <= next_instruction.imm_ext;
     end
 
-    always_ff @(posedge clk) ix_lst_valid <= lsu_instr && next_instruction_valid && !wb_do_branch && fire_instruction;
+    always_ff @(posedge clk) ix_lst_valid <= issue_lsu_op;
 
     // Outputs to LSU
     always_ff @(posedge clk) begin
@@ -232,8 +227,8 @@ module instruction_issue
         ix_lst_inf.register_write <= next_instruction.register_write;
         ix_lst_inf.mem_store <= next_instruction.mem_store;
         ix_lst_inf.mem_load <= next_instruction.mem_load;
-        ix_lst_inf.dcache_flush <= do_dcache_flush;
-        ix_lst_inf.dcache_invalidate <= do_dcache_inv;
+        ix_lst_inf.dcache_invalidate <= next_instruction.dcache_invalidate;
+        ix_lst_inf.dcache_flush <= next_instruction.dcache_flush;
         ix_lst_inf.lsu_control <= next_instruction.lsu_control;
         ix_lst_inf.write_data <= reg_file[next_instruction.a2];
         ix_lst_inf.rs1 <= reg_file[next_instruction.a1];

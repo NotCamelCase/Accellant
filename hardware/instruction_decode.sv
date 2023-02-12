@@ -22,6 +22,8 @@ module instruction_decode
     logic                   mem_store;
     logic                   mem_load;
     logic                   icache_invalidate;
+    logic                   dcache_invalidate;
+    logic                   dcache_flush;
     logic                   branch, jal, jalr;
     branch_op_e             branch_op;
     alu_op_e                alu_control;
@@ -54,6 +56,8 @@ module instruction_decode
         mem_load = 1'b0;
 
         icache_invalidate = 1'b0;
+        dcache_invalidate = 1'b0;
+        dcache_flush = 1'b0;
 
         alu_control = ALU_OP_ADD;
         mul_control = MUL_OP_MUL;
@@ -167,11 +171,24 @@ module instruction_decode
                 a1 = '0;
                 a2 = '0;
                 rd = '0;
-                exe_pipe[EXE_PIPE_ID_ALU] = 1'b1;
+                exe_pipe[EXE_PIPE_ID_ALU] = icache_invalidate;
+            end
+
+            INSTR_OPCODE_CSR: begin
+                //TODO: Re-do w/ all CSRs in mind
+                imm_src = IMM_TYPE_I;
+                a1 = '0;
+                a2 = '0;
+                rd = '0;
+
+                dcache_invalidate = (funct3 == CSR_OP_RW) && (imm_ext_i == CSR_REG_DCACHE_INV);
+                dcache_flush = (funct3 == CSR_OP_RW) && (imm_ext_i == CSR_REG_DCACHE_FLUSH);
+
+                exe_pipe[EXE_PIPE_ID_LSU] = dcache_invalidate || dcache_flush;
+                //TODO: Rest of CSR ops
             end
 
             //TODO: FPU ops
-            //TODO: CSR ops
 
             default: ; //TODO: Assert for undefined/un-implemented opcodes!!!
         endcase
@@ -224,6 +241,8 @@ module instruction_decode
         id_ix_inf.mem_store <= mem_store;
         id_ix_inf.mem_load <= mem_load;
         id_ix_inf.icache_invalidate <= icache_invalidate;
+        id_ix_inf.dcache_invalidate <= dcache_invalidate;
+        id_ix_inf.dcache_flush <= dcache_flush;
         id_ix_inf.alu_control <= alu_control;
         id_ix_inf.mul_control <= mul_control;
         id_ix_inf.div_control <= div_control;

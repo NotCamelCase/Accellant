@@ -1,69 +1,56 @@
 
+Discarded input sections
+
+ .data          0x0000000000000000        0x0 /tmp/ccjWtigR.o
+ .bss           0x0000000000000000        0x0 /tmp/ccjWtigR.o
+ .data          0x0000000000000000        0x0 /tmp/cc5lY2mO.o
+ .bss           0x0000000000000000        0x0 /tmp/cc5lY2mO.o
+
 Memory Configuration
 
 Name             Origin             Length             Attributes
-rom              0x0000000010000000 0x0000000000004000 xr
+rom              0x0000000010000000 0x0000000000001000 xr
 ram              0x0000000000000000 0x0000000000010000 xrw
 *default*        0x0000000000000000 0xffffffffffffffff
 
 Linker script and memory map
 
-LOAD /tmp/cc4dEYiW.o
-LOAD /tmp/ccH9iGYI.o
+LOAD /tmp/ccjWtigR.o
+LOAD /tmp/cc5lY2mO.o
                 0x0000000000000800                STACK_SIZE = 0x800
 
-.text           0x0000000010000000      0x194
+.text           0x0000000010000000      0x2d4
  *(.text*)
- .text          0x0000000010000000       0x14 /tmp/cc4dEYiW.o
+ .text          0x0000000010000000       0x14 /tmp/ccjWtigR.o
                 0x0000000010000000                _start
- .text          0x0000000010000014       0x90 /tmp/ccH9iGYI.o
-                0x0000000010000014                time_ms
-                0x000000001000002c                Sleep
-                0x0000000010000058                SetLed
-                0x0000000010000064                write_serial_byte
-                0x000000001000007c                str_len
- .text.startup  0x00000000100000a4       0xf0 /tmp/ccH9iGYI.o
-                0x00000000100000a4                main
-                0x0000000010000194                _etext = .
-
-.rodata         0x0000000000000000       0x10 load address 0x0000000010000194
-                0x0000000000000000                _srodata = .
-                0x0000000000000000                . = ALIGN (0x4)
- *(.rodata*)
- .rodata.str1.4
-                0x0000000000000000        0xf /tmp/ccH9iGYI.o
-                0x0000000000000010                . = ALIGN (0x4)
- *fill*         0x000000000000000f        0x1 
-                0x0000000000000010                _erodata = .
-
-.rela.dyn       0x0000000000000010        0x0 load address 0x00000000100001a4
- .rela.text     0x0000000000000010        0x0 /tmp/cc4dEYiW.o
- .rela.text.startup
-                0x0000000000000010        0x0 /tmp/cc4dEYiW.o
-
-.data           0x0000000000000010        0x0 load address 0x00000000100001a4
- .data          0x0000000000000010        0x0 /tmp/cc4dEYiW.o
- .data          0x0000000000000010        0x0 /tmp/ccH9iGYI.o
-
-.bss            0x0000000000000010        0x0 load address 0x00000000100001a4
- .bss           0x0000000000000010        0x0 /tmp/cc4dEYiW.o
- .bss           0x0000000000000010        0x0 /tmp/ccH9iGYI.o
-
-.stack          0x0000000000000010      0x800 load address 0x00000000100001a4
-                0x0000000000000010                . = ALIGN (0x4)
-                0x0000000000000810                . = (. + STACK_SIZE)
- *fill*         0x0000000000000010      0x800 
-                0x0000000000000810                . = ALIGN (0x4)
-                0x0000000000000800                _sp = (. - 0x10)
+ .text          0x0000000010000014      0x220 /tmp/cc5lY2mO.o
+                0x0000000010000014                set_baud_rate
+                0x0000000010000034                rx_empty
+                0x0000000010000044                rx_full
+                0x0000000010000058                tx_empty
+                0x000000001000006c                tx_full
+                0x0000000010000080                write_serial_byte
+                0x000000001000009c                write_serial_integer
+                0x00000000100000d0                read_serial_byte
+                0x00000000100000ec                read_serial_int
+                0x0000000010000170                set_led
+                0x000000001000017c                transfer_data
+                0x000000001000022c                execute_app
+ .text.startup  0x0000000010000234       0xa0 /tmp/cc5lY2mO.o
+                0x0000000010000234                main
+                0x0000000000010000                _sp = (ORIGIN (ram) + LENGTH (ram))
 OUTPUT(boot.elf elf32-littleriscv)
 
+.rela.dyn       0x00000000100002d4        0x0
+ .rela.text     0x00000000100002d4        0x0 /tmp/ccjWtigR.o
+
 .riscv.attributes
-                0x0000000000000000       0x21
+                0x0000000000000000       0x25
  .riscv.attributes
-                0x0000000000000000       0x1f /tmp/cc4dEYiW.o
+                0x0000000000000000       0x1f /tmp/ccjWtigR.o
  .riscv.attributes
-                0x000000000000001f       0x21 /tmp/ccH9iGYI.o
+                0x000000000000001f       0x25 /tmp/cc5lY2mO.o
 
 .comment        0x0000000000000000       0x24
- .comment       0x0000000000000000       0x24 /tmp/ccH9iGYI.o
+ .comment       0x0000000000000000       0x24 /tmp/cc5lY2mO.o
                                          0x25 (size before relaxing)

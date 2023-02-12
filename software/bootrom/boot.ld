@@ -4,7 +4,7 @@ ENTRY(_start)
 
 MEMORY
 {
-    rom (rx)    : ORIGIN = 0x10000000,  LENGTH = 0x4000
+    rom (rx)    : ORIGIN = 0x10000000,  LENGTH = 0x1000
     ram (rwx)   : ORIGIN = 0x00000000,  LENGTH = 0x10000
 }
 
@@ -15,23 +15,7 @@ SECTIONS
     .text : ALIGN(4)
     {
         *(.text*)
-        _etext = . ;
     } > rom
 
-    .rodata :
-    {
-        _srodata = . ;
-        . = ALIGN(4);
-        *(.rodata*)
-        . = ALIGN(4);
-        _erodata = . ;
-    } > ram AT > rom
-
-    .stack (NOLOAD) :
-    {
-        . = ALIGN(4);
-        . = . + STACK_SIZE;
-        . = ALIGN(4);
-        _sp = . -16;
-    } > ram
+    _sp = ORIGIN(ram) + LENGTH(ram);
 }

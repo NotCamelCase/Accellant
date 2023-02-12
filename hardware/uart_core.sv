@@ -17,10 +17,12 @@ module uart_core
     output logic        uart_tx,
     output logic[31:0]  rd_data
 );
+    localparam  UART_FIFO_LENGTH = 8;
+
     logic       baud_pulse;
     logic[10:0] divisor_reg;
 
-    logic       remove_data;
+    logic       remove_rx_data, insert_tx_data;
     logic       rx_done, tx_done;
     logic[7:0]  rx_data;
     logic[7:0]  rx_fifo_data, tx_fifo_data;
@@ -62,7 +64,9 @@ module uart_core
     assign baud_pulse = (divisor_reg == 11'h1);
 
     // Remove an element from RX FIFO upon a data read
-    assign remove_data = io_bus_s_cs && io_bus_s_rd_en && (io_bus_s_address[7:0] == MMIO_UART_GET_DATA);
+    assign remove_rx_data = io_bus_s_cs && io_bus_s_rd_en && (io_bus_s_address[7:0] == MMIO_UART_GET_DATA);
+    // Insert an element to TX FIFO upon a data write
+    assign insert_tx_data = io_bus_s_cs && io_bus_s_wr_en && (io_bus_s_address[7:0] == MMIO_UART_WRITE_DATA);
 
     uart_rx rx(
         .clk(clk),
@@ -75,13 +79,13 @@ module uart_core
     // RX fifo
     basic_fifo #(
         // Queue up to 4 bytes
-        .ADDR_WIDTH(2),
+        .ADDR_WIDTH($clog2(UART_FIFO_LENGTH)),
         .DATA_WIDTH(8)) rx_fifo(
             .clk(clk),
             .rst(rst),
             .clear(1'b0),
             .push(rx_done),
-            .pop (remove_data),
+            .pop (remove_rx_data),
             .empty(rx_empty),
             .full(rx_full),
             .almost_empty(),
@@ -100,12 +104,12 @@ module uart_core
 
     basic_fifo #(
         // Queue up to 4 bytes
-        .ADDR_WIDTH(2),
+        .ADDR_WIDTH($clog2(UART_FIFO_LENGTH)),
         .DATA_WIDTH(8)) tx_fifo(
             .clk(clk),
             .rst(rst),
             .clear(1'b0),
-            .push(io_bus_s_cs && io_bus_s_wr_en && (io_bus_s_address[7:0] == MMIO_UART_WRITE_DATA)),
+            .push(insert_tx_data),
             .pop (tx_done),
             .empty(tx_empty),
             .full(tx_full),

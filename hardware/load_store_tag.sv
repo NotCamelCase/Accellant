@@ -128,8 +128,8 @@ module load_store_tag
         lst_lsd_inf.register_write <= ix_lst_inf.register_write;
         lst_lsd_inf.mem_store <= ix_lst_inf.mem_store;
         lst_lsd_inf.mem_load <= ix_lst_inf.mem_load;
-        lst_lsd_inf.dcache_flush <= ix_lst_inf.dcache_flush;
         lst_lsd_inf.dcache_invalidate <= ix_lst_inf.dcache_invalidate;
+        lst_lsd_inf.dcache_flush <= ix_lst_inf.dcache_flush;
         lst_lsd_inf.cacheable_mem_access <= cache_mem_access;
         lst_lsd_inf.rd <= ix_lst_inf.rd;
         lst_lsd_inf.mem_addr <= mem_addr;
