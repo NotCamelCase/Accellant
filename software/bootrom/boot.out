@@ -7,213 +7,211 @@ Disassembly of section .text:
 10000000 <_start>:
 10000000:	00010137          	lui	sp,0x10
 10000004:	00010113          	mv	sp,sp
-10000008:	22c000ef          	jal	ra,10000234 <main>
+10000008:	228000ef          	jal	ra,10000230 <main>
 1000000c:	0000                	.2byte	0x0
 1000000e:	0000                	.2byte	0x0
 10000010:	0000                	.2byte	0x0
 10000012:	0000                	.2byte	0x0
 
-10000014 <set_baud_rate>:
+10000014 <_Z13set_baud_ratei>:
 10000014:	05f5e7b7          	lui	a5,0x5f5e
 10000018:	00451513          	slli	a0,a0,0x4
 1000001c:	10078793          	addi	a5,a5,256 # 5f5e100 <_sp+0x5f4e100>
 10000020:	02a7c7b3          	div	a5,a5,a0
 10000024:	ff000737          	lui	a4,0xff000
 10000028:	fff78793          	addi	a5,a5,-1
-1000002c:	20f72223          	sw	a5,516(a4) # ff000204 <main+0xeeffffd0>
+1000002c:	20f72223          	sw	a5,516(a4) # ff000204 <main+0xeeffffd4>
 10000030:	00008067          	ret
 
-10000034 <rx_empty>:
+10000034 <_Z8rx_emptyv>:
 10000034:	ff0007b7          	lui	a5,0xff000
-10000038:	2087a503          	lw	a0,520(a5) # ff000208 <main+0xeeffffd4>
+10000038:	2087a503          	lw	a0,520(a5) # ff000208 <main+0xeeffffd8>
 1000003c:	00157513          	andi	a0,a0,1
 10000040:	00008067          	ret
 
-10000044 <rx_full>:
+10000044 <_Z7rx_fullv>:
 10000044:	ff0007b7          	lui	a5,0xff000
-10000048:	2087a503          	lw	a0,520(a5) # ff000208 <main+0xeeffffd4>
+10000048:	2087a503          	lw	a0,520(a5) # ff000208 <main+0xeeffffd8>
 1000004c:	00155513          	srli	a0,a0,0x1
 10000050:	00157513          	andi	a0,a0,1
 10000054:	00008067          	ret
 
-10000058 <tx_empty>:
+10000058 <_Z8tx_emptyv>:
 10000058:	ff0007b7          	lui	a5,0xff000
-1000005c:	2087a503          	lw	a0,520(a5) # ff000208 <main+0xeeffffd4>
+1000005c:	2087a503          	lw	a0,520(a5) # ff000208 <main+0xeeffffd8>
 10000060:	00255513          	srli	a0,a0,0x2
 10000064:	00157513          	andi	a0,a0,1
 10000068:	00008067          	ret
 
-1000006c <tx_full>:
+1000006c <_Z7tx_fullv>:
 1000006c:	ff0007b7          	lui	a5,0xff000
-10000070:	2087a503          	lw	a0,520(a5) # ff000208 <main+0xeeffffd4>
+10000070:	2087a503          	lw	a0,520(a5) # ff000208 <main+0xeeffffd8>
 10000074:	00355513          	srli	a0,a0,0x3
 10000078:	00157513          	andi	a0,a0,1
 1000007c:	00008067          	ret
 
-10000080 <write_serial_byte>:
+10000080 <_Z17write_serial_byteh>:
 10000080:	ff000737          	lui	a4,0xff000
-10000084:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd4>
-10000088:	0037d793          	srli	a5,a5,0x3
-1000008c:	0017f793          	andi	a5,a5,1
-10000090:	fe079ae3          	bnez	a5,10000084 <write_serial_byte+0x4>
-10000094:	20a72623          	sw	a0,524(a4)
-10000098:	00008067          	ret
+10000084:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd8>
+10000088:	0087f793          	andi	a5,a5,8
+1000008c:	fe079ce3          	bnez	a5,10000084 <_Z17write_serial_byteh+0x4>
+10000090:	20a72623          	sw	a0,524(a4)
+10000094:	00008067          	ret
 
-1000009c <write_serial_integer>:
-1000009c:	00400613          	li	a2,4
-100000a0:	ff000737          	lui	a4,0xff000
-100000a4:	00050693          	mv	a3,a0
-100000a8:	00855513          	srli	a0,a0,0x8
-100000ac:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd4>
-100000b0:	0037d793          	srli	a5,a5,0x3
-100000b4:	0017f793          	andi	a5,a5,1
-100000b8:	fe079ae3          	bnez	a5,100000ac <write_serial_integer+0x10>
-100000bc:	0ff6f793          	zext.b	a5,a3
-100000c0:	20f72623          	sw	a5,524(a4)
-100000c4:	fff60613          	addi	a2,a2,-1
-100000c8:	fc061ee3          	bnez	a2,100000a4 <write_serial_integer+0x8>
-100000cc:	00008067          	ret
+10000098 <_Z20write_serial_integerm>:
+10000098:	00400613          	li	a2,4
+1000009c:	ff000737          	lui	a4,0xff000
+100000a0:	00050693          	mv	a3,a0
+100000a4:	00855513          	srli	a0,a0,0x8
+100000a8:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd8>
+100000ac:	0087f793          	andi	a5,a5,8
+100000b0:	fe079ce3          	bnez	a5,100000a8 <_Z20write_serial_integerm+0x10>
+100000b4:	0ff6f793          	zext.b	a5,a3
+100000b8:	20f72623          	sw	a5,524(a4)
+100000bc:	fff60613          	addi	a2,a2,-1
+100000c0:	fe0610e3          	bnez	a2,100000a0 <_Z20write_serial_integerm+0x8>
+100000c4:	00008067          	ret
 
-100000d0 <read_serial_byte>:
-100000d0:	ff000737          	lui	a4,0xff000
-100000d4:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd4>
-100000d8:	0017f793          	andi	a5,a5,1
-100000dc:	fe079ce3          	bnez	a5,100000d4 <read_serial_byte+0x4>
-100000e0:	20072503          	lw	a0,512(a4)
-100000e4:	0ff57513          	zext.b	a0,a0
-100000e8:	00008067          	ret
+100000c8 <_Z16read_serial_bytev>:
+100000c8:	ff000737          	lui	a4,0xff000
+100000cc:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd8>
+100000d0:	0017f793          	andi	a5,a5,1
+100000d4:	fe079ce3          	bnez	a5,100000cc <_Z16read_serial_bytev+0x4>
+100000d8:	20072503          	lw	a0,512(a4)
+100000dc:	0ff57513          	zext.b	a0,a0
+100000e0:	00008067          	ret
 
-100000ec <read_serial_int>:
-100000ec:	ff000737          	lui	a4,0xff000
-100000f0:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd4>
-100000f4:	0017f793          	andi	a5,a5,1
-100000f8:	fe079ce3          	bnez	a5,100000f0 <read_serial_int+0x4>
-100000fc:	20072603          	lw	a2,512(a4)
-10000100:	ff000737          	lui	a4,0xff000
-10000104:	0ff67613          	zext.b	a2,a2
-10000108:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd4>
-1000010c:	0017f793          	andi	a5,a5,1
-10000110:	fe079ce3          	bnez	a5,10000108 <read_serial_int+0x1c>
-10000114:	20072503          	lw	a0,512(a4)
-10000118:	ff000737          	lui	a4,0xff000
-1000011c:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd4>
-10000120:	0017f793          	andi	a5,a5,1
-10000124:	fe079ce3          	bnez	a5,1000011c <read_serial_int+0x30>
-10000128:	20072683          	lw	a3,512(a4)
-1000012c:	ff000737          	lui	a4,0xff000
-10000130:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd4>
-10000134:	0017f793          	andi	a5,a5,1
-10000138:	fe079ce3          	bnez	a5,10000130 <read_serial_int+0x44>
-1000013c:	20072783          	lw	a5,512(a4)
-10000140:	01069713          	slli	a4,a3,0x10
-10000144:	00ff06b7          	lui	a3,0xff0
-10000148:	01879793          	slli	a5,a5,0x18
-1000014c:	00d77733          	and	a4,a4,a3
-10000150:	00c7e7b3          	or	a5,a5,a2
-10000154:	00e7e7b3          	or	a5,a5,a4
-10000158:	00010737          	lui	a4,0x10
-1000015c:	fff70713          	addi	a4,a4,-1 # ffff <STACK_SIZE+0xf7ff>
-10000160:	00851513          	slli	a0,a0,0x8
-10000164:	00e57533          	and	a0,a0,a4
-10000168:	00a7e533          	or	a0,a5,a0
-1000016c:	00008067          	ret
+100000e4 <_Z15read_serial_intv>:
+100000e4:	ff000737          	lui	a4,0xff000
+100000e8:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd8>
+100000ec:	0017f793          	andi	a5,a5,1
+100000f0:	fe079ce3          	bnez	a5,100000e8 <_Z15read_serial_intv+0x4>
+100000f4:	20072603          	lw	a2,512(a4)
+100000f8:	ff000737          	lui	a4,0xff000
+100000fc:	0ff67613          	zext.b	a2,a2
+10000100:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd8>
+10000104:	0017f793          	andi	a5,a5,1
+10000108:	fe079ce3          	bnez	a5,10000100 <_Z15read_serial_intv+0x1c>
+1000010c:	20072503          	lw	a0,512(a4)
+10000110:	ff000737          	lui	a4,0xff000
+10000114:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd8>
+10000118:	0017f793          	andi	a5,a5,1
+1000011c:	fe079ce3          	bnez	a5,10000114 <_Z15read_serial_intv+0x30>
+10000120:	20072683          	lw	a3,512(a4)
+10000124:	ff000737          	lui	a4,0xff000
+10000128:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd8>
+1000012c:	0017f793          	andi	a5,a5,1
+10000130:	fe079ce3          	bnez	a5,10000128 <_Z15read_serial_intv+0x44>
+10000134:	20072783          	lw	a5,512(a4)
+10000138:	01069713          	slli	a4,a3,0x10
+1000013c:	00ff06b7          	lui	a3,0xff0
+10000140:	01879793          	slli	a5,a5,0x18
+10000144:	00d77733          	and	a4,a4,a3
+10000148:	00c7e7b3          	or	a5,a5,a2
+1000014c:	00e7e7b3          	or	a5,a5,a4
+10000150:	00010737          	lui	a4,0x10
+10000154:	fff70713          	addi	a4,a4,-1 # ffff <STACK_SIZE+0xf7ff>
+10000158:	00851513          	slli	a0,a0,0x8
+1000015c:	00e57533          	and	a0,a0,a4
+10000160:	00a7e533          	or	a0,a5,a0
+10000164:	00008067          	ret
 
-10000170 <set_led>:
-10000170:	ff0007b7          	lui	a5,0xff000
-10000174:	00a7a023          	sw	a0,0(a5) # ff000000 <main+0xeefffdcc>
-10000178:	00008067          	ret
+10000168 <_Z7set_ledm>:
+10000168:	ff0007b7          	lui	a5,0xff000
+1000016c:	00a7a023          	sw	a0,0(a5) # ff000000 <main+0xeefffdd0>
+10000170:	00008067          	ret
 
-1000017c <transfer_data>:
-1000017c:	ff000737          	lui	a4,0xff000
-10000180:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd4>
-10000184:	0017f793          	andi	a5,a5,1
-10000188:	fe079ce3          	bnez	a5,10000180 <transfer_data+0x4>
-1000018c:	20072503          	lw	a0,512(a4)
-10000190:	ff000737          	lui	a4,0xff000
-10000194:	0ff57513          	zext.b	a0,a0
-10000198:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd4>
-1000019c:	0017f793          	andi	a5,a5,1
-100001a0:	fe079ce3          	bnez	a5,10000198 <transfer_data+0x1c>
-100001a4:	20072683          	lw	a3,512(a4)
-100001a8:	ff000737          	lui	a4,0xff000
-100001ac:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd4>
-100001b0:	0017f793          	andi	a5,a5,1
-100001b4:	fe079ce3          	bnez	a5,100001ac <transfer_data+0x30>
-100001b8:	20072583          	lw	a1,512(a4)
-100001bc:	ff000737          	lui	a4,0xff000
-100001c0:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd4>
-100001c4:	0017f793          	andi	a5,a5,1
-100001c8:	fe079ce3          	bnez	a5,100001c0 <transfer_data+0x44>
-100001cc:	20072603          	lw	a2,512(a4)
-100001d0:	00ff07b7          	lui	a5,0xff0
-100001d4:	01059713          	slli	a4,a1,0x10
-100001d8:	01861613          	slli	a2,a2,0x18
-100001dc:	00f77733          	and	a4,a4,a5
-100001e0:	00a66633          	or	a2,a2,a0
-100001e4:	00e66633          	or	a2,a2,a4
-100001e8:	00010737          	lui	a4,0x10
-100001ec:	00869793          	slli	a5,a3,0x8
-100001f0:	fff70713          	addi	a4,a4,-1 # ffff <STACK_SIZE+0xf7ff>
-100001f4:	00e7f7b3          	and	a5,a5,a4
-100001f8:	00f66633          	or	a2,a2,a5
-100001fc:	02060663          	beqz	a2,10000228 <transfer_data+0xac>
-10000200:	00000693          	li	a3,0
-10000204:	ff000737          	lui	a4,0xff000
-10000208:	00068593          	mv	a1,a3
-1000020c:	00168693          	addi	a3,a3,1 # ff0001 <_sp+0xfe0001>
-10000210:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd4>
-10000214:	0017f793          	andi	a5,a5,1
-10000218:	fe079ce3          	bnez	a5,10000210 <transfer_data+0x94>
-1000021c:	20072783          	lw	a5,512(a4)
-10000220:	00f58023          	sb	a5,0(a1)
-10000224:	fec692e3          	bne	a3,a2,10000208 <transfer_data+0x8c>
-10000228:	00008067          	ret
+10000174 <_Z13transfer_datav>:
+10000174:	ff000737          	lui	a4,0xff000
+10000178:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd8>
+1000017c:	0017f793          	andi	a5,a5,1
+10000180:	fe079ce3          	bnez	a5,10000178 <_Z13transfer_datav+0x4>
+10000184:	20072503          	lw	a0,512(a4)
+10000188:	ff000737          	lui	a4,0xff000
+1000018c:	0ff57513          	zext.b	a0,a0
+10000190:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd8>
+10000194:	0017f793          	andi	a5,a5,1
+10000198:	fe079ce3          	bnez	a5,10000190 <_Z13transfer_datav+0x1c>
+1000019c:	20072683          	lw	a3,512(a4)
+100001a0:	ff000737          	lui	a4,0xff000
+100001a4:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd8>
+100001a8:	0017f793          	andi	a5,a5,1
+100001ac:	fe079ce3          	bnez	a5,100001a4 <_Z13transfer_datav+0x30>
+100001b0:	20072583          	lw	a1,512(a4)
+100001b4:	ff000737          	lui	a4,0xff000
+100001b8:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd8>
+100001bc:	0017f793          	andi	a5,a5,1
+100001c0:	fe079ce3          	bnez	a5,100001b8 <_Z13transfer_datav+0x44>
+100001c4:	20072603          	lw	a2,512(a4)
+100001c8:	00ff07b7          	lui	a5,0xff0
+100001cc:	01059713          	slli	a4,a1,0x10
+100001d0:	01861613          	slli	a2,a2,0x18
+100001d4:	00f77733          	and	a4,a4,a5
+100001d8:	00a66633          	or	a2,a2,a0
+100001dc:	00e66633          	or	a2,a2,a4
+100001e0:	00010737          	lui	a4,0x10
+100001e4:	00869793          	slli	a5,a3,0x8
+100001e8:	fff70713          	addi	a4,a4,-1 # ffff <STACK_SIZE+0xf7ff>
+100001ec:	00e7f7b3          	and	a5,a5,a4
+100001f0:	00f66633          	or	a2,a2,a5
+100001f4:	02060863          	beqz	a2,10000224 <_Z13transfer_datav+0xb0>
+100001f8:	00000693          	li	a3,0
+100001fc:	ff000737          	lui	a4,0xff000
+10000200:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd8>
+10000204:	0017f793          	andi	a5,a5,1
+10000208:	fe079ce3          	bnez	a5,10000200 <_Z13transfer_datav+0x8c>
+1000020c:	20072583          	lw	a1,512(a4)
+10000210:	00168793          	addi	a5,a3,1 # ff0001 <_sp+0xfe0001>
+10000214:	00b68023          	sb	a1,0(a3)
+10000218:	00c78663          	beq	a5,a2,10000224 <_Z13transfer_datav+0xb0>
+1000021c:	00078693          	mv	a3,a5
+10000220:	fe1ff06f          	j	10000200 <_Z13transfer_datav+0x8c>
+10000224:	00008067          	ret
 
-1000022c <execute_app>:
-1000022c:	000500e7          	jalr	a0
-10000230:	00008067          	ret
+10000228 <_Z11execute_appm>:
+10000228:	000500e7          	jalr	a0
+1000022c:	00008067          	ret
 
-10000234 <main>:
-10000234:	ff010113          	addi	sp,sp,-16 # fff0 <STACK_SIZE+0xf7f0>
-10000238:	00112623          	sw	ra,12(sp)
-1000023c:	00812423          	sw	s0,8(sp)
-10000240:	00912223          	sw	s1,4(sp)
-10000244:	ff0007b7          	lui	a5,0xff000
-10000248:	0007a023          	sw	zero,0(a5) # ff000000 <main+0xeefffdcc>
-1000024c:	00c00713          	li	a4,12
-10000250:	20e7a223          	sw	a4,516(a5)
-10000254:	00f00713          	li	a4,15
-10000258:	00e7a023          	sw	a4,0(a5)
-1000025c:	01100693          	li	a3,17
-10000260:	ff000737          	lui	a4,0xff000
-10000264:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd4>
-10000268:	0017f793          	andi	a5,a5,1
-1000026c:	fe079ce3          	bnez	a5,10000264 <main+0x30>
-10000270:	20072783          	lw	a5,512(a4)
-10000274:	0ff7f793          	zext.b	a5,a5
-10000278:	fed796e3          	bne	a5,a3,10000264 <main+0x30>
-1000027c:	00c00793          	li	a5,12
-10000280:	00f72023          	sw	a5,0(a4)
-10000284:	ff0004b7          	lui	s1,0xff000
-10000288:	2084a403          	lw	s0,520(s1) # ff000208 <main+0xeeffffd4>
-1000028c:	00345413          	srli	s0,s0,0x3
-10000290:	00147413          	andi	s0,s0,1
-10000294:	fe041ae3          	bnez	s0,10000288 <main+0x54>
-10000298:	02200793          	li	a5,34
-1000029c:	20f4a623          	sw	a5,524(s1)
-100002a0:	00300793          	li	a5,3
-100002a4:	00f4a023          	sw	a5,0(s1)
-100002a8:	ed5ff0ef          	jal	ra,1000017c <transfer_data>
-100002ac:	00a00793          	li	a5,10
-100002b0:	00f4a023          	sw	a5,0(s1)
-100002b4:	3a101073          	csrw	pmpcfg1,zero
-100002b8:	000400e7          	jalr	s0
-100002bc:	00c12083          	lw	ra,12(sp)
-100002c0:	00812403          	lw	s0,8(sp)
-100002c4:	00412483          	lw	s1,4(sp)
-100002c8:	00000513          	li	a0,0
-100002cc:	01010113          	addi	sp,sp,16
-100002d0:	00008067          	ret
+10000230 <main>:
+10000230:	ff010113          	addi	sp,sp,-16 # fff0 <STACK_SIZE+0xf7f0>
+10000234:	00112623          	sw	ra,12(sp)
+10000238:	00812423          	sw	s0,8(sp)
+1000023c:	00912223          	sw	s1,4(sp)
+10000240:	ff0007b7          	lui	a5,0xff000
+10000244:	0007a023          	sw	zero,0(a5) # ff000000 <main+0xeefffdd0>
+10000248:	00c00713          	li	a4,12
+1000024c:	20e7a223          	sw	a4,516(a5)
+10000250:	00f00713          	li	a4,15
+10000254:	00e7a023          	sw	a4,0(a5)
+10000258:	01100693          	li	a3,17
+1000025c:	ff000737          	lui	a4,0xff000
+10000260:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd8>
+10000264:	0017f793          	andi	a5,a5,1
+10000268:	fe079ce3          	bnez	a5,10000260 <main+0x30>
+1000026c:	20072783          	lw	a5,512(a4)
+10000270:	0ff7f793          	zext.b	a5,a5
+10000274:	fed796e3          	bne	a5,a3,10000260 <main+0x30>
+10000278:	00c00793          	li	a5,12
+1000027c:	00f72023          	sw	a5,0(a4)
+10000280:	ff0004b7          	lui	s1,0xff000
+10000284:	2084a403          	lw	s0,520(s1) # ff000208 <main+0xeeffffd8>
+10000288:	00847413          	andi	s0,s0,8
+1000028c:	fe041ce3          	bnez	s0,10000284 <main+0x54>
+10000290:	02200793          	li	a5,34
+10000294:	20f4a623          	sw	a5,524(s1)
+10000298:	00300793          	li	a5,3
+1000029c:	00f4a023          	sw	a5,0(s1)
+100002a0:	ed5ff0ef          	jal	ra,10000174 <_Z13transfer_datav>
+100002a4:	00a00793          	li	a5,10
+100002a8:	00f4a023          	sw	a5,0(s1)
+100002ac:	3a101073          	csrw	pmpcfg1,zero
+100002b0:	000400e7          	jalr	s0
+100002b4:	00c12083          	lw	ra,12(sp)
+100002b8:	00812403          	lw	s0,8(sp)
+100002bc:	00412483          	lw	s1,4(sp)
+100002c0:	00000513          	li	a0,0
+100002c4:	01010113          	addi	sp,sp,16
+100002c8:	00008067          	ret
 
 Disassembly of section .riscv.attributes:
 

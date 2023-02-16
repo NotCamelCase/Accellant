@@ -78,7 +78,7 @@ module uart_core
 
     // RX fifo
     basic_fifo #(
-        // Queue up to 4 bytes
+        // Queue up to UART_FIFO_LENGTH bytes
         .ADDR_WIDTH($clog2(UART_FIFO_LENGTH)),
         .DATA_WIDTH(8)) rx_fifo(
             .clk(clk),
@@ -103,7 +103,7 @@ module uart_core
         .tx(uart_tx));
 
     basic_fifo #(
-        // Queue up to 4 bytes
+        // Queue up to UART_FIFO_LENGTH bytes
         .ADDR_WIDTH($clog2(UART_FIFO_LENGTH)),
         .DATA_WIDTH(8)) tx_fifo(
             .clk(clk),

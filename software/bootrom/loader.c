@@ -118,10 +118,10 @@ bool write_integer(int fd, uint32_t val)
     return true;
 }
 
-bool read_hex_file(const char* path, unsigned char** buffer, uint32_t* length)
+bool read_binary_file(const char* path, unsigned char** buffer, uint32_t* length)
 {
-    FILE* pHexFile = fopen(path, "r");
-    if (!pHexFile)
+    FILE* programFile = fopen(path, "r");
+    if (!programFile)
     {
         printf("ERROR: Opening %s.hex file\n", path);
         return false;
@@ -129,19 +129,19 @@ bool read_hex_file(const char* path, unsigned char** buffer, uint32_t* length)
 
     // Get the file size in bytes
     long fileLength = 0;
-    fseek(pHexFile, 0, SEEK_END);
-    fileLength = ftell(pHexFile);
-    fseek(pHexFile, 0, SEEK_SET);
+    fseek(programFile, 0, SEEK_END);
+    fileLength = ftell(programFile);
+    fseek(programFile, 0, SEEK_SET);
 
     // Read entire file into a buffer
     unsigned char* pBuffer = malloc(fileLength);
-    if (fread(pBuffer, fileLength, 1, pHexFile) == 0)
+    if (fread(pBuffer, fileLength, 1, programFile) == 0)
     {
         printf("ERROR: Reading file\n");
         return false;
     }
 
-    fclose(pHexFile);
+    fclose(programFile);
 
     *buffer = pBuffer;
     *length = fileLength;
@@ -172,7 +172,7 @@ int main(int argc, char** argv)
     unsigned char* buffer;  // Program data
     uint32_t programSize;   // Data size in bytes
 
-    if (!read_hex_file(argv[1], &buffer, &programSize))
+    if (!read_binary_file(argv[1], &buffer, &programSize))
     {
         return 0;
     }
@@ -192,6 +192,7 @@ int main(int argc, char** argv)
     printf("Pinging...\n");
     write_byte(fd, CMD_PING);
 
+    // Handshake before proceeding w/ data transfer
     wait_for_ack(fd, CMD_ACK);
 
     // Transfer program size and data

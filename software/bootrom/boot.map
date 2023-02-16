@@ -1,10 +1,11 @@
 
 Discarded input sections
 
- .data          0x0000000000000000        0x0 /tmp/ccjWtigR.o
- .bss           0x0000000000000000        0x0 /tmp/ccjWtigR.o
- .data          0x0000000000000000        0x0 /tmp/cc5lY2mO.o
- .bss           0x0000000000000000        0x0 /tmp/cc5lY2mO.o
+ .data          0x0000000000000000        0x0 /tmp/ccm54C0U.o
+ .bss           0x0000000000000000        0x0 /tmp/ccm54C0U.o
+ .data          0x0000000000000000        0x0 /tmp/cclStdbc.o
+ .bss           0x0000000000000000        0x0 /tmp/cclStdbc.o
+ .eh_frame      0x0000000000000000      0x12c /tmp/cclStdbc.o
 
 Memory Configuration
 
@@ -15,42 +16,42 @@ ram              0x0000000000000000 0x0000000000010000 xrw
 
 Linker script and memory map
 
-LOAD /tmp/ccjWtigR.o
-LOAD /tmp/cc5lY2mO.o
+LOAD /tmp/ccm54C0U.o
+LOAD /tmp/cclStdbc.o
                 0x0000000000000800                STACK_SIZE = 0x800
 
-.text           0x0000000010000000      0x2d4
+.text           0x0000000010000000      0x2cc
  *(.text*)
- .text          0x0000000010000000       0x14 /tmp/ccjWtigR.o
+ .text          0x0000000010000000       0x14 /tmp/ccm54C0U.o
                 0x0000000010000000                _start
- .text          0x0000000010000014      0x220 /tmp/cc5lY2mO.o
-                0x0000000010000014                set_baud_rate
-                0x0000000010000034                rx_empty
-                0x0000000010000044                rx_full
-                0x0000000010000058                tx_empty
-                0x000000001000006c                tx_full
-                0x0000000010000080                write_serial_byte
-                0x000000001000009c                write_serial_integer
-                0x00000000100000d0                read_serial_byte
-                0x00000000100000ec                read_serial_int
-                0x0000000010000170                set_led
-                0x000000001000017c                transfer_data
-                0x000000001000022c                execute_app
- .text.startup  0x0000000010000234       0xa0 /tmp/cc5lY2mO.o
-                0x0000000010000234                main
+ .text          0x0000000010000014      0x21c /tmp/cclStdbc.o
+                0x0000000010000014                set_baud_rate(int)
+                0x0000000010000034                rx_empty()
+                0x0000000010000044                rx_full()
+                0x0000000010000058                tx_empty()
+                0x000000001000006c                tx_full()
+                0x0000000010000080                write_serial_byte(unsigned char)
+                0x0000000010000098                write_serial_integer(unsigned long)
+                0x00000000100000c8                read_serial_byte()
+                0x00000000100000e4                read_serial_int()
+                0x0000000010000168                set_led(unsigned long)
+                0x0000000010000174                transfer_data()
+                0x0000000010000228                execute_app(unsigned long)
+ .text.startup  0x0000000010000230       0x9c /tmp/cclStdbc.o
+                0x0000000010000230                main
                 0x0000000000010000                _sp = (ORIGIN (ram) + LENGTH (ram))
 OUTPUT(boot.elf elf32-littleriscv)
 
-.rela.dyn       0x00000000100002d4        0x0
- .rela.text     0x00000000100002d4        0x0 /tmp/ccjWtigR.o
+.rela.dyn       0x00000000100002cc        0x0
+ .rela.text     0x00000000100002cc        0x0 /tmp/ccm54C0U.o
 
 .riscv.attributes
                 0x0000000000000000       0x25
  .riscv.attributes
-                0x0000000000000000       0x1f /tmp/ccjWtigR.o
+                0x0000000000000000       0x1f /tmp/ccm54C0U.o
  .riscv.attributes
-                0x000000000000001f       0x25 /tmp/cc5lY2mO.o
+                0x000000000000001f       0x25 /tmp/cclStdbc.o
 
 .comment        0x0000000000000000       0x24
- .comment       0x0000000000000000       0x24 /tmp/cc5lY2mO.o
+ .comment       0x0000000000000000       0x24 /tmp/cclStdbc.o
                                          0x25 (size before relaxing)

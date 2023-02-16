@@ -60,19 +60,18 @@ SECTIONS
 	    __bss_end = .;
     } > ram
 
-    .stack (NOLOAD) :
-    {
-        . = ALIGN(8);
-        . = . + STACK_SIZE;
-        . = ALIGN(8);
-        __sp = . ;
-    } > ram
-
+    /* Place heap after program data */
     .heap (NOLOAD) :
     {
-        . = ALIGN(8);
+        . = ALIGN(16);
         __heap_start = . ;
-        . = ALIGN(8);
-        __heap_end = ORIGIN(ram) + LENGTH(ram);
+        . = ALIGN(16);
+        __heap_end = ORIGIN(ram) + LENGTH(ram) - STACK_SIZE;
     } > ram
+
+    /* Place stack on top of RAM */
+    .stack ORIGIN(ram) + LENGTH(ram) (NOLOAD) :
+    {
+        __sp = . ;
+    }
 }

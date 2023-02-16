@@ -70,7 +70,7 @@ unsigned char read_serial_byte(void)
 {
     while (rx_empty()) ; // Wait idle for data
     volatile uint32_t* pUART = (volatile uint32_t*)UART_REG;
-    return pUART[0];
+    return (unsigned char)pUART[0];
 }
 
 uint32_t read_serial_int(void)

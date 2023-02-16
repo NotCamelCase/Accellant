@@ -168,8 +168,8 @@ typedef enum logic[2:0] {
 
 // CSR specifiers
 typedef enum logic[11:0] {
-    CSR_REG_DCACHE_INV      = 12'h03a0,
-    CSR_REG_DCACHE_FLUSH    = 12'h03a1
+    CSR_REG_DCACHE_INV      = 12'h3a0,
+    CSR_REG_DCACHE_FLUSH    = 12'h3a1
 } csr_reg_e;
 
 // IFT -> IFD
