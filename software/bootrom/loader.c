@@ -133,6 +133,8 @@ bool read_binary_file(const char* path, unsigned char** buffer, uint32_t* length
     fileLength = ftell(programFile);
     fseek(programFile, 0, SEEK_SET);
 
+    printf("Program binary size: %ld bytes\n", fileLength);
+
     // Read entire file into a buffer
     unsigned char* pBuffer = malloc(fileLength);
     if (fread(pBuffer, fileLength, 1, programFile) == 0)

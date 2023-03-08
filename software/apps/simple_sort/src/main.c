@@ -42,7 +42,7 @@ void sort_numbers(int* numbers, const int N)
     {
         for (int j = i+1; j < N; j++)
         {
-            if (numbers[i] >= numbers[j])
+            if (numbers[i] > numbers[j])
             {
                 swap(&numbers[j], &numbers[i]);
             }
@@ -68,15 +68,13 @@ int main(void)
     {
         print_str("Enter a new number: \n");
 
-        // Receive up to 10 chars which comprise each possible 32-bit integer
         int i = 0;
+        bool eol = false;
         char digits[10] = {};
-        while (i < 10)
+
+        // Receive up to 10 chars which comprise each possible 32-bit integer
+        while ((i < 10) && (!eol))
         {
-            while (uart_rx_empty()) ;
-
-            bool eol = false;
-
             while (!uart_rx_empty())
             {
                 uint8_t nc;
@@ -91,9 +89,6 @@ int main(void)
                     digits[i++] = nc;
                 }
             }
-
-            if (eol)
-                break;
         }
 
         numbers[n] = atoi(&digits[0]);
@@ -102,11 +97,12 @@ int main(void)
     // Sort the inputs
     sort_numbers(&numbers[0], N);
 
+    char tempStr[10] = {};
+
     print_str("Inputs sorted: ");
     print_str("{ ");
     for (int n = 0; n < N; n++)
     {
-        char tempStr[10] = {};
         itoa(numbers[n], &tempStr[0], 10);
 
         print_str(&tempStr[0]);

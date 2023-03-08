@@ -6,7 +6,7 @@ module tb_accellant_soc
     // Clock period
     localparam  T = 10;
 
-    localparam  LED_COUNT   = 4;
+    localparam  LED_COUNT   = 8;
 
     // Inputs
     logic                   clk; // 10 ns
@@ -25,17 +25,17 @@ module tb_accellant_soc
 
     initial begin
         rst = 1'b1;
-        #(2*T);
+        #(10*T);
         rst = 1'b0;
     end
 
-    accellant_soc soc(.*);
+    accellant_soc #(.LED_COUNT(LED_COUNT)) soc(.*);
 
     initial begin
         uart_tx <= 1'b1;
         @(negedge rst);
 
-        repeat(5000) @(posedge clk);
+        repeat(350000) @(posedge clk);
 
         $finish;
     end
