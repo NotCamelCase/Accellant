@@ -3,6 +3,7 @@
 import defines::*;
 
 module writeback
+#(OPT_REG_OUTPUTS = 1'b0)
 (
     input logic             clk, rst,
     // ALU -> WB
@@ -22,7 +23,8 @@ module writeback
     // WB -> IFT/IFD/ID/IX/EXE
     output logic            wb_do_branch,
     output logic            wb_icache_invalidate,
-    output logic[31:0]      wb_branch_target
+    output logic[31:0]      wb_branch_target,
+    output logic[31:0]      wb_control_flow_pc
 );
     // LSU load op delivery
     logic[7:0]                  lb_rd_data;
@@ -34,10 +36,16 @@ module writeback
     logic[31:0]                 lh_sext;
     logic[31:0]                 lhu_zext;
 
+    // Outputs
+    logic                       wr_en;
+    logic[REG_WIDTH-1:0]        rd;
+    logic[31:0]                 wr_data;
+
     // Handle branch requests from ALU or LSU
     assign wb_do_branch = alu_wb_inf.do_branch || lsd_wb_inf.do_branch;
     assign wb_icache_invalidate = alu_wb_inf.icache_invalidate;
     assign wb_branch_target = {alu_wb_inf.do_branch ? alu_wb_inf.branch_target[31:2] : lsd_wb_inf.branch_target[31:2], 2'b0};
+    assign wb_control_flow_pc = alu_wb_inf.do_branch ? alu_wb_inf.control_flow_pc : lsd_wb_inf.control_flow_pc;
 
     // Byte/half-word/word selection
     always_comb begin
@@ -59,24 +67,36 @@ module writeback
     assign lw = (lsd_wb_inf.load_control == LOAD_OP_LW) ? lw_rd_data : 32'h0;
 
     // Collect EXE payloads
-    always_ff @(posedge clk) begin
-        wb_ix_inf.wr_en <=
-            (alu_valid & alu_wb_inf.register_write) |
-            (lsd_valid & lsd_wb_inf.register_write) |
-            // MUL/DIV always have results written back.
-            mul_valid |
-            div_valid;
+    assign wr_en = (alu_valid & alu_wb_inf.register_write) |
+                    (lsd_valid & lsd_wb_inf.register_write) |
+                    // MUL/DIV always have results written back.
+                    mul_valid |
+                    div_valid;
 
-        wb_ix_inf.rd <=
-            ({REG_WIDTH{alu_valid}} & alu_wb_inf.rd) |
-            ({REG_WIDTH{lsd_valid}} & lsd_wb_inf.rd) |
-            ({REG_WIDTH{mul_valid}} & mul_wb_inf.rd) |
-            ({REG_WIDTH{div_valid}} & div_wb_inf.rd);
+    assign rd = ({REG_WIDTH{alu_valid}} & alu_wb_inf.rd) |
+                ({REG_WIDTH{lsd_valid}} & lsd_wb_inf.rd) |
+                ({REG_WIDTH{mul_valid}} & mul_wb_inf.rd) |
+                ({REG_WIDTH{div_valid}} & div_wb_inf.rd);
 
-        wb_ix_inf.wr_data <=
-            ({32{alu_valid}} & alu_wb_inf.exe_result) |
-            ({32{lsd_valid}} & (lb_sext ^ lbu_zext ^ lh_sext ^ lhu_zext ^ lw)) |
-            ({32{mul_valid}} & mul_wb_inf.result) |
-            ({32{div_valid}} & div_wb_inf.result);
-    end
+    assign wr_data = ({32{alu_valid}} & alu_wb_inf.exe_result) |
+                     ({32{lsd_valid}} & (lb_sext ^ lbu_zext ^ lh_sext ^ lhu_zext ^ lw)) |
+                     ({32{mul_valid}} & mul_wb_inf.result) |
+                     ({32{div_valid}} & div_wb_inf.result);
+
+    // Outputs
+    generate
+        if (OPT_REG_OUTPUTS == 1'b1) begin
+            always_ff @(posedge clk) begin
+                wb_ix_inf.wr_en <= wr_en;
+                wb_ix_inf.rd <= rd;
+                wb_ix_inf.wr_data <= wr_data;
+            end
+        end else begin
+            always_comb begin
+                wb_ix_inf.wr_en = wr_en;
+                wb_ix_inf.rd = rd;
+                wb_ix_inf.wr_data = wr_data;
+            end
+        end
+    endgenerate
 endmodule

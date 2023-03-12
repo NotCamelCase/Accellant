@@ -53,7 +53,7 @@ module load_store_tag
                     for (int set_idx = 0; set_idx < DCACHE_NUM_SETS; set_idx++)
                         valid_bits_reg[set_idx] <= 1'b0;
                 end else if (lsd_lst_inf.update_tag_en[way_idx])
-                        valid_bits_reg[lsd_lst_inf.update_tag_set] <= 1'b1; // Set valid bit on CL fetch
+                    valid_bits_reg[lsd_lst_inf.update_tag_set] <= 1'b1; // Set valid bit on CL fetch
             end
 
             // CL tags

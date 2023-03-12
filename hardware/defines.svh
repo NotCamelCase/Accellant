@@ -27,9 +27,9 @@ localparam  EXE_PIPE_ID_LSU         = 1;
 localparam  EXE_PIPE_ID_MUL         = 2;
 localparam  EXE_PIPE_ID_DIV         = 3;
 
-// I$ - 4k
+// I$ - 8k
 localparam  ICACHE_NUM_WAYS         = 4;
-localparam  ICACHE_NUM_SETS         = 16;
+localparam  ICACHE_NUM_SETS         = 32;
 localparam  ICACHE_CL_SIZE          = 64; // In bytes
 
 localparam  ICACHE_NUM_BLOCK_BITS   = $clog2(ICACHE_CL_SIZE);
@@ -172,6 +172,12 @@ typedef enum logic[11:0] {
     CSR_REG_DCACHE_FLUSH    = 12'h3a1
 } csr_reg_e;
 
+// BTP
+typedef struct packed {
+    logic       branch_taken;
+    logic[31:0] branch_target;
+} btp_info_t;
+
 // IFT -> IFD
 typedef struct packed {
     ifu_address_t                       fetched_pc;
@@ -182,6 +188,7 @@ typedef struct packed {
 // IFD -> IFT
 typedef struct packed {
     logic                           cache_miss;
+    logic                           cache_fetch_fsm_idle;
     logic                           resume_fetch;
     logic[ICACHE_NUM_WAYS-1:0]      update_tag_en;
     logic[ICACHE_NUM_SET_BITS-1:0]  update_tag_set;
@@ -206,6 +213,7 @@ typedef struct packed {
     logic                   register_write;
     logic                   branch, jal, jalr;
     branch_op_e             branch_op;
+    btp_info_t              btp_info;
     logic                   result_src;
     logic                   mem_store;
     logic                   mem_load;
@@ -225,6 +233,7 @@ typedef struct packed {
     logic                   icache_invalidate;
     logic                   register_write;
     logic                   branch, jump;
+    btp_info_t              btp_info;
     branch_op_e             branch_op;
     logic                   result_src;
     alu_op_e                alu_control;
@@ -302,6 +311,7 @@ typedef struct packed {
     logic                   do_branch;
     logic                   icache_invalidate;
     logic[31:0]             branch_target;
+    logic[31:0]             control_flow_pc;
     logic                   register_write;
     logic[REG_WIDTH-1:0]    rd;
     logic[31:0]             exe_result;
@@ -310,6 +320,7 @@ typedef struct packed {
 // LSD -> WB
 typedef struct packed {
     logic                   do_branch;
+    logic[31:0]             control_flow_pc;
     logic                   register_write;
     logic[1:0]              load_selector;
     load_op_e               load_control;

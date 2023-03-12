@@ -72,6 +72,7 @@ module riscv_core
     ifd_id_inf_t                        ifd_id_inf;
     logic                               id_valid;
     id_ix_inf_t                         id_ix_inf;
+    btp_info_t                          ift_id_btp_info;
 
     logic                               ix_stall_if;
 
@@ -110,6 +111,7 @@ module riscv_core
 
     logic                               wb_do_branch, wb_icache_invalidate;
     logic[31:0]                         wb_branch_target;
+    logic[31:0]                         wb_control_flow_pc;
 
     instruction_fetch_tag ift(.*);
     instruction_fetch_data ifd(.*);

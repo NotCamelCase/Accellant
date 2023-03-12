@@ -10,6 +10,8 @@ module instruction_decode
     // IFD -> ID
     input logic         ifd_valid,
     input ifd_id_inf_t  ifd_id_inf,
+    // IFT -> ID
+    input btp_info_t    ift_id_btp_info,
     // ID -> IX
     output logic        id_valid,
     output id_ix_inf_t  id_ix_inf
@@ -237,6 +239,7 @@ module instruction_decode
         id_ix_inf.jal <= jal;
         id_ix_inf.jalr <= jalr;
         id_ix_inf.branch_op <= branch_op;
+        id_ix_inf.btp_info <= ift_id_btp_info;
         id_ix_inf.result_src <= result_src;
         id_ix_inf.mem_store <= mem_store;
         id_ix_inf.mem_load <= mem_load;

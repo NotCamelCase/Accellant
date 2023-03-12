@@ -1,12 +1,12 @@
-PROJ_NAME := simple_sort
+PROJ_NAME := ranpi
 
 DEBUG=no
 
 BUILD_DIR = ./build
 SRC_DIRS = ./src
-KERNEL_SRC_DIRS = ../../kernel
+KERNEL_SRC_DIRS = ../../../kernel
 
-LDSCRIPT = ../../kernel/linker.ld
+LDSCRIPT = ../../../kernel/linker.ld
 
 MABI=ilp32
 MARCH := rv32im

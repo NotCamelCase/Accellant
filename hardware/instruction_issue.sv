@@ -32,7 +32,7 @@ module instruction_issue
     input logic             div_ix_done
 );
     // Max number of decoded instructions queued up to be issued (must be PoT!)
-    localparam  IQ_LENGTH               = 8;
+    localparam  IQ_LENGTH               = 16;
 
     // Should be equal the depth of IFT -> IX pipe
     localparam  IQ_STALL_IF_THRESHOLD   = IQ_LENGTH - 4;
@@ -136,9 +136,9 @@ module instruction_issue
 
         // Clear the last RD after a branch has been taken
         // LSU requires two slots for WB rd invalidation -- why?
-            // The first LSU instruction to branch due to D$ miss is replayed at a later time, but has its rd recorded pending in SB,
-            // and then comes the next instruction, which might happen to be another LSU instruction. With only a single rd tracked,
-            // the first LSU that we branched off of, to replay again (re-try for D$ hit), would now hang because writeback for that rd won't ever come because it was dropped before WB at LST
+        // The first LSU instruction to branch due to D$ miss is replayed at a later time, but has its rd recorded pending in SB,
+        // and then comes the next instruction, which might happen to be another LSU instruction. With only a single rd tracked,
+        // the first LSU that we branched off of, to replay again (re-try for D$ hit), would now hang because writeback for that rd won't ever come because it was dropped before WB at LST
         sb_wb_bits[sb_pending_wb_rd_reg[REG_WIDTH-1:0]] = wb_do_branch;
         sb_wb_bits[sb_pending_wb_rd_reg[2*REG_WIDTH-1:REG_WIDTH]] = wb_do_branch;
 
@@ -202,6 +202,7 @@ module instruction_issue
         ix_alu_inf.register_write <= next_instruction.register_write;
         ix_alu_inf.branch <= next_instruction.branch;
         ix_alu_inf.jump <= next_instruction.jal || next_instruction.jalr;
+        ix_alu_inf.btp_info <= next_instruction.btp_info;
         ix_alu_inf.branch_op <= next_instruction.branch_op;
         ix_alu_inf.icache_invalidate <= next_instruction.icache_invalidate;
         ix_alu_inf.result_src <= next_instruction.result_src;

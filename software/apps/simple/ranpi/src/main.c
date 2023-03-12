@@ -4,9 +4,9 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#include "../../../kernel/uart_core.h"
-#include "../../../kernel/led_core.h"
-#include "../../../kernel/timer_core.h"
+#include "../../../../kernel/uart_core.h"
+#include "../../../../kernel/led_core.h"
+#include "../../../../kernel/timer_core.h"
 
 #define BAUD_RATE   9600
 
@@ -102,7 +102,7 @@ int main(void)
     print_str(&floatStr[0]); // 3.004f = 0x40428f5c
 
     char intStr[10] = {};
-    print_str("\nNumber of cycles: "); // 320296
+    print_str("\nNumber of cycles: "); // 221975
     itoa((e - s), &intStr[0], 10);
     print_str(&intStr[0]);
 

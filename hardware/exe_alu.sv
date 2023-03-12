@@ -85,9 +85,10 @@ module exe_alu
     always_comb begin
         branch_taken = 1'b0;
 
-        if (ix_alu_inf.jump)
-            branch_taken = 1'b1;
-        else if (ix_alu_inf.branch) begin
+        if (ix_alu_inf.jump) begin
+            // On unconditional branches, BTP can be applied if branch was taken and branch target is up-to-date
+            branch_taken = !(ix_alu_inf.btp_info.branch_taken && (ix_alu_inf.btp_info.branch_target == branch_target));
+        end else if (ix_alu_inf.branch) begin
             unique case (ix_alu_inf.branch_op)
                 BRANCH_OP_BEQ:  branch_taken = ~(|sub_result);
                 BRANCH_OP_BNE:  branch_taken = |sub_result;
@@ -96,6 +97,10 @@ module exe_alu
                 BRANCH_OP_BGE:  branch_taken = ~lt_result;
                 default: branch_taken = ~ltu_result; // BGEU
             endcase
+
+            // On conditional branches, BTP can be applied if either branch was taken and prediction was valid
+            // or branch was NOT taken and prediction was invalid
+            branch_taken = (branch_taken ^ ix_alu_inf.btp_info.branch_taken);
         end
     end
 
@@ -104,7 +109,8 @@ module exe_alu
     // Outputs to WB
     always_ff @(posedge clk) begin
         alu_wb_inf.do_branch <= (ix_alu_inf.icache_invalidate || branch_taken) && (ix_alu_valid && !wb_do_branch);
-        alu_wb_inf.branch_target <= ix_alu_inf.icache_invalidate ? ix_alu_inf.pc_inc : branch_target; // If I$ invalidation request (fence.i), branch off to PC+4 or else the computed branch target
+        alu_wb_inf.branch_target <= (ix_alu_inf.icache_invalidate || (ix_alu_inf.branch && ix_alu_inf.btp_info.branch_taken)) ? ix_alu_inf.pc_inc : branch_target; // If I$ invalidation request (fence.i), branch off to PC+4 or else the computed branch target, if mis-predicted.
+        alu_wb_inf.control_flow_pc <= {ix_alu_inf.pc[31:2], 1'b0, ix_alu_inf.jump || ~ix_alu_inf.btp_info.branch_taken}; // PC of control-flow instruction used for branch prediction
         alu_wb_inf.icache_invalidate <= ix_alu_inf.icache_invalidate;
         alu_wb_inf.register_write <= ix_alu_inf.register_write;
         alu_wb_inf.rd <= ix_alu_inf.rd;

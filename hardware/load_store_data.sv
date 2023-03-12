@@ -121,6 +121,7 @@ module load_store_data
     // Combinatorial signal to detect D$ miss after LST not to have 2-cycle branches, which complicates WB logic quite a bit
     assign lsd_wb_inf.do_branch = cache_miss;
     assign lsd_wb_inf.branch_target = lst_lsd_inf.pc;
+    assign lsd_wb_inf.control_flow_pc = {lst_lsd_inf.pc[31:2], 2'b0}; // Branch info for BTP
 
     // AXI read interface
     assign axi_dbus_araddr = fetch_address_reg;

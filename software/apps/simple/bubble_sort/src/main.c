@@ -4,9 +4,9 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#include "../../../kernel/uart_core.h"
-#include "../../../kernel/led_core.h"
-#include "../../../kernel/timer_core.h"
+#include "../../../../kernel/uart_core.h"
+#include "../../../../kernel/led_core.h"
+#include "../../../../kernel/timer_core.h"
 
 #define BAUD_RATE   9600
 
@@ -58,7 +58,7 @@ int main(void)
 
     led_set_value(0x5);
 
-    sleep_ms(5000);
+    sleep_ms(1000);
 
     const int N = 10;
     int numbers[N];
@@ -75,10 +75,9 @@ int main(void)
         // Receive up to 10 chars which comprise each possible 32-bit integer
         while ((i < 10) && (!eol))
         {
-            while (!uart_rx_empty())
+            uint8_t nc;
+            while (uart_read_byte(&nc) == STATUS_SUCCESS)
             {
-                uint8_t nc;
-                uart_read_byte(&nc);
                 if (!isdigit(nc))
                 {
                     eol = true;
