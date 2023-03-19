@@ -1,4 +1,4 @@
-PROJ_NAME := simple_sort
+PROJ_NAME := bubble_sort
 
 DEBUG=no
 

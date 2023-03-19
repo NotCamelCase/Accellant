@@ -448,7 +448,7 @@ module load_store_data
         if (rst)
             lsd_valid <= 1'b0;
         else
-            lsd_valid <= (lst_valid && cache_hit && lst_lsd_inf.cacheable_mem_access) || ((|lst_lsd_inf.io_cs) && (lst_lsd_inf.io_rd_en || lst_lsd_inf.io_wr_en));
+            lsd_valid <= (lst_valid && (lst_lsd_inf.dcache_flush || lst_lsd_inf.dcache_invalidate || (cache_hit && lst_lsd_inf.cacheable_mem_access))) || ((|lst_lsd_inf.io_cs) && (lst_lsd_inf.io_rd_en || lst_lsd_inf.io_wr_en));
     end
 
     // Outputs to WB

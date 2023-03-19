@@ -49,7 +49,7 @@ module load_store_tag
             logic   valid_bits_reg[DCACHE_NUM_SETS-1:0];
 
             always_ff @(posedge clk) begin
-                if (rst || ix_lst_inf.dcache_invalidate) begin
+                if (rst || (lst_valid && ix_lst_inf.dcache_invalidate && !wb_do_branch)) begin
                     for (int set_idx = 0; set_idx < DCACHE_NUM_SETS; set_idx++)
                         valid_bits_reg[set_idx] <= 1'b0;
                 end else if (lsd_lst_inf.update_tag_en[way_idx])

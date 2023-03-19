@@ -1,11 +1,11 @@
 
 Discarded input sections
 
- .data          0x0000000000000000        0x0 /tmp/cciAwmXU.o
- .bss           0x0000000000000000        0x0 /tmp/cciAwmXU.o
- .data          0x0000000000000000        0x0 /tmp/cczq6hzP.o
- .bss           0x0000000000000000        0x0 /tmp/cczq6hzP.o
- .eh_frame      0x0000000000000000      0x12c /tmp/cczq6hzP.o
+ .data          0x0000000000000000        0x0 /tmp/ccZX5YD2.o
+ .bss           0x0000000000000000        0x0 /tmp/ccZX5YD2.o
+ .data          0x0000000000000000        0x0 /tmp/cc3dlHcV.o
+ .bss           0x0000000000000000        0x0 /tmp/cc3dlHcV.o
+ .eh_frame      0x0000000000000000      0x12c /tmp/cc3dlHcV.o
 
 Memory Configuration
 
@@ -16,15 +16,15 @@ ram              0x0000000000000000 0x0000000000010000 xrw
 
 Linker script and memory map
 
-LOAD /tmp/cciAwmXU.o
-LOAD /tmp/cczq6hzP.o
+LOAD /tmp/ccZX5YD2.o
+LOAD /tmp/cc3dlHcV.o
                 0x0000000000000800                STACK_SIZE = 0x800
 
 .text           0x0000000010000000      0x2cc
  *(.text*)
- .text          0x0000000010000000       0x14 /tmp/cciAwmXU.o
+ .text          0x0000000010000000       0x14 /tmp/ccZX5YD2.o
                 0x0000000010000000                _start
- .text          0x0000000010000014      0x21c /tmp/cczq6hzP.o
+ .text          0x0000000010000014      0x21c /tmp/cc3dlHcV.o
                 0x0000000010000014                set_baud_rate(int)
                 0x0000000010000034                rx_empty()
                 0x0000000010000044                rx_full()
@@ -37,21 +37,21 @@ LOAD /tmp/cczq6hzP.o
                 0x0000000010000168                set_led(unsigned long)
                 0x0000000010000174                transfer_data()
                 0x0000000010000228                execute_app(unsigned long)
- .text.startup  0x0000000010000230       0x9c /tmp/cczq6hzP.o
+ .text.startup  0x0000000010000230       0x9c /tmp/cc3dlHcV.o
                 0x0000000010000230                main
                 0x0000000000010000                _sp = (ORIGIN (ram) + LENGTH (ram))
 OUTPUT(boot.elf elf32-littleriscv)
 
 .rela.dyn       0x00000000100002cc        0x0
- .rela.text     0x00000000100002cc        0x0 /tmp/cciAwmXU.o
+ .rela.text     0x00000000100002cc        0x0 /tmp/ccZX5YD2.o
 
 .riscv.attributes
                 0x0000000000000000       0x25
  .riscv.attributes
-                0x0000000000000000       0x1f /tmp/cciAwmXU.o
+                0x0000000000000000       0x1f /tmp/ccZX5YD2.o
  .riscv.attributes
-                0x000000000000001f       0x25 /tmp/cczq6hzP.o
+                0x000000000000001f       0x25 /tmp/cc3dlHcV.o
 
 .comment        0x0000000000000000       0x24
- .comment       0x0000000000000000       0x24 /tmp/cczq6hzP.o
+ .comment       0x0000000000000000       0x24 /tmp/cc3dlHcV.o
                                          0x25 (size before relaxing)
