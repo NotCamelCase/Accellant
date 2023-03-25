@@ -1,45 +1,47 @@
-.text
-.align 4
-
+.section .text.start
 .global _start
-.type _start,@function
+.type _start, @function
 
-.global main
-
-.section .start,"ax",@progbits
 _start:
-    # Set up global pointer
-    .option push
-    .option norelax
-    la gp, __global_pointer$
-    .option pop
+/* initialize global pointer */
+.option push
+.option norelax
+1:	auipc gp, %pcrel_hi(__global_pointer$)
+	addi  gp, gp, %pcrel_lo(1b)
+.option pop
 
-    # Set up stack pointer
-    la sp, __sp
+/* initialize stack pointer */
+	la sp, _sp
 
-bss_init:
-    la a0, __bss_start
-    la a1, __bss_end
-bss_loop:
-    beq a0,a1,bss_done
-    sw zero,0(a0)
-    add a0,a0,4
-    j bss_loop
-bss_done:
+/* clear the bss segment */
+	la a0, __bss_start
+	la a2, __bss_end
+	sub a2, a2, a0
+	li a1, 0
+	call memset
 
-ctors_init:
-    la a0, __ctors_start
-    addi sp,sp,-4
-ctors_loop:
-    la a1, __ctors_end
-    beq a0,a1,ctors_done
-    lw a3,0(a0)
-    add a0,a0,4
-    sw a0,0(sp)
-    jalr  a3
-    lw a0,0(sp)
-    j ctors_loop
-ctors_done:
-    addi sp,sp,4
+/* new-style constructors and destructors */
+	la a0, __libc_fini_array
+	call atexit
+	call __libc_init_array
 
-    jal main
+/* call main */
+	lw a0, 0(sp)                    /* a0 = argc */
+	addi a1, sp, 4                  /* a1 = argv */
+	li a2, 0                        /* a2 = envp = NULL */
+	call main
+	tail exit
+
+.size  _start, .-_start
+
+.global _init
+.type   _init, @function
+.global _fini
+.type   _fini, @function
+_init:
+_fini:
+ /* These don't have to do anything since we use init_array/fini_array. Prevent
+    missing symbol error */
+	ret
+.size  _init, .-_init
+.size _fini, .-_fini

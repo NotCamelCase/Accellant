@@ -30,7 +30,7 @@ RISCV_CPP = riscv64-unknown-elf-g++
 
 CFLAGS += -fstrict-volatile-bitfields -fno-strict-aliasing -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror
 CXXFLAGS += -fno-exceptions
-LDFLAGS += -lgcc -mcmodel=medany -nostartfiles -ffreestanding -Wl,-Bstatic,-T,$(LDSCRIPT),-Map,$(BUILD_DIR)/$(PROJ_NAME).map,--gc-sections,--print-memory-usage
+LDFLAGS += -nostartfiles -nostdlib -ffreestanding -static -lc -lm -lgcc -mcmodel=medany -Wl,-Bstatic,-T,$(LDSCRIPT),-Map,$(BUILD_DIR)/$(PROJ_NAME).map,--gc-sections,--print-memory-usage
 
 # Find all source files to compile
 SRCS := $(shell find $(SRC_DIRS) -name '*.cpp' -or -name '*.c' -or -name '*.s')

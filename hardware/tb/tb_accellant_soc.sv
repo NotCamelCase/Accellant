@@ -35,7 +35,7 @@ module tb_accellant_soc
         uart_tx <= 1'b1;
         @(negedge rst);
 
-        repeat(250000) @(posedge clk);
+        repeat(100000) @(posedge clk);
 
         $finish;
     end

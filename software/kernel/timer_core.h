@@ -11,6 +11,7 @@ typedef enum {
 
 uint32_t timer_get_cycle_count(void);
 uint32_t timer_get_time_ms(void);
+void timer_sleep(uint32_t val); // Sleep for 'val' ms
 #if __cplusplus
 }
 #endif

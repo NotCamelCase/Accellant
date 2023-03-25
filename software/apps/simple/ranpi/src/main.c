@@ -7,37 +7,10 @@
  *
  *  Translated to C from FORTRAN 20 Nov 1993
  */
-
 #include <stdint.h>
-#include <stdbool.h>
-#include <string.h>
 #include <stdlib.h>
-#include <ctype.h>
 
-#include "../../../../kernel/uart_core.h"
-#include "../../../../kernel/led_core.h"
-#include "../../../../kernel/timer_core.h"
-
-#define BAUD_RATE   9600
-
-void sleep_ms(uint32_t valMs)
-{
-    uint32_t start = timer_get_time_ms();
-    uint32_t now = 0;
-    do
-    {
-        now = timer_get_time_ms();
-    } while ((now - start) <= valMs);
-}
-
-void print_str(const char* val)
-{
-    const uint32_t len = strlen(val) + 1; // Include \0
-    for (uint32_t i = 0; i < len; i++)
-    {
-        uart_write_byte(val[i]);
-    }
-}
+#include "../../../../kernel/common.h"
 
 void myadd(float* sum, float* addend)
 {
@@ -51,20 +24,15 @@ void myadd(float* sum, float* addend)
 // Computes a value of PI iteratively using soft-float
 int main(void)
 {
-    led_set_value(0x0);
+    // Brief delay to let putty catch up w/ the program
+    timer_sleep(1000);
 
-    uart_init(BAUD_RATE);
+    printf("Running RanPI...\n");
 
-    led_set_value(0x5);
+    uint32_t s = timer_get_cycle_count();
 
     float ztot, yran, ymult, ymod, x, y, z, pi, prod;
     long int low, ixran, itot, j, iprod;
-
-    sleep_ms(1000);
-
-    print_str("Running RanPI...\n");
-
-    uint32_t s = timer_get_cycle_count();
 
     ztot = 0.0;
     low = 1;
@@ -104,17 +72,8 @@ int main(void)
 
     uint32_t e = timer_get_cycle_count();
 
-    // Print result value in hex
-    print_str("Result: 0x");
-
-    char floatStr[32] = {};
-    itoa(*(int*)(&pi), &floatStr[0], 16);
-    print_str(&floatStr[0]); // 3.004f = 0x40428f5c
-
-    char intStr[10] = {};
-    print_str("\nNumber of cycles: "); // 221975
-    itoa((e - s), &intStr[0], 10);
-    print_str(&intStr[0]);
+    printf("Result: %f\n", pi); // 3.004f = 0x40428f5c
+    printf("Number of cycles: %d\n", (int)(e - s)); // 223101
 
     return 0;
 }

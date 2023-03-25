@@ -56,7 +56,7 @@ module instruction_fetch_tag
     bram_1r1w #(.ADDR_WIDTH(BTP_ENTRIES_BIT), .DATA_WIDTH($bits(btp_entry_t))) btb(
         .clk(clk),
         .wr_en(wb_do_branch),
-        .rd_en(fetch_active_reg || wb_do_branch),
+        .rd_en(1'b1),
         .rd_addr(last_pc_fetched[BTP_ENTRIES_BIT+1:2]),
         .wr_addr(wb_control_flow_pc[BTP_ENTRIES_BIT+1:2]),
         .wr_data(new_btp_entry),

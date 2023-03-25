@@ -5,8 +5,7 @@
 
 #define CPU_CLOCK_FREQ_MHZ  100
 
-typedef enum STATUS
-{
-    STATUS_SUCCESS,
-    STATUS_UART_RX_EMPTY
-} STATUS;
+#include "timer_core.h"
+#include "led_core.h"
+#include "uart_core.h"
+#include "printf.h"

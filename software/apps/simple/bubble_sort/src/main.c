@@ -1,33 +1,7 @@
-#include <stdint.h>
-#include <stdbool.h>
-#include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
 
-#include "../../../../kernel/uart_core.h"
-#include "../../../../kernel/led_core.h"
-#include "../../../../kernel/timer_core.h"
-
-#define BAUD_RATE   9600
-
-void sleep_ms(uint32_t valMs)
-{
-    uint32_t start = timer_get_time_ms();
-    uint32_t now = 0;
-    do
-    {
-        now = timer_get_time_ms();
-    } while ((now - start) <= valMs);
-}
-
-void print_str(const char* val)
-{
-    const uint32_t len = strlen(val) + 1; // Include \0
-    for (uint32_t i = 0; i < len; i++)
-    {
-        uart_write_byte(val[i]);
-    }
-}
+#include "../../../../kernel/common.h"
 
 void swap(int* a, int* b)
 {
@@ -52,21 +26,15 @@ void sort_numbers(int* numbers, const int N)
 
 int main(void)
 {
-    led_set_value(0x0);
-
-    uart_init(BAUD_RATE);
-
-    led_set_value(0x5);
-
-    sleep_ms(1000);
+    timer_sleep(1000);
 
     const int N = 10;
-    int numbers[N];
+    int* numbers = (int*)malloc(N * sizeof(int));
 
     // Wait for user to input N numbers
     for (int n = 0; n < N; n++)
     {
-        print_str("Enter a new number: \n");
+        printf("Enter a new number: \n");
 
         int i = 0;
         bool eol = false;
@@ -76,8 +44,10 @@ int main(void)
         while ((i < 10) && (!eol))
         {
             uint8_t nc;
-            while (uart_read_byte(&nc) == STATUS_SUCCESS)
+            while (!uart_rx_empty())
             {
+                uart_read_byte(&nc);
+
                 if (!isdigit(nc))
                 {
                     eol = true;
@@ -96,20 +66,15 @@ int main(void)
     // Sort the inputs
     sort_numbers(&numbers[0], N);
 
-    char tempStr[10] = {};
-
-    print_str("Inputs sorted: ");
-    print_str("{ ");
-    for (int n = 0; n < N; n++)
+    printf("Inputs sorted: {");
+    for (int n = 0; n < N-1; n++)
     {
-        itoa(numbers[n], &tempStr[0], 10);
-
-        print_str(&tempStr[0]);
-
-        if (n != N-1)
-            print_str(", ");
+        printf("%d, ", numbers[n]);
     }
-    print_str(" }\n");
+
+    printf("%d}\n", numbers[N-1]);
+
+    free(numbers);
 
     return 0;
 }

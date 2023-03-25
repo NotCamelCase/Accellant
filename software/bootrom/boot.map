@@ -1,57 +1,57 @@
 
 Discarded input sections
 
- .data          0x0000000000000000        0x0 /tmp/ccZX5YD2.o
- .bss           0x0000000000000000        0x0 /tmp/ccZX5YD2.o
- .data          0x0000000000000000        0x0 /tmp/cc3dlHcV.o
- .bss           0x0000000000000000        0x0 /tmp/cc3dlHcV.o
- .eh_frame      0x0000000000000000      0x12c /tmp/cc3dlHcV.o
+ .data          0x00000000        0x0 /tmp/ccim0uqx.o
+ .bss           0x00000000        0x0 /tmp/ccim0uqx.o
+ .data          0x00000000        0x0 /tmp/ccr95RsC.o
+ .bss           0x00000000        0x0 /tmp/ccr95RsC.o
+ .eh_frame      0x00000000      0x12c /tmp/ccr95RsC.o
 
 Memory Configuration
 
 Name             Origin             Length             Attributes
-rom              0x0000000010000000 0x0000000000001000 xr
-ram              0x0000000000000000 0x0000000000010000 xrw
-*default*        0x0000000000000000 0xffffffffffffffff
+rom              0x10000000         0x00000400         xr
+ram              0x00000000         0x00010000         xrw
+*default*        0x00000000         0xffffffff
 
 Linker script and memory map
 
-LOAD /tmp/ccZX5YD2.o
-LOAD /tmp/cc3dlHcV.o
-                0x0000000000000800                STACK_SIZE = 0x800
+LOAD /tmp/ccim0uqx.o
+LOAD /tmp/ccr95RsC.o
+                0x00000800                        STACK_SIZE = 0x800
 
-.text           0x0000000010000000      0x2cc
+.text           0x10000000      0x2cc
  *(.text*)
- .text          0x0000000010000000       0x14 /tmp/ccZX5YD2.o
-                0x0000000010000000                _start
- .text          0x0000000010000014      0x21c /tmp/cc3dlHcV.o
-                0x0000000010000014                set_baud_rate(int)
-                0x0000000010000034                rx_empty()
-                0x0000000010000044                rx_full()
-                0x0000000010000058                tx_empty()
-                0x000000001000006c                tx_full()
-                0x0000000010000080                write_serial_byte(unsigned char)
-                0x0000000010000098                write_serial_integer(unsigned long)
-                0x00000000100000c8                read_serial_byte()
-                0x00000000100000e4                read_serial_int()
-                0x0000000010000168                set_led(unsigned long)
-                0x0000000010000174                transfer_data()
-                0x0000000010000228                execute_app(unsigned long)
- .text.startup  0x0000000010000230       0x9c /tmp/cc3dlHcV.o
-                0x0000000010000230                main
-                0x0000000000010000                _sp = (ORIGIN (ram) + LENGTH (ram))
+ .text          0x10000000       0x14 /tmp/ccim0uqx.o
+                0x10000000                _start
+ .text          0x10000014      0x21c /tmp/ccr95RsC.o
+                0x10000014                set_baud_rate(int)
+                0x10000034                rx_empty()
+                0x10000044                rx_full()
+                0x10000058                tx_empty()
+                0x1000006c                tx_full()
+                0x10000080                write_serial_byte(unsigned char)
+                0x10000098                write_serial_integer(unsigned long)
+                0x100000c8                read_serial_byte()
+                0x100000e4                read_serial_int()
+                0x10000168                set_led(unsigned long)
+                0x10000174                transfer_data()
+                0x10000228                execute_app(unsigned long)
+ .text.startup  0x10000230       0x9c /tmp/ccr95RsC.o
+                0x10000230                main
+                0x00010000                        _sp = (ORIGIN (ram) + LENGTH (ram))
 OUTPUT(boot.elf elf32-littleriscv)
 
-.rela.dyn       0x00000000100002cc        0x0
- .rela.text     0x00000000100002cc        0x0 /tmp/ccZX5YD2.o
+.rela.dyn       0x100002cc        0x0
+ .rela.text     0x100002cc        0x0 /tmp/ccim0uqx.o
 
 .riscv.attributes
-                0x0000000000000000       0x25
+                0x00000000       0x2e
  .riscv.attributes
-                0x0000000000000000       0x1f /tmp/ccZX5YD2.o
+                0x00000000       0x28 /tmp/ccim0uqx.o
  .riscv.attributes
-                0x000000000000001f       0x25 /tmp/cc3dlHcV.o
+                0x00000028       0x2e /tmp/ccr95RsC.o
 
-.comment        0x0000000000000000       0x24
- .comment       0x0000000000000000       0x24 /tmp/cc3dlHcV.o
-                                         0x25 (size before relaxing)
+.comment        0x00000000       0x1b
+ .comment       0x00000000       0x1b /tmp/ccr95RsC.o
+                                 0x1c (size before relaxing)

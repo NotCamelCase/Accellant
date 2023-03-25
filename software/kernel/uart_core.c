@@ -2,11 +2,11 @@
 
 #include "memory_map.h"
 
-static volatile uint32_t* uart_ptr = (volatile uint32_t*)MMIO_UART_BASE_ADDRESS;
+static volatile uint32_t* const uart_ptr = (volatile uint32_t*)MMIO_UART_BASE_ADDRESS;
 
-void uart_init(uint32_t baudRate)
+static __attribute__((constructor)) void uart_init(void)
 {
-    uart_set_baud_rate(baudRate);
+    uart_set_baud_rate(UART_DEFAULT_BAUD_RATE);
 }
 
 void uart_set_baud_rate(uint32_t baudRate)
@@ -23,17 +23,9 @@ void uart_write_byte(uint8_t val)
     uart_ptr[UART_REG_WRITE_DATA] = val;
 }
 
-STATUS uart_read_byte(uint8_t* val)
+void uart_read_byte(uint8_t* val)
 {
-    if (uart_rx_empty())
-    {
-        return STATUS_UART_RX_EMPTY;
-    }
-    else
-    {
-        *val = (uint8_t)uart_ptr[UART_REG_GET_DATA];
-        return STATUS_SUCCESS;
-    }
+    *val = (uint8_t)uart_ptr[UART_REG_GET_DATA];
 }
 
 bool uart_rx_empty()

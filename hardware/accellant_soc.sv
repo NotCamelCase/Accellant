@@ -4,7 +4,7 @@
 import defines::*;
 
 module accellant_soc
-#(LED_COUNT = 4)
+#(parameter LED_COUNT = 4)
 (
     input logic                 clk, rst,
     input logic                 uart_tx,

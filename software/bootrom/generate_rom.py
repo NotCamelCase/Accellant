@@ -10,8 +10,7 @@ def main():
             if not word:
                 break
 
-            out_file.write(binascii.hexlify(word[::-1]).decode() + ",\n")
+            out_file.write(binascii.hexlify(word[::-1]).decode() + "\n")
 
 if __name__ == '__main__':
     main()
-    

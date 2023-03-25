@@ -6,9 +6,11 @@ module top_test
     output logic        uart_rx,
     input logic         uart_tx
 );
+    localparam  LED_COUNT   = 4;
+
     logic   rst; // Active-high sync reset
 
     sync_reset sync_rst(.*);
 
-    accellant_soc soc(.*);
+    accellant_soc #(.LED_COUNT(LED_COUNT)) soc(.*);
 endmodule

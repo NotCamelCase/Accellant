@@ -7,7 +7,7 @@ Disassembly of section .text:
 10000000 <_start>:
 10000000:	00010137          	lui	sp,0x10
 10000004:	00010113          	mv	sp,sp
-10000008:	228000ef          	jal	ra,10000230 <main>
+10000008:	228000ef          	jal	10000230 <main>
 1000000c:	0000                	.2byte	0x0
 1000000e:	0000                	.2byte	0x0
 10000010:	0000                	.2byte	0x0
@@ -15,45 +15,45 @@ Disassembly of section .text:
 
 10000014 <_Z13set_baud_ratei>:
 10000014:	05f5e7b7          	lui	a5,0x5f5e
-10000018:	00451513          	slli	a0,a0,0x4
-1000001c:	10078793          	addi	a5,a5,256 # 5f5e100 <_sp+0x5f4e100>
+10000018:	00451513          	sll	a0,a0,0x4
+1000001c:	10078793          	add	a5,a5,256 # 5f5e100 <_sp+0x5f4e100>
 10000020:	02a7c7b3          	div	a5,a5,a0
 10000024:	ff000737          	lui	a4,0xff000
-10000028:	fff78793          	addi	a5,a5,-1
+10000028:	fff78793          	add	a5,a5,-1
 1000002c:	20f72223          	sw	a5,516(a4) # ff000204 <main+0xeeffffd4>
 10000030:	00008067          	ret
 
 10000034 <_Z8rx_emptyv>:
 10000034:	ff0007b7          	lui	a5,0xff000
 10000038:	2087a503          	lw	a0,520(a5) # ff000208 <main+0xeeffffd8>
-1000003c:	00157513          	andi	a0,a0,1
+1000003c:	00157513          	and	a0,a0,1
 10000040:	00008067          	ret
 
 10000044 <_Z7rx_fullv>:
 10000044:	ff0007b7          	lui	a5,0xff000
 10000048:	2087a503          	lw	a0,520(a5) # ff000208 <main+0xeeffffd8>
-1000004c:	00155513          	srli	a0,a0,0x1
-10000050:	00157513          	andi	a0,a0,1
+1000004c:	00155513          	srl	a0,a0,0x1
+10000050:	00157513          	and	a0,a0,1
 10000054:	00008067          	ret
 
 10000058 <_Z8tx_emptyv>:
 10000058:	ff0007b7          	lui	a5,0xff000
 1000005c:	2087a503          	lw	a0,520(a5) # ff000208 <main+0xeeffffd8>
-10000060:	00255513          	srli	a0,a0,0x2
-10000064:	00157513          	andi	a0,a0,1
+10000060:	00255513          	srl	a0,a0,0x2
+10000064:	00157513          	and	a0,a0,1
 10000068:	00008067          	ret
 
 1000006c <_Z7tx_fullv>:
 1000006c:	ff0007b7          	lui	a5,0xff000
 10000070:	2087a503          	lw	a0,520(a5) # ff000208 <main+0xeeffffd8>
-10000074:	00355513          	srli	a0,a0,0x3
-10000078:	00157513          	andi	a0,a0,1
+10000074:	00355513          	srl	a0,a0,0x3
+10000078:	00157513          	and	a0,a0,1
 1000007c:	00008067          	ret
 
 10000080 <_Z17write_serial_byteh>:
 10000080:	ff000737          	lui	a4,0xff000
 10000084:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd8>
-10000088:	0087f793          	andi	a5,a5,8
+10000088:	0087f793          	and	a5,a5,8
 1000008c:	fe079ce3          	bnez	a5,10000084 <_Z17write_serial_byteh+0x4>
 10000090:	20a72623          	sw	a0,524(a4)
 10000094:	00008067          	ret
@@ -62,20 +62,20 @@ Disassembly of section .text:
 10000098:	00400613          	li	a2,4
 1000009c:	ff000737          	lui	a4,0xff000
 100000a0:	00050693          	mv	a3,a0
-100000a4:	00855513          	srli	a0,a0,0x8
+100000a4:	00855513          	srl	a0,a0,0x8
 100000a8:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd8>
-100000ac:	0087f793          	andi	a5,a5,8
+100000ac:	0087f793          	and	a5,a5,8
 100000b0:	fe079ce3          	bnez	a5,100000a8 <_Z20write_serial_integerm+0x10>
 100000b4:	0ff6f793          	zext.b	a5,a3
 100000b8:	20f72623          	sw	a5,524(a4)
-100000bc:	fff60613          	addi	a2,a2,-1
+100000bc:	fff60613          	add	a2,a2,-1
 100000c0:	fe0610e3          	bnez	a2,100000a0 <_Z20write_serial_integerm+0x8>
 100000c4:	00008067          	ret
 
 100000c8 <_Z16read_serial_bytev>:
 100000c8:	ff000737          	lui	a4,0xff000
 100000cc:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd8>
-100000d0:	0017f793          	andi	a5,a5,1
+100000d0:	0017f793          	and	a5,a5,1
 100000d4:	fe079ce3          	bnez	a5,100000cc <_Z16read_serial_bytev+0x4>
 100000d8:	20072503          	lw	a0,512(a4)
 100000dc:	0ff57513          	zext.b	a0,a0
@@ -84,34 +84,34 @@ Disassembly of section .text:
 100000e4 <_Z15read_serial_intv>:
 100000e4:	ff000737          	lui	a4,0xff000
 100000e8:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd8>
-100000ec:	0017f793          	andi	a5,a5,1
+100000ec:	0017f793          	and	a5,a5,1
 100000f0:	fe079ce3          	bnez	a5,100000e8 <_Z15read_serial_intv+0x4>
 100000f4:	20072603          	lw	a2,512(a4)
 100000f8:	ff000737          	lui	a4,0xff000
 100000fc:	0ff67613          	zext.b	a2,a2
 10000100:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd8>
-10000104:	0017f793          	andi	a5,a5,1
+10000104:	0017f793          	and	a5,a5,1
 10000108:	fe079ce3          	bnez	a5,10000100 <_Z15read_serial_intv+0x1c>
 1000010c:	20072503          	lw	a0,512(a4)
 10000110:	ff000737          	lui	a4,0xff000
 10000114:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd8>
-10000118:	0017f793          	andi	a5,a5,1
+10000118:	0017f793          	and	a5,a5,1
 1000011c:	fe079ce3          	bnez	a5,10000114 <_Z15read_serial_intv+0x30>
 10000120:	20072683          	lw	a3,512(a4)
 10000124:	ff000737          	lui	a4,0xff000
 10000128:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd8>
-1000012c:	0017f793          	andi	a5,a5,1
+1000012c:	0017f793          	and	a5,a5,1
 10000130:	fe079ce3          	bnez	a5,10000128 <_Z15read_serial_intv+0x44>
 10000134:	20072783          	lw	a5,512(a4)
-10000138:	01069713          	slli	a4,a3,0x10
+10000138:	01069713          	sll	a4,a3,0x10
 1000013c:	00ff06b7          	lui	a3,0xff0
-10000140:	01879793          	slli	a5,a5,0x18
+10000140:	01879793          	sll	a5,a5,0x18
 10000144:	00d77733          	and	a4,a4,a3
 10000148:	00c7e7b3          	or	a5,a5,a2
 1000014c:	00e7e7b3          	or	a5,a5,a4
 10000150:	00010737          	lui	a4,0x10
-10000154:	fff70713          	addi	a4,a4,-1 # ffff <STACK_SIZE+0xf7ff>
-10000158:	00851513          	slli	a0,a0,0x8
+10000154:	fff70713          	add	a4,a4,-1 # ffff <STACK_SIZE+0xf7ff>
+10000158:	00851513          	sll	a0,a0,0x8
 1000015c:	00e57533          	and	a0,a0,a4
 10000160:	00a7e533          	or	a0,a5,a0
 10000164:	00008067          	ret
@@ -124,44 +124,44 @@ Disassembly of section .text:
 10000174 <_Z13transfer_datav>:
 10000174:	ff000737          	lui	a4,0xff000
 10000178:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd8>
-1000017c:	0017f793          	andi	a5,a5,1
+1000017c:	0017f793          	and	a5,a5,1
 10000180:	fe079ce3          	bnez	a5,10000178 <_Z13transfer_datav+0x4>
 10000184:	20072503          	lw	a0,512(a4)
 10000188:	ff000737          	lui	a4,0xff000
 1000018c:	0ff57513          	zext.b	a0,a0
 10000190:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd8>
-10000194:	0017f793          	andi	a5,a5,1
+10000194:	0017f793          	and	a5,a5,1
 10000198:	fe079ce3          	bnez	a5,10000190 <_Z13transfer_datav+0x1c>
 1000019c:	20072683          	lw	a3,512(a4)
 100001a0:	ff000737          	lui	a4,0xff000
 100001a4:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd8>
-100001a8:	0017f793          	andi	a5,a5,1
+100001a8:	0017f793          	and	a5,a5,1
 100001ac:	fe079ce3          	bnez	a5,100001a4 <_Z13transfer_datav+0x30>
 100001b0:	20072583          	lw	a1,512(a4)
 100001b4:	ff000737          	lui	a4,0xff000
 100001b8:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd8>
-100001bc:	0017f793          	andi	a5,a5,1
+100001bc:	0017f793          	and	a5,a5,1
 100001c0:	fe079ce3          	bnez	a5,100001b8 <_Z13transfer_datav+0x44>
 100001c4:	20072603          	lw	a2,512(a4)
 100001c8:	00ff07b7          	lui	a5,0xff0
-100001cc:	01059713          	slli	a4,a1,0x10
-100001d0:	01861613          	slli	a2,a2,0x18
+100001cc:	01059713          	sll	a4,a1,0x10
+100001d0:	01861613          	sll	a2,a2,0x18
 100001d4:	00f77733          	and	a4,a4,a5
 100001d8:	00a66633          	or	a2,a2,a0
 100001dc:	00e66633          	or	a2,a2,a4
 100001e0:	00010737          	lui	a4,0x10
-100001e4:	00869793          	slli	a5,a3,0x8
-100001e8:	fff70713          	addi	a4,a4,-1 # ffff <STACK_SIZE+0xf7ff>
+100001e4:	00869793          	sll	a5,a3,0x8
+100001e8:	fff70713          	add	a4,a4,-1 # ffff <STACK_SIZE+0xf7ff>
 100001ec:	00e7f7b3          	and	a5,a5,a4
 100001f0:	00f66633          	or	a2,a2,a5
 100001f4:	02060863          	beqz	a2,10000224 <_Z13transfer_datav+0xb0>
 100001f8:	00000693          	li	a3,0
 100001fc:	ff000737          	lui	a4,0xff000
 10000200:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd8>
-10000204:	0017f793          	andi	a5,a5,1
+10000204:	0017f793          	and	a5,a5,1
 10000208:	fe079ce3          	bnez	a5,10000200 <_Z13transfer_datav+0x8c>
 1000020c:	20072583          	lw	a1,512(a4)
-10000210:	00168793          	addi	a5,a3,1 # ff0001 <_sp+0xfe0001>
+10000210:	00168793          	add	a5,a3,1 # ff0001 <_sp+0xfe0001>
 10000214:	00b68023          	sb	a1,0(a3)
 10000218:	00c78663          	beq	a5,a2,10000224 <_Z13transfer_datav+0xb0>
 1000021c:	00078693          	mv	a3,a5
@@ -173,7 +173,7 @@ Disassembly of section .text:
 1000022c:	00008067          	ret
 
 10000230 <main>:
-10000230:	ff010113          	addi	sp,sp,-16 # fff0 <STACK_SIZE+0xf7f0>
+10000230:	ff010113          	add	sp,sp,-16 # fff0 <STACK_SIZE+0xf7f0>
 10000234:	00112623          	sw	ra,12(sp)
 10000238:	00812423          	sw	s0,8(sp)
 1000023c:	00912223          	sw	s1,4(sp)
@@ -186,7 +186,7 @@ Disassembly of section .text:
 10000258:	01100693          	li	a3,17
 1000025c:	ff000737          	lui	a4,0xff000
 10000260:	20872783          	lw	a5,520(a4) # ff000208 <main+0xeeffffd8>
-10000264:	0017f793          	andi	a5,a5,1
+10000264:	0017f793          	and	a5,a5,1
 10000268:	fe079ce3          	bnez	a5,10000260 <main+0x30>
 1000026c:	20072783          	lw	a5,512(a4)
 10000270:	0ff7f793          	zext.b	a5,a5
@@ -195,13 +195,13 @@ Disassembly of section .text:
 1000027c:	00f72023          	sw	a5,0(a4)
 10000280:	ff0004b7          	lui	s1,0xff000
 10000284:	2084a403          	lw	s0,520(s1) # ff000208 <main+0xeeffffd8>
-10000288:	00847413          	andi	s0,s0,8
+10000288:	00847413          	and	s0,s0,8
 1000028c:	fe041ce3          	bnez	s0,10000284 <main+0x54>
 10000290:	02200793          	li	a5,34
 10000294:	20f4a623          	sw	a5,524(s1)
 10000298:	00300793          	li	a5,3
 1000029c:	00f4a023          	sw	a5,0(s1)
-100002a0:	ed5ff0ef          	jal	ra,10000174 <_Z13transfer_datav>
+100002a0:	ed5ff0ef          	jal	10000174 <_Z13transfer_datav>
 100002a4:	00a00793          	li	a5,10
 100002a8:	00f4a023          	sw	a5,0(s1)
 100002ac:	3a101073          	csrw	pmpcfg1,zero
@@ -210,19 +210,18 @@ Disassembly of section .text:
 100002b8:	00812403          	lw	s0,8(sp)
 100002bc:	00412483          	lw	s1,4(sp)
 100002c0:	00000513          	li	a0,0
-100002c4:	01010113          	addi	sp,sp,16
+100002c4:	01010113          	add	sp,sp,16
 100002c8:	00008067          	ret
 
 Disassembly of section .riscv.attributes:
 
 00000000 <.riscv.attributes>:
-   0:	2441                	.2byte	0x2441
+   0:	2d41                	.2byte	0x2d41
    2:	0000                	.2byte	0x0
    4:	7200                	.2byte	0x7200
    6:	7369                	.2byte	0x7369
    8:	01007663          	bgeu	zero,a6,14 <STACK_SIZE-0x7ec>
-   c:	001a                	.2byte	0x1a
-   e:	0000                	.2byte	0x0
+   c:	00000023          	sb	zero,0(zero) # 0 <STACK_SIZE-0x800>
   10:	1004                	.2byte	0x1004
   12:	7205                	.2byte	0x7205
   14:	3376                	.2byte	0x3376
@@ -231,25 +230,25 @@ Disassembly of section .riscv.attributes:
   1a:	5f30                	.2byte	0x5f30
   1c:	326d                	.2byte	0x326d
   1e:	3070                	.2byte	0x3070
-  20:	0800                	.2byte	0x800
-  22:	0a01                	.2byte	0xa01
-  24:	0b              	Address 0x0000000000000024 is out of bounds.
-
+  20:	7a5f 6d6d 6c75      	.byte	0x5f, 0x7a, 0x6d, 0x6d, 0x75, 0x6c
+  26:	7031                	.2byte	0x7031
+  28:	0030                	.2byte	0x30
+  2a:	0108                	.2byte	0x108
+  2c:	0b0a                	.2byte	0xb0a
 
 Disassembly of section .comment:
 
 00000000 <.comment>:
    0:	3a434347          	.4byte	0x3a434347
    4:	2820                	.2byte	0x2820
-   6:	63643967          	.4byte	0x63643967
-   a:	61656163          	bltu	a0,s6,60c <STACK_SIZE-0x1f4>
-   e:	3561                	.2byte	0x3561
-  10:	3638                	.2byte	0x3638
+   6:	65653267          	.4byte	0x65653267
+   a:	6535                	.2byte	0x6535
+   c:	3334                	.2byte	0x3334
+   e:	3030                	.2byte	0x3030
+  10:	3831                	.2byte	0x3831
   12:	2029                	.2byte	0x2029
   14:	3231                	.2byte	0x3231
   16:	322e                	.2byte	0x322e
-  18:	312e                	.2byte	0x312e
-  1a:	3220                	.2byte	0x3220
-  1c:	3230                	.2byte	0x3230
-  1e:	33313033          	.4byte	0x33313033
-  22:	0030                	.2byte	0x30
+  18:	302e                	.2byte	0x302e
+  1a:	00              	Address 0x1a is out of bounds.
+

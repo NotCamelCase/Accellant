@@ -102,6 +102,7 @@ module uart_core
         .uart_tx_done(tx_done),
         .tx(uart_tx));
 
+    // TX FIFO
     basic_fifo #(
         // Queue up to UART_FIFO_LENGTH bytes
         .ADDR_WIDTH($clog2(UART_FIFO_LENGTH)),
