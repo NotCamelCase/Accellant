@@ -3,13 +3,40 @@
 
 import defines::*;
 
-module accellant_soc
+module accellant_soc_sdram
 #(parameter LED_COUNT = 4)
 (
     input logic                 clk, rst,
+    // UART inf
     input logic                 uart_tx,
     output logic                uart_rx,
-    output logic[LED_COUNT-1:0] led
+    output logic[LED_COUNT-1:0] led,
+    // DBus inf
+    output logic[31:0]          axi_dbus_awaddr,
+    output logic[1:0]           axi_dbus_awburst,
+    output logic[7:0]           axi_dbus_awlen,
+    output logic[2:0]           axi_dbus_awsize,
+    output logic                axi_dbus_awvalid,
+    input logic                 axi_dbus_awready,
+    output logic[31:0]          axi_dbus_wdata,
+    output logic[3:0]           axi_dbus_wstrb,
+    output logic                axi_dbus_wlast,
+    output logic                axi_dbus_wvalid,
+    input logic                 axi_dbus_wready,
+    input logic[1:0]            axi_dbus_bresp,
+    input logic                 axi_dbus_bvalid,
+    output logic                axi_dbus_bready,
+    output logic[31:0]          axi_dbus_araddr,
+    output logic[7:0]           axi_dbus_arlen,
+    output logic[2:0]           axi_dbus_arsize,
+    output logic[1:0]           axi_dbus_arburst,
+    output logic                axi_dbus_arvalid,
+    input logic                 axi_dbus_arready,
+    input logic[31:0]           axi_dbus_rdata,
+    input logic[1:0]            axi_dbus_rresp,
+    input logic                 axi_dbus_rvalid,
+    input logic                 axi_dbus_rlast,
+    output logic                axi_dbus_rready
 );
     // AXI ibus master
     logic[31:0]             axi_ibus_m_awaddr;
@@ -140,7 +167,7 @@ module accellant_soc
 
     riscv_core core(
     	.clk(clk),
-        .rst(rst),
+        .rst(rst), // Active-high sync reset
         .io_bus_rd_en(io_bus_m_rd_en),
         .io_bus_wr_en(io_bus_m_wr_en),
         .io_bus_cs(io_bus_m_cs),
@@ -349,7 +376,6 @@ module accellant_soc
             .m_axi_rvalid({axi_ibus_s_rvalid, axi_dbus_s_rvalid}),
             .m_axi_rready({axi_ibus_s_rready, axi_dbus_s_rready}));
 
-    // AXI BRAM ROM
     instruction_rom boot_rom(
         .clk(clk),
         .rst(~rst), // Active-low sync AXI reset
@@ -383,37 +409,30 @@ module accellant_soc
         .axi_rvalid(axi_ibus_s_rvalid),
         .axi_rready(axi_ibus_s_rready));
 
-    // AXI BRAM RAM
-    data_ram ram(
-        .s_aclk(clk),
-        .s_aresetn(~rst), // Active-low sync AXI reset
-        .s_axi_awid('0),
-        .s_axi_awaddr(axi_dbus_s_awaddr),
-        .s_axi_awlen(axi_dbus_s_awlen),
-        .s_axi_awsize(axi_dbus_s_awsize),
-        .s_axi_awburst(axi_dbus_s_awburst),
-        .s_axi_awvalid(axi_dbus_s_awvalid),
-        .s_axi_awready(axi_dbus_s_awready),
-        .s_axi_wdata(axi_dbus_s_wdata),
-        .s_axi_wstrb(axi_dbus_s_wstrb),
-        .s_axi_wlast(axi_dbus_s_wlast),
-        .s_axi_wvalid(axi_dbus_s_wvalid),
-        .s_axi_wready(axi_dbus_s_wready),
-        .s_axi_bid(),
-        .s_axi_bresp(axi_dbus_s_bresp),
-        .s_axi_bvalid(axi_dbus_s_bvalid),
-        .s_axi_bready(axi_dbus_s_bready),
-        .s_axi_arid('0),
-        .s_axi_araddr(axi_dbus_s_araddr),
-        .s_axi_arlen(axi_dbus_s_arlen),
-        .s_axi_arsize(axi_dbus_s_arsize),
-        .s_axi_arburst(axi_dbus_s_arburst),
-        .s_axi_arvalid(axi_dbus_s_arvalid),
-        .s_axi_arready(axi_dbus_s_arready),
-        .s_axi_rid(),
-        .s_axi_rdata(axi_dbus_s_rdata),
-        .s_axi_rresp(axi_dbus_s_rresp),
-        .s_axi_rlast(axi_dbus_s_rlast),
-        .s_axi_rvalid(axi_dbus_s_rvalid),
-        .s_axi_rready(axi_dbus_s_rready));
+    // AXI DBus slave connections
+    assign axi_dbus_s_awready   = axi_dbus_awready;
+    assign axi_dbus_s_wready    = axi_dbus_wready;
+    assign axi_dbus_s_bresp     = axi_dbus_bresp;
+    assign axi_dbus_s_bvalid    = axi_dbus_bvalid;
+    assign axi_dbus_s_arready   = axi_dbus_arready;
+    assign axi_dbus_s_rdata     = axi_dbus_rdata;
+    assign axi_dbus_s_rresp     = axi_dbus_rresp;
+    assign axi_dbus_s_rvalid    = axi_dbus_rvalid;
+    assign axi_dbus_s_rlast     = axi_dbus_rlast;
+    assign axi_dbus_awaddr      = axi_dbus_s_awaddr;
+    assign axi_dbus_awburst     = axi_dbus_s_awburst;
+    assign axi_dbus_awlen       = axi_dbus_s_awlen;
+    assign axi_dbus_awsize      = axi_dbus_s_awsize;
+    assign axi_dbus_awvalid     = axi_dbus_s_awvalid;
+    assign axi_dbus_wdata       = axi_dbus_s_wdata;
+    assign axi_dbus_wstrb       = axi_dbus_s_wstrb;
+    assign axi_dbus_wlast       = axi_dbus_s_wlast;
+    assign axi_dbus_wvalid      = axi_dbus_s_wvalid;
+    assign axi_dbus_bready      = axi_dbus_s_bready;
+    assign axi_dbus_araddr      = axi_dbus_s_araddr;
+    assign axi_dbus_arlen       = axi_dbus_s_arlen;
+    assign axi_dbus_arsize      = axi_dbus_s_arsize;
+    assign axi_dbus_arburst     = axi_dbus_s_arburst;
+    assign axi_dbus_arvalid     = axi_dbus_s_arvalid;
+    assign axi_dbus_rready      = axi_dbus_s_rready;
 endmodule

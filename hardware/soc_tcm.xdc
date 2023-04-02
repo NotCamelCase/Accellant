@@ -2,10 +2,6 @@
 set_property -dict {PACKAGE_PIN R2 IOSTANDARD SSTL135} [get_ports clk100]
 create_clock -period 10.000 -name sys_clk_pin -waveform {0.000 5.000} -add [get_ports clk100]
 
-set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_nets mmcm/inst/clk_in_clk_gen]
-set_clock_groups -name clk_soc -asynchronous -group [get_clocks [list [get_clocks -of_objects [get_pins mmcm/inst/mmcm_adv_inst/CLKOUT2] -filter {IS_GENERATED && MASTER_CLOCK == clk100}] [get_clocks -of_objects [get_pins mmcm/inst/mmcm_adv_inst/CLKOUT2] -filter {IS_GENERATED && MASTER_CLOCK == sys_clk_pin}]]]
-
-## Active-low async reset
 set_property -dict {PACKAGE_PIN C18 IOSTANDARD LVCMOS33} [get_ports arstn]
 
 ## LEDs

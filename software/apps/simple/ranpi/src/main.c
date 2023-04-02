@@ -73,7 +73,7 @@ int main(void)
     uint32_t e = timer_get_cycle_count();
 
     printf("Result: %f\n", pi); // 3.004f = 0x40428f5c
-    printf("Number of cycles: %d\n", (int)(e - s)); // 223101
+    printf("Number of cycles: %d\n", (int)(e - s)); // ~225000
 
     return 0;
 }

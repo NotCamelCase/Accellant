@@ -6,17 +6,16 @@ module sync_reset
 #(parameter N = 4) // # of FFs to debounce reset input
 (
     input logic     clk,
-    input logic     arst,   // Async reset, active-low
+    input logic     arstn,   // Async reset, active-low
     output logic    rst     // Sync reset, active-high
 );
-    (* ASYNC_REG = "true" *)
-    logic           async_rst_meta, async_rst_sync;
+    (* ASYNC_REG = "true" *) logic async_rst_meta, async_rst_sync;
 
-    logic[N-1:0]    rst_db;
+    logic[N-1:0]    rst_db = {N{1'b1}};
 
     // Async reset bridge, active-low
-    always_ff @(posedge clk, negedge arst) begin
-        if (~arst) begin
+    always_ff @(posedge clk, negedge arstn) begin
+        if (~arstn) begin
             async_rst_meta <= 1'b0;
             async_rst_sync <= 1'b0;
         end else begin

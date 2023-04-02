@@ -128,7 +128,7 @@ int main(void)
     transfer_data();
     set_led(0b1010);
 
-    // Commit entire D$ to main memory so that the newly copied program data (instructions & data) are made visible to I$
+    // Commit entire D$ to main memory so that the newly copied program data (instructions & data) are made visible to IF
     asm volatile ("csrw pmpcfg1, x0");
 
     // Jump to the beginning of SDRAM where app instructions & data have just been copied to

@@ -5,7 +5,7 @@ boot.elf:     file format elf32-littleriscv
 Disassembly of section .text:
 
 10000000 <_start>:
-10000000:	00010137          	lui	sp,0x10
+10000000:	10000137          	lui	sp,0x10000
 10000004:	00010113          	mv	sp,sp
 10000008:	228000ef          	jal	10000230 <main>
 1000000c:	0000                	.2byte	0x0
@@ -16,7 +16,7 @@ Disassembly of section .text:
 10000014 <_Z13set_baud_ratei>:
 10000014:	05f5e7b7          	lui	a5,0x5f5e
 10000018:	00451513          	sll	a0,a0,0x4
-1000001c:	10078793          	add	a5,a5,256 # 5f5e100 <_sp+0x5f4e100>
+1000001c:	10078793          	add	a5,a5,256 # 5f5e100 <_start-0xa0a1f00>
 10000020:	02a7c7b3          	div	a5,a5,a0
 10000024:	ff000737          	lui	a4,0xff000
 10000028:	fff78793          	add	a5,a5,-1
@@ -110,7 +110,7 @@ Disassembly of section .text:
 10000148:	00c7e7b3          	or	a5,a5,a2
 1000014c:	00e7e7b3          	or	a5,a5,a4
 10000150:	00010737          	lui	a4,0x10
-10000154:	fff70713          	add	a4,a4,-1 # ffff <STACK_SIZE+0xf7ff>
+10000154:	fff70713          	add	a4,a4,-1 # ffff <_start-0xfff0001>
 10000158:	00851513          	sll	a0,a0,0x8
 1000015c:	00e57533          	and	a0,a0,a4
 10000160:	00a7e533          	or	a0,a5,a0
@@ -151,7 +151,7 @@ Disassembly of section .text:
 100001dc:	00e66633          	or	a2,a2,a4
 100001e0:	00010737          	lui	a4,0x10
 100001e4:	00869793          	sll	a5,a3,0x8
-100001e8:	fff70713          	add	a4,a4,-1 # ffff <STACK_SIZE+0xf7ff>
+100001e8:	fff70713          	add	a4,a4,-1 # ffff <_start-0xfff0001>
 100001ec:	00e7f7b3          	and	a5,a5,a4
 100001f0:	00f66633          	or	a2,a2,a5
 100001f4:	02060863          	beqz	a2,10000224 <_Z13transfer_datav+0xb0>
@@ -161,7 +161,7 @@ Disassembly of section .text:
 10000204:	0017f793          	and	a5,a5,1
 10000208:	fe079ce3          	bnez	a5,10000200 <_Z13transfer_datav+0x8c>
 1000020c:	20072583          	lw	a1,512(a4)
-10000210:	00168793          	add	a5,a3,1 # ff0001 <_sp+0xfe0001>
+10000210:	00168793          	add	a5,a3,1 # ff0001 <_start-0xf00ffff>
 10000214:	00b68023          	sb	a1,0(a3)
 10000218:	00c78663          	beq	a5,a2,10000224 <_Z13transfer_datav+0xb0>
 1000021c:	00078693          	mv	a3,a5
@@ -173,7 +173,7 @@ Disassembly of section .text:
 1000022c:	00008067          	ret
 
 10000230 <main>:
-10000230:	ff010113          	add	sp,sp,-16 # fff0 <STACK_SIZE+0xf7f0>
+10000230:	ff010113          	add	sp,sp,-16 # ffffff0 <_start-0x10>
 10000234:	00112623          	sw	ra,12(sp)
 10000238:	00812423          	sw	s0,8(sp)
 1000023c:	00912223          	sw	s1,4(sp)
@@ -220,8 +220,8 @@ Disassembly of section .riscv.attributes:
    2:	0000                	.2byte	0x0
    4:	7200                	.2byte	0x7200
    6:	7369                	.2byte	0x7369
-   8:	01007663          	bgeu	zero,a6,14 <STACK_SIZE-0x7ec>
-   c:	00000023          	sb	zero,0(zero) # 0 <STACK_SIZE-0x800>
+   8:	01007663          	bgeu	zero,a6,14 <_start-0xfffffec>
+   c:	00000023          	sb	zero,0(zero) # 0 <_start-0x10000000>
   10:	1004                	.2byte	0x1004
   12:	7205                	.2byte	0x7205
   14:	3376                	.2byte	0x3376

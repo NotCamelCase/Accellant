@@ -53,7 +53,7 @@ int main(void)
 
     int find = rand() % N;
 
-    if (find_item(head, find) && (find < N))
+    if (find_item(head, find))
         printf("PASS: Found %d\n", find);
     else
         printf("FAIL: No %d\n", find);
