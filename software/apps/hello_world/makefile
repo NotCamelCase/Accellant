@@ -52,16 +52,13 @@ INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
 CFLAGS += $(INC_FLAGS) -MMD -MP
 
-all: $(BUILD_DIR)/$(PROJ_NAME).elf $(BUILD_DIR)/$(PROJ_NAME).asm $(BUILD_DIR)/$(PROJ_NAME).v $(BUILD_DIR)/$(PROJ_NAME).bin
+all: $(BUILD_DIR)/$(PROJ_NAME).elf $(BUILD_DIR)/$(PROJ_NAME).asm $(BUILD_DIR)/$(PROJ_NAME).bin
 
 $(BUILD_DIR)/%.elf: $(OBJS)
 	$(RISCV_CPP) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 %.bin: %.elf
 	$(RISCV_OBJCOPY) -S -O binary $^ $@
-
-%.v: %.elf
-	$(RISCV_OBJCOPY) -O verilog $^ $@
 
 %.asm: %.elf
 	$(RISCV_OBJDUMP) -S -d $^ > $@

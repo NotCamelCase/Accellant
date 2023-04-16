@@ -17,10 +17,10 @@ ENTRY(_start)
 
 MEMORY
 {
-    ram (rwx) : ORIGIN = 0x00000000,  LENGTH = 0x10000
+    ram (rwx) : ORIGIN = 0x00000000,  LENGTH = 0x10000 /* 64 kB*/
 }
 
-__stack_size  = DEFINED(stack_size) ? stack_size : 0x10000; /* 64 kB*/
+__stack_size  = DEFINED(stack_size) ? stack_size : 0x1000; /* 4 kB*/
 
 SECTIONS
 {
@@ -296,21 +296,18 @@ SECTIONS
     }
 
     /* Place heap after program data */
-    .heap (NOLOAD) :
+    .heap (NOLOAD) : ALIGN(16)
     {
-        . = ALIGN(16);
-        __heap_start = . ;
-        . = ALIGN(16);
-        __heap_end = ORIGIN(ram) + LENGTH(ram) - __stack_size;
+        PROVIDE(__heap_start = .);
+        PROVIDE(__heap_end = ORIGIN(ram) + LENGTH(ram) - __stack_size);
     } > ram
 
     /* Place stack on top of RAM */
     .stack ORIGIN(ram) + LENGTH(ram) (NOLOAD) : ALIGN(16)
     {
       PROVIDE(__stack_start = .);
-     . = __stack_size;
-     PROVIDE(_sp = .);
-     PROVIDE(__stack_end = .);
+      PROVIDE(_sp = .);
+      PROVIDE(__stack_end = . - __stack_size);
     }
 
   /* Stabs debugging sections.  */

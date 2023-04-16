@@ -1,3 +1,5 @@
+#include "ranpi.h"
+
 /*--- pi.c       PROGRAM RANPI
  *
  *   Program to compute PI by probability.
@@ -10,9 +12,10 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "../../../../kernel/common.h"
+// Use tiny printf to print out floating-point numbers
+#include "../../../kernel/common.h"
 
-void myadd(float* sum, float* addend)
+static void myadd(float* sum, float* addend)
 {
     /*
     c   Simple adding subroutine thrown in to allow subroutine
@@ -22,11 +25,8 @@ void myadd(float* sum, float* addend)
 }
 
 // Computes a value of PI iteratively using soft-float
-int main(void)
+void test_ranpi(void)
 {
-    // Brief delay to let putty catch up w/ the program
-    timer_sleep(1000);
-
     printf("Running RanPI...\n");
 
     uint32_t s = timer_get_cycle_count();
@@ -72,8 +72,10 @@ int main(void)
 
     uint32_t e = timer_get_cycle_count();
 
-    printf("Result: %f\n", pi); // 3.004f = 0x40428f5c
     printf("Number of cycles: %d\n", (int)(e - s)); // ~225000
 
-    return 0;
+    if ((*(int*)(&pi)) == 0x40428f5c) // 3.004f = 0x40428f5c
+        printf("PASS: %f\n", pi);
+    else
+        printf("FAIL: %f\n", pi);
 }

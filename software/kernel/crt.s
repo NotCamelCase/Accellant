@@ -1,3 +1,5 @@
+/* See: https://github.com/openhwgroup/cv32e40p/blob/master/example_tb/core/custom/crt0.S */
+
 .section .text.start
 .global _start
 .type _start, @function

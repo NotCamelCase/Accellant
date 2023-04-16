@@ -1,13 +1,14 @@
+#include "bsearch.h"
+
+#include <stdio.h>
 #include <stdlib.h>
 
-#include "../../../../kernel/common.h"
-
-int compare(const void* a, const void* b)
+static int compare(const void* a, const void* b)
 {
     return *(int*)a - *(int*)b;
 }
 
-bool verify(int* numbers, int N, int k)
+static bool verify(int* numbers, int N, int k)
 {
     for (int i = 0; i < N; i++)
     {
@@ -18,11 +19,8 @@ bool verify(int* numbers, int N, int k)
     return false;
 }
 
-int main(void)
+void test_bsearch(void)
 {
-    // Brief delay to let putty catch up w/ the program
-    timer_sleep(1000);
-
     const int N = 100;
     int* numbers = (int*)malloc(N * sizeof(int));
 
@@ -53,5 +51,5 @@ int main(void)
             printf("FAIL: Mismatch\n");
     }
 
-    return 0;
+    free(numbers);
 }

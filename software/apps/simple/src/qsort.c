@@ -1,13 +1,14 @@
+#include "qsort.h"
+
+#include <stdio.h>
 #include <stdlib.h>
 
-#include "../../../../kernel/common.h"
-
-int compare(const void* a, const void* b)
+static int compare(const void* a, const void* b)
 {
     return *(int*)a - *(int*)b;
 }
 
-bool verify(int* numbers, int N)
+static bool verify(int* numbers, int N)
 {
     for (int i = 0; i < N-1; i++)
     {
@@ -18,11 +19,8 @@ bool verify(int* numbers, int N)
     return true;
 }
 
-int main(void)
+void test_qsort(void)
 {
-    // Brief delay to let putty catch up w/ the program
-    timer_sleep(1000);
-
     const int N = 100;
     int* numbers = (int*)malloc(N * sizeof(int));
 
@@ -35,16 +33,15 @@ int main(void)
 
     if (verify(numbers, N))
     {
-        printf("PASS\n");
         for (int i = 0; i < N; i++)
-        {
             printf("%d\n", numbers[i]);
-        }
+
+        printf("PASS\n");
     }
     else
     {
         printf("FAIL\n");
     }
 
-    return 0;
+    free(numbers);
 }

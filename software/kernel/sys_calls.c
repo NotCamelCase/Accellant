@@ -1,7 +1,8 @@
 #include "sys_calls.h"
 
+#include <ctype.h>
+
 #include "uart_core.h"
-#include "printf.h"
 
 extern char     __heap_start[];
 extern char     __heap_end[];
@@ -61,15 +62,27 @@ int _read(int /*fd*/, char* buf, int count)
 {
     int read = 0;
 
-    for (int i = 0; i < count; i++)
+    bool abort = false;
+    while ((read < count) && (!abort))
     {
         while (uart_rx_empty()) ;
 
-        uart_read_byte((uint8_t*)buf++);
+        uint8_t nc;
+        uart_read_byte(&nc);
+
+        *buf++ = nc;
         read++;
+
+        abort = isspace(nc);
     }
 
     return read;
+}
+
+int _brk(void *addr)
+{
+    __heap = (char*)addr;
+    return 0;
 }
 
 void* _sbrk(int incr)

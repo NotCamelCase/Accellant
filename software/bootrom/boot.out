@@ -204,7 +204,7 @@ Disassembly of section .text:
 100002a0:	ed5ff0ef          	jal	10000174 <_Z13transfer_datav>
 100002a4:	00a00793          	li	a5,10
 100002a8:	00f4a023          	sw	a5,0(s1)
-100002ac:	3a101073          	csrw	pmpcfg1,zero
+100002ac:	3a001073          	csrw	pmpcfg0,zero
 100002b0:	000400e7          	jalr	s0
 100002b4:	00c12083          	lw	ra,12(sp)
 100002b8:	00812403          	lw	s0,8(sp)
@@ -241,14 +241,15 @@ Disassembly of section .comment:
 00000000 <.comment>:
    0:	3a434347          	.4byte	0x3a434347
    4:	2820                	.2byte	0x2820
-   6:	65653267          	.4byte	0x65653267
-   a:	6535                	.2byte	0x6535
-   c:	3334                	.2byte	0x3334
-   e:	3030                	.2byte	0x3030
-  10:	3831                	.2byte	0x3831
+   6:	32666167          	.4byte	0x32666167
+   a:	37336337          	lui	t1,0x37336
+   e:	3131                	.2byte	0x3131
+  10:	6635                	.2byte	0x6635
   12:	2029                	.2byte	0x2029
   14:	3231                	.2byte	0x3231
   16:	322e                	.2byte	0x322e
-  18:	302e                	.2byte	0x302e
-  1a:	00              	Address 0x1a is out of bounds.
-
+  18:	312e                	.2byte	0x312e
+  1a:	3220                	.2byte	0x3220
+  1c:	3230                	.2byte	0x3230
+  1e:	31343033          	.4byte	0x31343033
+  22:	0035                	.2byte	0x35

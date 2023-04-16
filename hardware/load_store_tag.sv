@@ -40,7 +40,7 @@ module load_store_tag
     // True if the memory location is accessed within the uncacheable I/O address space
     assign io_access = ((mem_addr & MMIO_BASE_ADDRESS) == MMIO_BASE_ADDRESS);
     // Let all non-I/O accesses go thru D$ (neglecting PFs!)
-    assign cache_mem_access = !io_access && !(ix_lst_inf.dcache_flush || ix_lst_inf.dcache_invalidate);
+    assign cache_mem_access = !io_access && !ix_lst_inf.dcache_flush;
 
     // Way memories
     generate
@@ -49,7 +49,7 @@ module load_store_tag
             logic   valid_bits_reg[DCACHE_NUM_SETS-1:0];
 
             always_ff @(posedge clk) begin
-                if (rst || (lst_valid && ix_lst_inf.dcache_invalidate && !wb_do_branch)) begin
+                if (rst) begin
                     for (int set_idx = 0; set_idx < DCACHE_NUM_SETS; set_idx++)
                         valid_bits_reg[set_idx] <= 1'b0;
                 end else if (lsd_lst_inf.update_tag_en[way_idx])
@@ -84,7 +84,7 @@ module load_store_tag
     always_ff @(posedge clk) begin
         lst_lsd_inf.io_rd_en <= ix_lst_valid && !wb_do_branch && ix_lst_inf.mem_load;
         lst_lsd_inf.io_wr_en <= ix_lst_valid && !wb_do_branch && ix_lst_inf.mem_store;
-        lst_lsd_inf.io_cs <= io_cs & {NUM_IO_CORES{!(ix_lst_inf.dcache_flush || ix_lst_inf.dcache_invalidate)}};
+        lst_lsd_inf.io_cs <= io_cs & {NUM_IO_CORES{!ix_lst_inf.dcache_flush}};
     end
 
     // Align write data for SB/SH/SW
@@ -128,7 +128,6 @@ module load_store_tag
         lst_lsd_inf.register_write <= ix_lst_inf.register_write;
         lst_lsd_inf.mem_store <= ix_lst_inf.mem_store;
         lst_lsd_inf.mem_load <= ix_lst_inf.mem_load;
-        lst_lsd_inf.dcache_invalidate <= ix_lst_inf.dcache_invalidate;
         lst_lsd_inf.dcache_flush <= ix_lst_inf.dcache_flush;
         lst_lsd_inf.cacheable_mem_access <= cache_mem_access;
         lst_lsd_inf.rd <= ix_lst_inf.rd;

@@ -228,7 +228,6 @@ module instruction_issue
         ix_lst_inf.register_write <= next_instruction.register_write;
         ix_lst_inf.mem_store <= next_instruction.mem_store;
         ix_lst_inf.mem_load <= next_instruction.mem_load;
-        ix_lst_inf.dcache_invalidate <= next_instruction.dcache_invalidate;
         ix_lst_inf.dcache_flush <= next_instruction.dcache_flush;
         ix_lst_inf.lsu_control <= next_instruction.lsu_control;
         ix_lst_inf.write_data <= reg_file[next_instruction.a2];

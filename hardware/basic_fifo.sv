@@ -17,7 +17,7 @@ module basic_fifo
     logic[DATA_WIDTH-1:0]   buffer_reg[2**ADDR_WIDTH-1:0];
 
     logic[ADDR_WIDTH-1:0]   wr_ptr_reg, rd_ptr_reg;
-    logic[ADDR_WIDTH-1:0]   count_reg, count_nxt;
+    logic[ADDR_WIDTH:0]     count_reg, count_nxt;
 
     always_ff @(posedge clk) begin
         if (rst || clear) begin
@@ -46,11 +46,11 @@ module basic_fifo
 
         // Push-only
         if (push && !pop)
-            count_nxt = count_reg + ADDR_WIDTH'(1);
+            count_nxt = count_reg + (ADDR_WIDTH+1)'(1);
 
         // Pop-only
         if (pop && !push)
-            count_nxt = count_reg - ADDR_WIDTH'(1);
+            count_nxt = count_reg - (ADDR_WIDTH+1)'(1);
     end
 
     always_ff @(posedge clk) begin
@@ -61,7 +61,7 @@ module basic_fifo
             almost_full <= 1'b0;
         end else begin
             empty <= ~(|count_nxt);
-            full <= count_nxt == (2**ADDR_WIDTH-1);
+            full <= count_nxt == (2**ADDR_WIDTH);
             almost_empty <= count_nxt <= ALMOST_EMPTY_THRESHOLD;
             almost_full <= count_nxt >= ALMOST_FULL_THRESHOLD;
         end

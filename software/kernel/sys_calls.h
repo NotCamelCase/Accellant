@@ -14,6 +14,7 @@ void _kill(int /*pid*/, int /*sig*/);
 int _getpid(void);
 int _write(int /*fd*/, char* buf, int count);
 int _read(int /*fd*/, char* buf, int count);
+int _brk(void* addr);
 void* _sbrk(int incr);
 #if __cplusplus
 }

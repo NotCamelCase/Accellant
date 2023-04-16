@@ -168,8 +168,7 @@ typedef enum logic[2:0] {
 
 // CSR specifiers
 typedef enum logic[11:0] {
-    CSR_REG_DCACHE_INV      = 12'h3a0,
-    CSR_REG_DCACHE_FLUSH    = 12'h3a1
+    CSR_REG_DCACHE_FLUSH    = 12'h3a0
 } csr_reg_e;
 
 // BTP
@@ -218,7 +217,6 @@ typedef struct packed {
     logic                   mem_store;
     logic                   mem_load;
     logic                   icache_invalidate;
-    logic                   dcache_invalidate;
     logic                   dcache_flush;
     alu_op_e                alu_control;
     mul_op_e                mul_control;
@@ -253,7 +251,6 @@ typedef struct packed {
     logic                   mem_store;
     logic                   mem_load;
     logic                   dcache_flush;
-    logic                   dcache_invalidate;
     logic[2:0]              lsu_control;
     logic[31:0]             write_data;
     logic[31:0]             rs1;
@@ -267,7 +264,6 @@ typedef struct packed {
     logic                               mem_store;
     logic                               mem_load;
     logic                               dcache_flush;
-    logic                               dcache_invalidate;
     logic                               cacheable_mem_access;
     logic[REG_WIDTH-1:0]                rd;
     lsu_address_t                       mem_addr;

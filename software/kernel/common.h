@@ -7,5 +7,4 @@
 
 #include "timer_core.h"
 #include "led_core.h"
-#include "uart_core.h"
 #include "printf.h"
