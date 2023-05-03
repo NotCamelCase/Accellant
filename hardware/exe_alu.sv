@@ -87,7 +87,7 @@ module exe_alu
 
         if (ix_alu_inf.jump) begin
             // On unconditional branches, BTP can be applied if branch was taken and branch target is up-to-date
-            branch_taken = !(ix_alu_inf.btp_info.branch_taken && (ix_alu_inf.btp_info.branch_target == branch_target));
+            branch_taken = !(ix_alu_inf.btp_info.branch_taken && (ix_alu_inf.btp_info.branch_target == branch_target[31:2]));
         end else if (ix_alu_inf.branch) begin
             unique case (ix_alu_inf.branch_op)
                 BRANCH_OP_BEQ:  branch_taken = ~(|sub_result);

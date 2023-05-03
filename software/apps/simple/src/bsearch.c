@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 static int compare(const void* a, const void* b)
 {
@@ -27,7 +28,6 @@ void test_bsearch(void)
     for (int i = 0; i < N; i++)
     {
         numbers[i] = rand() % N;
-        printf("%d\n", numbers[i]);
     }
 
     qsort(numbers, N, sizeof(int), compare);

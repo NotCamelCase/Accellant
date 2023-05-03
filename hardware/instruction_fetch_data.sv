@@ -183,7 +183,6 @@ module instruction_fetch_data
     // IFD -> IFT feedback to update CL tag & valid bit
     assign ifd_ift_inf.cache_miss = cache_miss;
     assign ifd_ift_inf.resume_fetch = fetch_resume_reg;
-    assign ifd_ift_inf.cache_fetch_fsm_idle = state_reg == IDLE; // Allow only one outstanding I$ miss
     assign ifd_ift_inf.update_tag_en = replace_way_en & {ICACHE_NUM_WAYS{update_tag_en_reg}};
     assign ifd_ift_inf.update_tag_set = pc_to_fetch_reg.set_idx;
     assign ifd_ift_inf.update_tag = pc_to_fetch_reg.tag_idx;

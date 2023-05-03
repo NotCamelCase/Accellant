@@ -3,7 +3,8 @@ module bram_1r1w
 (
     parameter   ADDR_WIDTH  = 4,
     parameter   DATA_WIDTH  = 8,
-    parameter   READ_BYPASS = 0
+    parameter   READ_BYPASS = 0,
+    parameter   RAM_FILE    = ""
 )
 (
     input logic                     clk,
@@ -17,6 +18,11 @@ module bram_1r1w
 
     logic[DATA_WIDTH-1:0]   buffer[2**ADDR_WIDTH-1:0];
     logic[DATA_WIDTH-1:0]   data_reg;
+
+    initial begin
+        if (RAM_FILE != "")
+            $readmemh(RAM_FILE, buffer, 0, 2**ADDR_WIDTH-1);
+    end
 
     // Write port
     always_ff @(posedge clk) begin

@@ -174,7 +174,7 @@ typedef enum logic[11:0] {
 // BTP
 typedef struct packed {
     logic       branch_taken;
-    logic[31:0] branch_target;
+    logic[29:0] branch_target;
 } btp_info_t;
 
 // IFT -> IFD
@@ -187,7 +187,6 @@ typedef struct packed {
 // IFD -> IFT
 typedef struct packed {
     logic                           cache_miss;
-    logic                           cache_fetch_fsm_idle;
     logic                           resume_fetch;
     logic[ICACHE_NUM_WAYS-1:0]      update_tag_en;
     logic[ICACHE_NUM_SET_BITS-1:0]  update_tag_set;

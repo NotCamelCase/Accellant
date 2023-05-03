@@ -17,7 +17,7 @@ module uart_core
     output logic        uart_tx,
     output logic[31:0]  rd_data
 );
-    localparam  UART_FIFO_LENGTH = 8;
+    localparam  UART_FIFO_LENGTH = 16;
 
     logic       baud_pulse;
     logic[10:0] divisor_reg;

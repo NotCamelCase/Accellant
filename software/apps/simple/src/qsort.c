@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 static int compare(const void* a, const void* b)
 {
@@ -32,16 +33,9 @@ void test_qsort(void)
     qsort(numbers, N, sizeof(int), compare);
 
     if (verify(numbers, N))
-    {
-        for (int i = 0; i < N; i++)
-            printf("%d\n", numbers[i]);
-
         printf("PASS\n");
-    }
     else
-    {
         printf("FAIL\n");
-    }
 
     free(numbers);
 }

@@ -26,8 +26,6 @@ typedef enum {
 
 void uart_set_baud_rate(uint32_t baudRate);
 void uart_write_byte(uint8_t val);
-
-// Caller should probe for data availability
 void uart_read_byte(uint8_t* val);
 
 bool uart_rx_empty(void);

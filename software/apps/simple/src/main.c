@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "qsort.h"
@@ -10,8 +11,10 @@
 
 int main(void)
 {
-    // Brief delay to let putty catch up w/ the program
-    timer_sleep(1000);
+#if 1
+    // Brief delay to let putty catch up w/ the program on FPGA
+    timer_sleep(100);
+#endif
 
     printf("***** QSORT *****\n");
     test_qsort();

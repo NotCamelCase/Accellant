@@ -22,7 +22,7 @@ module instruction_fetch_tag
     output btp_info_t       ift_id_btp_info
 );
 `ifdef XILINX_SIMULATOR
-    localparam  RESET_PC    = 0; // Bypass bootloader and issue instructions directly from RAM assuming it's burn into the model
+    localparam  RESET_PC    = 0; // Bypass bootloader and issue instructions directly from RAM assuming it's burnt into the model
 `else
     localparam  RESET_PC    = INSTR_ROM_BASE_ADDRESS; // Start executing instructions from Boot ROM to blit program binary onto RAM
 `endif
@@ -101,19 +101,17 @@ module instruction_fetch_tag
     always_ff @(posedge clk) begin
         if (rst)
             btp_use_reg <= 1'b0;
-        else
+        else if (fetch_active_reg)
             btp_use_reg <= btp_valid_reg[last_pc_fetched[BTP_ENTRIES_BIT+1:2]]; // Registered w/ last fetched PC to ease timing
+        else
+            btp_use_reg <= 1'b0;
     end
 
     // New BTP entry to be inserted when a branch has taken place
     assign new_btp_entry.tag = wb_control_flow_pc[31:BTP_ENTRIES_BIT+2];
     assign new_btp_entry.target_pc = wb_branch_target[31:2];
 
-    // If the last fetched PC has a valid BTP entry, predict next PC to be taken
-    // such that we fetch from the target PC instead of PC+4 next clock cycle.
-    // Because IFD only allows at most one outstanding cache miss, stop steering by BTP
-    // not to cause further I$ misses before fetching the last I$-missed instruction.
-    assign btp_taken = ifd_ift_inf.cache_fetch_fsm_idle && btp_use_reg && (current_btp_entry.tag == pc_prev_reg[31:BTP_ENTRIES_BIT+2]);
+    assign btp_taken = btp_use_reg && (current_btp_entry.tag == pc_prev_reg[31:BTP_ENTRIES_BIT+2]);
 
     assign last_pc_fetched = ifu_address_t'({(
                         wb_do_branch ? wb_branch_target[31:2] :
@@ -136,7 +134,7 @@ module instruction_fetch_tag
             end
 
             // CL tags
-            bram_1r1w #(.ADDR_WIDTH(ICACHE_NUM_SET_BITS), .DATA_WIDTH(ICACHE_NUM_TAG_BITS)) tags(
+            bram_1r1w #(.ADDR_WIDTH(ICACHE_NUM_SET_BITS), .DATA_WIDTH(ICACHE_NUM_TAG_BITS), .READ_BYPASS(1'b1)) tags(
                 .clk(clk),
                 .wr_en(ifd_ift_inf.update_tag_en[way_idx]),
                 .rd_en(fetch_active_reg || wb_do_branch),
@@ -146,7 +144,9 @@ module instruction_fetch_tag
                 .rd_data(ift_ifd_inf.tags_read[way_idx]));
 
             // Pass CL valid bit for way memory to IFD
-            assign cl_valid_bits[way_idx] = !(wb_do_branch && wb_icache_invalidate) && valid_bits_reg[last_pc_fetched.set_idx];
+            assign cl_valid_bits[way_idx] = !(wb_do_branch && wb_icache_invalidate) &&
+                (((last_pc_fetched.set_idx == ifd_ift_inf.update_tag_set) && (ifd_ift_inf.update_tag_en[way_idx])) ? 1'b1
+                : valid_bits_reg[last_pc_fetched.set_idx]);
         end
     endgenerate
 
@@ -155,7 +155,7 @@ module instruction_fetch_tag
     // that's being decoded at ID because BTB has 1 clk cycle latency
     always_ff @(posedge clk) begin
         ift_id_btp_info.branch_taken <= btp_taken;
-        ift_id_btp_info.branch_target <= {current_btp_entry.target_pc, 2'b0};
+        ift_id_btp_info.branch_target <= current_btp_entry.target_pc;
     end
 
     // Outputs to IFD

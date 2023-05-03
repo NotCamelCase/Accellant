@@ -7,4 +7,3 @@
 
 #include "timer_core.h"
 #include "led_core.h"
-#include "printf.h"

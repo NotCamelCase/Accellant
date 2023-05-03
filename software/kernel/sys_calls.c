@@ -65,8 +65,6 @@ int _read(int /*fd*/, char* buf, int count)
     bool abort = false;
     while ((read < count) && (!abort))
     {
-        while (uart_rx_empty()) ;
-
         uint8_t nc;
         uart_read_byte(&nc);
 
@@ -92,10 +90,4 @@ void* _sbrk(int incr)
     __heap += incr;
 
     return (void*)prevHeap;
-}
-
-// _putchar for tiny printf
-void _putchar(char c)
-{
-    uart_write_byte(c);
 }
