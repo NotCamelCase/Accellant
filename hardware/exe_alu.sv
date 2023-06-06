@@ -51,7 +51,7 @@ module exe_alu
     // Shift operations
     assign sll_result = src_a << shtamt;
     assign srl_result = src_a >> shtamt;
-    assign sra_result = src_a >>> shtamt;
+    assign sra_result = $signed(src_a) >>> $signed(shtamt);
 
     // LESS_THAN operation
     assign lt_result = $signed(src_a) < $signed(src_b); // signed

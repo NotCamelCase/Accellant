@@ -33,6 +33,8 @@ module load_store_tag
     logic                       io_access, cache_mem_access;
     logic[NUM_IO_CORES-1:0]     io_cs;
 
+    logic                       unaligned_mem_access;
+
     // Compute memory location to be accessed
     assign mem_addr = ix_lst_inf.rs1 + ix_lst_inf.imm_ext;
     assign mem_addr_packed = lsu_address_t'(mem_addr);
@@ -97,12 +99,35 @@ module load_store_tag
         endcase
     end
 
-    assign sh_wr_data = mem_addr[0] ? {ix_lst_inf.write_data[15:0], 16'b0} : {16'b0, ix_lst_inf.write_data[15:0]};
+    always_comb begin
+        unique case (mem_addr[1:0])
+            2'b10: sh_wr_data = {ix_lst_inf.write_data[15:0], 16'b0};
+            default: sh_wr_data = {16'b0, ix_lst_inf.write_data[15:0]};
+        endcase
+    end
+
+    // Check if an unaligned memory access is being performed
+    always_comb begin
+        unaligned_mem_access = 1'b0;
+
+        if (ix_lst_inf.mem_load) begin
+            if ((ix_lst_inf.lsu_control == LOAD_OP_LH) || (ix_lst_inf.lsu_control == LOAD_OP_LHU))
+                unaligned_mem_access = !((mem_addr[1:0] == 2'b00) || (mem_addr[1:0] == 2'b10));
+            else if (ix_lst_inf.lsu_control == LOAD_OP_LW)
+                unaligned_mem_access = mem_addr[1:0] != 2'b00;
+        end else if (ix_lst_inf.mem_store) begin
+            if (ix_lst_inf.lsu_control[1:0] == STORE_OP_SH)
+                unaligned_mem_access = !((mem_addr[1:0] == 2'b00) || (mem_addr[1:0] == 2'b10));
+            else if (ix_lst_inf.lsu_control[1:0] == STORE_OP_SW)
+                unaligned_mem_access = mem_addr[1:0] != 2'b00;
+        end
+    end
+
     assign sw_wr_data = ix_lst_inf.write_data;
 
     // Adjust byte-enable for SB/SH/SW
     assign sb_wr_en = 4'b0001 << mem_addr[1:0];
-    assign sh_wr_en = mem_addr[0] ? 4'b1100 : 4'b0011;
+    assign sh_wr_en = 4'b0011 << mem_addr[1:0];
     assign sw_wr_en = 4'b1111;
 
     // Byte-enable for word
@@ -130,6 +155,7 @@ module load_store_tag
         lst_lsd_inf.mem_load <= ix_lst_inf.mem_load;
         lst_lsd_inf.dcache_flush <= ix_lst_inf.dcache_flush;
         lst_lsd_inf.cacheable_mem_access <= cache_mem_access;
+        lst_lsd_inf.unaligned_mem_access <= unaligned_mem_access;
         lst_lsd_inf.rd <= ix_lst_inf.rd;
         lst_lsd_inf.mem_addr <= mem_addr;
         lst_lsd_inf.mem_load_op <= load_op_e'(ix_lst_inf.lsu_control);

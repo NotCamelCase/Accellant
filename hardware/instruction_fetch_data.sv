@@ -77,13 +77,10 @@ module instruction_fetch_data
 
     // Handle branch misprediction during cache miss
     always_ff @(posedge clk) begin
-        if (rst)
+        if ((state_reg == IDLE) || (ift_valid && cache_hit))
             pending_branch_reg <= 1'b0;
-        else if (state_reg != IDLE) begin
-            if (wb_do_branch)
-                pending_branch_reg <= 1'b1;
-        end else
-            pending_branch_reg <= 1'b0;
+        else if (wb_do_branch)
+            pending_branch_reg <= 1'b1;
     end
 
     always_ff @(posedge clk) if (wb_do_branch) pending_branch_target_reg <= wb_branch_target;

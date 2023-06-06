@@ -454,6 +454,7 @@ module load_store_data
     // Outputs to WB
     always_ff @(posedge clk) begin
         lsd_wb_inf.register_write <= lst_lsd_inf.register_write;
+        lsd_wb_inf.unaligned_mem_access <= lst_lsd_inf.unaligned_mem_access;
         lsd_wb_inf.rd <= lst_lsd_inf.rd;
         lsd_wb_inf.load_selector <= lst_lsd_inf.mem_addr[1:0];
         lsd_wb_inf.load_control <= lst_lsd_inf.mem_load_op;

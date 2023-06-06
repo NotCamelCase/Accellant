@@ -78,7 +78,7 @@ SECTIONS
 */
 
   /* the bulk of the program: main, libc, functions etc. */
-  .text           :
+  .text : ALIGN(4)
   {
     *(.text.unlikely .text.*_unlikely .text.unlikely.*)
     *(.text.exit .text.exit.*)

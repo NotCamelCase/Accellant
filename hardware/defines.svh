@@ -264,6 +264,7 @@ typedef struct packed {
     logic                               mem_load;
     logic                               dcache_flush;
     logic                               cacheable_mem_access;
+    logic                               unaligned_mem_access;
     logic[REG_WIDTH-1:0]                rd;
     lsu_address_t                       mem_addr;
     load_op_e                           mem_load_op;
@@ -317,6 +318,7 @@ typedef struct packed {
     logic                   do_branch;
     logic[31:0]             control_flow_pc;
     logic                   register_write;
+    logic                   unaligned_mem_access;
     logic[1:0]              load_selector;
     load_op_e               load_control;
     logic[REG_WIDTH-1:0]    rd;

@@ -116,7 +116,7 @@ module instruction_decode
             end
 
             INSTR_OPCODE_ALU_I: begin
-                alu_control = alu_op_e'({(funct3 == 3'b101), funct3});
+                alu_control = alu_op_e'({(funct3 == 3'b101) & funct7[5], funct3});
                 alu_src = 1'b1;
                 imm_src = ((funct3 == 3'b001) || (funct3 == 3'b101)) ? IMM_TYPE_SH : IMM_TYPE_I;
                 register_write = 1'b1;

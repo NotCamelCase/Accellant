@@ -11,7 +11,9 @@ LDSCRIPT = ../../kernel/linker.ld
 MABI=ilp32
 MARCH := rv32im
 
-CFLAGS += -march=$(MARCH) -mabi=$(MABI) -DNDEBUG
+ACCELLANT_SILICON ?= 1
+
+CFLAGS += -march=$(MARCH) -mabi=$(MABI) -DNDEBUG -DACCELLANT_SILICON=$(ACCELLANT_SILICON)
 LDFLAGS += -march=$(MARCH) -mabi=$(MABI)
 
 ifeq ($(DEBUG),yes)
@@ -28,7 +30,7 @@ RISCV_OBJDUMP = riscv64-unknown-elf-objdump
 RISCV_CC = riscv64-unknown-elf-g++
 RISCV_CPP = riscv64-unknown-elf-g++
 
-CFLAGS += -fstrict-volatile-bitfields -fno-strict-aliasing -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror
+CFLAGS += -fstrict-volatile-bitfields -fno-strict-aliasing -Wall -Wextra -Wpedantic -Wconversion -Wshadow
 CXXFLAGS += -fno-exceptions
 LDFLAGS += -nostartfiles -nostdlib -ffreestanding -static -lc -lm -lgcc -mcmodel=medany -Wl,-Bstatic,-T,$(LDSCRIPT),-Map,$(BUILD_DIR)/$(PROJ_NAME).map,--gc-sections,--print-memory-usage
 
@@ -91,6 +93,12 @@ $(BUILD_DIR)/%.s.o: $(KERNEL_SRC_DIRS)/%.s
 
 $(BUILD_DIR):
 	mkdir -p $@
+
+run:
+	../../tools/bootrom/loader $(BUILD_DIR)/$(PROJ_NAME).bin /dev/ttyUSB1 && putty -load "Default Settings"
+
+gen_sim:
+	python3 ../../tools/generate_rom.py $(BUILD_DIR)/$(PROJ_NAME).bin
 
 .PHONY: clean
 clean:

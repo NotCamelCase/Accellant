@@ -22,7 +22,7 @@ module instruction_fetch_tag
     output btp_info_t       ift_id_btp_info
 );
 `ifdef XILINX_SIMULATOR
-    localparam  RESET_PC    = 0; // Bypass bootloader and issue instructions directly from RAM assuming it's burnt into the model
+    localparam  RESET_PC    = 0; // Bypass bootloader and issue instructions directly from RAM assuming it's burn into the model
 `else
     localparam  RESET_PC    = INSTR_ROM_BASE_ADDRESS; // Start executing instructions from Boot ROM to blit program binary onto RAM
 `endif

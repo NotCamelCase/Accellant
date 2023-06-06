@@ -75,7 +75,7 @@ module instruction_issue
         .clk(clk),
         .rst(rst),
         .clear(wb_do_branch), // On a branch, flush the IQ because all previously decoded instructions are invalid now.
-        .push(id_valid && !wb_do_branch),
+        .push(id_valid),
         .pop(fire_instruction && !iq_empty),
         .empty(iq_empty),
         .full(),
