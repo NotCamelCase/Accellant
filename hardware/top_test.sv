@@ -5,6 +5,8 @@ module top_test
     output logic[3:0]   led,
     output logic        uart_rx,
     input logic         uart_tx,
+    output logic[3:0]   r, g, b,
+    output logic        hsync, vsync,
     // DDR3 inf
     output logic        ddr3_reset_n,
     output logic        ddr3_cke,

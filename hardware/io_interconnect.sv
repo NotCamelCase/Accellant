@@ -41,6 +41,7 @@ module io_interconnect
     assign cores_rd_data_array[0] = '0; // Slot #0 = LED
     assign cores_rd_data_array[1] = io_bus_timer_rd_data; // Slot #1 = Timer
     assign cores_rd_data_array[2] = io_bus_uart_rd_data; // Slot #2 = UART
+    assign cores_rd_data_array[3] = '0; // Slot #3 = VGA
 
     // Outputs
     assign io_bus_s_rd_en = io_bus_m_rd_en;

@@ -304,6 +304,8 @@ module load_store_data
                 end
 
                 EVICT_CL_DONE: begin
+                    writeback_clear_cl_dirty_reg <= 1'b0;
+
                     if (writeback_current_way_reg == DCACHE_NUM_WAY_BITS'(DCACHE_NUM_WAYS-1)) begin
                         if (writeback_current_set_reg == DCACHE_NUM_SET_BITS'(DCACHE_NUM_SETS-1)) begin
                             lsd_dcache_flush_done <= 1'b1; // End of D$ flush
@@ -367,19 +369,24 @@ module load_store_data
         for (genvar way_idx = 0; way_idx < DCACHE_NUM_WAYS; way_idx++) begin
             logic   dirty_lines_reg[DCACHE_NUM_SETS-1:0];
 
+            logic   clear_current_cl;
+
             always_ff @(posedge clk) begin
                 if (rst) begin
                     for (int set_idx = 0; set_idx < DCACHE_NUM_SETS; set_idx++)
                         dirty_lines_reg[set_idx] <= 1'b0;
                 end else if (pending_store_reg && (way_idx == pending_store_way_reg))
                     dirty_lines_reg[pending_store_set_idx_reg] <= 1'b1; // Mark the CL dirty after a store
-                else if (writeback_clear_cl_dirty_reg && (way_idx == writeback_current_way_reg))
+                else if (writeback_clear_cl_dirty_reg && (way_idx == writeback_current_way_reg) && clear_current_cl)
                     dirty_lines_reg[writeback_address_reg.set_idx] <= 1'b0; // Reset dirty bit when a CL has been evicted and replaced w/ a new CL
             end
 
             // Read CL dirty status
             assign dirty_lines[way_idx] = dirty_lines_reg[fetch_address_reg.set_idx];
             assign dirty_lines_flush[way_idx] = dirty_lines_reg[writeback_current_set_reg];
+
+            // Clear CL dirty bit only if the refill was not previously a store
+            assign clear_current_cl = !dirty_lines_reg[writeback_address_reg.set_idx];
         end
     endgenerate
 

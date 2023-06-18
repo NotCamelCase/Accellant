@@ -90,7 +90,6 @@ module data_ram
                 WRITE_IDLE: begin
                     // Asserted so long as we have no requests
                     aw_ready_reg <= 1'b1;
-                    w_ready_reg <= 1'b0;
 
                     aw_addr_reg <= axi_awaddr >> 2;
 
@@ -109,8 +108,10 @@ module data_ram
                     if (axi_wvalid) begin
                         aw_addr_reg <= aw_addr_nxt;
 
-                        if (axi_wlast)
+                        if (axi_wlast) begin
+                            w_ready_reg <= 1'b0;
                             write_state_reg <= WRITE_IDLE;
+                        end
                     end
                 end
             endcase

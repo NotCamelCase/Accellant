@@ -3,7 +3,7 @@
 #include "memory_map.h"
 #include "common.h"
 
-static volatile uint32_t* const timer_ptr = (volatile uint32_t*)MMIO_TIMER_BASE_ADDRESS;
+static volatile uint32_t *const timer_ptr = (volatile uint32_t *)MMIO_TIMER_BASE_ADDRESS;
 
 static __attribute__((constructor)) void timer_init(void)
 {
@@ -28,7 +28,8 @@ void timer_sleep(uint32_t val)
     uint32_t start = timer_get_time_ms();
     uint32_t now = 0;
 
-    do {
+    do
+    {
         now = timer_get_time_ms();
     } while ((now - start) < val);
 }

@@ -11,6 +11,9 @@ module accellant_soc_sdram
     input logic                 uart_tx,
     output logic                uart_rx,
     output logic[LED_COUNT-1:0] led,
+    // VGA inf,
+    output logic[3:0]           r, g, b,
+    output logic                hsync, vsync,
     // DBus inf
     output logic[31:0]          axi_dbus_awaddr,
     output logic[1:0]           axi_dbus_awburst,
@@ -146,6 +149,33 @@ module accellant_soc_sdram
     logic                   axi_dbus_s_rlast;
     logic                   axi_dbus_s_rready;
 
+    // AXI VGA master
+    logic[31:0]             axi_vga_m_awaddr;
+    logic[1:0]              axi_vga_m_awburst;
+    logic[7:0]              axi_vga_m_awlen;
+    logic[2:0]              axi_vga_m_awsize;
+    logic                   axi_vga_m_awvalid;
+    logic                   axi_vga_m_awready;
+    logic[31:0]             axi_vga_m_wdata;
+    logic[3:0]              axi_vga_m_wstrb;
+    logic                   axi_vga_m_wlast;
+    logic                   axi_vga_m_wvalid;
+    logic                   axi_vga_m_wready;
+    logic[1:0]              axi_vga_m_bresp;
+    logic                   axi_vga_m_bvalid;
+    logic                   axi_vga_m_bready;
+    logic[31:0]             axi_vga_m_araddr;
+    logic[7:0]              axi_vga_m_arlen;
+    logic[2:0]              axi_vga_m_arsize;
+    logic[1:0]              axi_vga_m_arburst;
+    logic                   axi_vga_m_arvalid;
+    logic                   axi_vga_m_arready;
+    logic[31:0]             axi_vga_m_rdata;
+    logic[1:0]              axi_vga_m_rresp;
+    logic                   axi_vga_m_rvalid;
+    logic                   axi_vga_m_rlast;
+    logic                   axi_vga_m_rready;
+
     // I/O bus master
     logic                   io_bus_m_rd_en;
     logic                   io_bus_m_wr_en;
@@ -277,6 +307,46 @@ module accellant_soc_sdram
         .uart_tx(uart_rx),
         .rd_data(io_bus_uart_rd_data));
 
+    // Slot #3
+    vga_core vga(
+        .clk(clk),
+        .rst(rst),
+        .io_bus_s_rd_en(io_bus_s_rd_en),
+        .io_bus_s_wr_en(io_bus_s_wr_en),
+        .io_bus_s_cs(io_bus_s_cs[3]),
+        .io_bus_s_address(io_bus_s_address),
+        .io_bus_s_wr_data(io_bus_s_wr_data),
+        .axi_awaddr(axi_vga_m_awaddr),
+        .axi_awlen(axi_vga_m_awlen),
+        .axi_awsize(axi_vga_m_awsize),
+        .axi_awburst(axi_vga_m_awburst),
+        .axi_awvalid(axi_vga_m_awvalid),
+        .axi_awready(axi_vga_m_awready),
+        .axi_wdata(axi_vga_m_wdata),
+        .axi_wstrb(axi_vga_m_wstrb),
+        .axi_wlast(axi_vga_m_wlast),
+        .axi_wvalid(axi_vga_m_wvalid),
+        .axi_wready(axi_vga_m_wready),
+        .axi_bresp(axi_vga_m_bresp),
+        .axi_bvalid(axi_vga_m_bvalid),
+        .axi_bready(axi_vga_m_bready),
+        .axi_araddr(axi_vga_m_araddr),
+        .axi_arlen(axi_vga_m_arlen),
+        .axi_arsize(axi_vga_m_arsize),
+        .axi_arburst(axi_vga_m_arburst),
+        .axi_arvalid(axi_vga_m_arvalid),
+        .axi_arready(axi_vga_m_arready),
+        .axi_rdata(axi_vga_m_rdata),
+        .axi_rresp(axi_vga_m_rresp),
+        .axi_rlast(axi_vga_m_rlast),
+        .axi_rvalid(axi_vga_m_rvalid),
+        .axi_rready(axi_vga_m_rready),
+        .r(r),
+        .g(g),
+        .b(b),
+        .hsync(hsync),
+        .vsync(vsync));
+
     axi_interconnect #(
         .S_COUNT(AXI_XBAR_NUM_SLAVES),
         .M_COUNT(AXI_XBAR_NUM_MASTERS),
@@ -285,53 +355,53 @@ module accellant_soc_sdram
         .M_BASE_ADDR({INSTR_ROM_BASE_ADDRESS, RAM_BASE_ADDRESS}),
         .M_ADDR_WIDTH({$clog2(INSTR_ROM_SIZE), $clog2(RAM_SIZE)}),
         // AXI Master-Slave read/write connections
-        .M_CONNECT_READ({2'b11, 2'b11}),
-        .M_CONNECT_WRITE({2'b00, 2'b01})) axi_crossbar(
+        .M_CONNECT_READ({3'b011, 3'b111}),
+        .M_CONNECT_WRITE({3'b000, 3'b001})) axi_crossbar(
             .clk(clk),
             .rst(rst),
             // AXI xbar slaves
             .s_axi_awid('0),
-            .s_axi_awaddr({axi_ibus_m_awaddr, axi_dbus_m_awaddr}),
-            .s_axi_awlen({axi_ibus_m_awlen, axi_dbus_m_awlen}),
-            .s_axi_awsize({axi_ibus_m_awsize, axi_dbus_m_awsize}),
-            .s_axi_awburst({axi_ibus_m_awburst, axi_dbus_m_awburst}),
+            .s_axi_awaddr({axi_vga_m_awaddr, axi_ibus_m_awaddr, axi_dbus_m_awaddr}),
+            .s_axi_awlen({axi_vga_m_awlen, axi_ibus_m_awlen, axi_dbus_m_awlen}),
+            .s_axi_awsize({axi_vga_m_awsize, axi_ibus_m_awsize, axi_dbus_m_awsize}),
+            .s_axi_awburst({axi_vga_m_awburst, axi_ibus_m_awburst, axi_dbus_m_awburst}),
             .s_axi_awlock('0),
             .s_axi_awcache('0),
             .s_axi_awprot('0),
             .s_axi_awqos('0),
             .s_axi_awuser('0),
-            .s_axi_awvalid({axi_ibus_m_awvalid, axi_dbus_m_awvalid}),
-            .s_axi_awready({axi_ibus_m_awready, axi_dbus_m_awready}),
-            .s_axi_wdata({axi_ibus_m_wdata, axi_dbus_m_wdata}),
-            .s_axi_wstrb({axi_ibus_m_wstrb, axi_dbus_m_wstrb}),
-            .s_axi_wlast({axi_ibus_m_wlast, axi_dbus_m_wlast}),
+            .s_axi_awvalid({axi_vga_m_awvalid, axi_ibus_m_awvalid, axi_dbus_m_awvalid}),
+            .s_axi_awready({axi_vga_m_awready, axi_ibus_m_awready, axi_dbus_m_awready}),
+            .s_axi_wdata({axi_vga_m_wdata, axi_ibus_m_wdata, axi_dbus_m_wdata}),
+            .s_axi_wstrb({axi_vga_m_wstrb, axi_ibus_m_wstrb, axi_dbus_m_wstrb}),
+            .s_axi_wlast({axi_vga_m_wlast, axi_ibus_m_wlast, axi_dbus_m_wlast}),
             .s_axi_wuser('0),
-            .s_axi_wvalid({axi_ibus_m_wvalid, axi_dbus_m_wvalid}),
-            .s_axi_wready({axi_ibus_m_wready, axi_dbus_m_wready}),
+            .s_axi_wvalid({axi_vga_m_wvalid, axi_ibus_m_wvalid, axi_dbus_m_wvalid}),
+            .s_axi_wready({axi_vga_m_wready, axi_ibus_m_wready, axi_dbus_m_wready}),
             .s_axi_bid(),
-            .s_axi_bresp({axi_ibus_m_bresp, axi_dbus_m_bresp}),
+            .s_axi_bresp({axi_vga_m_bresp, axi_ibus_m_bresp, axi_dbus_m_bresp}),
             .s_axi_buser(),
-            .s_axi_bvalid({axi_ibus_m_bvalid, axi_dbus_m_bvalid}),
-            .s_axi_bready({axi_ibus_m_bready, axi_dbus_m_bready}),
+            .s_axi_bvalid({axi_vga_m_bvalid, axi_ibus_m_bvalid, axi_dbus_m_bvalid}),
+            .s_axi_bready({axi_vga_m_bready, axi_ibus_m_bready, axi_dbus_m_bready}),
             .s_axi_arid('0),
-            .s_axi_araddr({axi_ibus_m_araddr, axi_dbus_m_araddr}),
-            .s_axi_arlen({axi_ibus_m_arlen, axi_dbus_m_arlen}),
-            .s_axi_arsize({axi_ibus_m_arsize, axi_dbus_m_arsize}),
-            .s_axi_arburst({axi_ibus_m_arburst, axi_dbus_m_arburst}),
+            .s_axi_araddr({axi_vga_m_araddr, axi_ibus_m_araddr, axi_dbus_m_araddr}),
+            .s_axi_arlen({axi_vga_m_arlen, axi_ibus_m_arlen, axi_dbus_m_arlen}),
+            .s_axi_arsize({axi_vga_m_arsize, axi_ibus_m_arsize, axi_dbus_m_arsize}),
+            .s_axi_arburst({axi_vga_m_arburst, axi_ibus_m_arburst, axi_dbus_m_arburst}),
             .s_axi_arlock('0),
             .s_axi_arcache('0),
             .s_axi_arprot('0),
             .s_axi_arqos('0),
             .s_axi_aruser('0),
-            .s_axi_arvalid({axi_ibus_m_arvalid, axi_dbus_m_arvalid}),
-            .s_axi_arready({axi_ibus_m_arready, axi_dbus_m_arready}),
+            .s_axi_arvalid({axi_vga_m_arvalid, axi_ibus_m_arvalid, axi_dbus_m_arvalid}),
+            .s_axi_arready({axi_vga_m_arready, axi_ibus_m_arready, axi_dbus_m_arready}),
             .s_axi_rid(),
-            .s_axi_rdata({axi_ibus_m_rdata, axi_dbus_m_rdata}),
-            .s_axi_rresp({axi_ibus_m_rresp, axi_dbus_m_rresp}),
-            .s_axi_rlast({axi_ibus_m_rlast, axi_dbus_m_rlast}),
+            .s_axi_rdata({axi_vga_m_rdata, axi_ibus_m_rdata, axi_dbus_m_rdata}),
+            .s_axi_rresp({axi_vga_m_rresp, axi_ibus_m_rresp, axi_dbus_m_rresp}),
+            .s_axi_rlast({axi_vga_m_rlast, axi_ibus_m_rlast, axi_dbus_m_rlast}),
             .s_axi_ruser(),
-            .s_axi_rvalid({axi_ibus_m_rvalid, axi_dbus_m_rvalid}),
-            .s_axi_rready({axi_ibus_m_rready, axi_dbus_m_rready}),
+            .s_axi_rvalid({axi_vga_m_rvalid, axi_ibus_m_rvalid, axi_dbus_m_rvalid}),
+            .s_axi_rready({axi_vga_m_rready, axi_ibus_m_rready, axi_dbus_m_rready}),
             // AXI xbar masters
             .m_axi_awid(),
             .m_axi_awaddr({axi_ibus_s_awaddr, axi_dbus_s_awaddr}),

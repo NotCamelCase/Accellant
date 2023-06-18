@@ -19,7 +19,7 @@ localparam  REG_WIDTH               = $clog2(NUM_REGS);
 localparam  NUM_EXE_PIPES           = 4; // ALU + LSU + MUL + DIV
 
 // Number of IO cores
-localparam  NUM_IO_CORES            = 3; // LED + Timer + UART
+localparam  NUM_IO_CORES            = 4; // LED + Timer + UART + VGA
 
 // EXE pipe IDs, which also designate fixed arbitration priority at WB
 localparam  EXE_PIPE_ID_ALU         = 0;

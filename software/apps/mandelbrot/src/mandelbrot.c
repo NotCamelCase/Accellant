@@ -14,7 +14,7 @@
 
 int main(int argc, char **ppArgv)
 {
-    float x, xx, y, cx, cy;
+    double x, xx, y, cx, cy;
     int iteration, hx, hy;
     int itermax = 100;
     int hxres = 78;

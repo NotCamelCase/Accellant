@@ -38,7 +38,7 @@ module uart_core
             baud_rate_reg <= 11'd650; // Baud rate = 9600
         else if (io_bus_s_cs && io_bus_s_wr_en) begin
             unique case (io_bus_s_address[7:0])
-                MMIO_UART_SET_BAUD_RATE: baud_rate_reg <= io_bus_s_wr_data[10:0];
+                MMIO_UART_REG_SET_BAUD_RATE: baud_rate_reg <= io_bus_s_wr_data[10:0];
                 default: ;
             endcase
         end
@@ -47,8 +47,8 @@ module uart_core
     // Read mux
     always_ff @(posedge clk) begin
         unique case (io_bus_s_address[7:0])
-            MMIO_UART_GET_DATA: rd_data <= {24'h0, rx_fifo_data};
-            MMIO_UART_GET_STATUS: rd_data <= {28'h0, tx_full, tx_empty, rx_full, rx_empty};
+            MMIO_UART_REG_GET_DATA: rd_data <= {24'h0, rx_fifo_data};
+            MMIO_UART_REG_GET_STATUS: rd_data <= {28'h0, tx_full, tx_empty, rx_full, rx_empty};
             default: ;
         endcase
     end
@@ -64,9 +64,9 @@ module uart_core
     assign baud_pulse = (divisor_reg == 11'h1);
 
     // Remove an element from RX FIFO upon a data read
-    assign remove_rx_data = io_bus_s_cs && io_bus_s_rd_en && (io_bus_s_address[7:0] == MMIO_UART_GET_DATA);
+    assign remove_rx_data = io_bus_s_cs && io_bus_s_rd_en && (io_bus_s_address[7:0] == MMIO_UART_REG_GET_DATA);
     // Insert an element to TX FIFO upon a data write
-    assign insert_tx_data = io_bus_s_cs && io_bus_s_wr_en && (io_bus_s_address[7:0] == MMIO_UART_WRITE_DATA);
+    assign insert_tx_data = io_bus_s_cs && io_bus_s_wr_en && (io_bus_s_address[7:0] == MMIO_UART_REG_WRITE_DATA);
 
     uart_rx rx(
         .clk(clk),

@@ -18,6 +18,24 @@ set_property -dict {PACKAGE_PIN H15 IOSTANDARD LVCMOS33} [get_ports {led[3]}]
 set_property -dict {PACKAGE_PIN R12 IOSTANDARD LVCMOS33} [get_ports uart_rx]
 set_property -dict {PACKAGE_PIN V12 IOSTANDARD LVCMOS33} [get_ports uart_tx]
 
+## Pmod Header JB
+set_property -dict {PACKAGE_PIN P17 IOSTANDARD LVCMOS33} [get_ports {r[0]}]
+set_property -dict {PACKAGE_PIN P18 IOSTANDARD LVCMOS33} [get_ports {r[1]}]
+set_property -dict {PACKAGE_PIN R18 IOSTANDARD LVCMOS33} [get_ports {r[2]}]
+set_property -dict {PACKAGE_PIN T18 IOSTANDARD LVCMOS33} [get_ports {r[3]}]
+set_property -dict {PACKAGE_PIN P14 IOSTANDARD LVCMOS33} [get_ports {b[0]}]
+set_property -dict {PACKAGE_PIN P15 IOSTANDARD LVCMOS33} [get_ports {b[1]}]
+set_property -dict {PACKAGE_PIN N15 IOSTANDARD LVCMOS33} [get_ports {b[2]}]
+set_property -dict {PACKAGE_PIN P16 IOSTANDARD LVCMOS33} [get_ports {b[3]}]
+
+## Pmod Header JC
+set_property -dict {PACKAGE_PIN U15 IOSTANDARD LVCMOS33} [get_ports {g[0]}]
+set_property -dict {PACKAGE_PIN V16 IOSTANDARD LVCMOS33} [get_ports {g[1]}]
+set_property -dict {PACKAGE_PIN U17 IOSTANDARD LVCMOS33} [get_ports {g[2]}]
+set_property -dict {PACKAGE_PIN U18 IOSTANDARD LVCMOS33} [get_ports {g[3]}]
+set_property -dict {PACKAGE_PIN U16 IOSTANDARD LVCMOS33} [get_ports hsync]
+set_property -dict {PACKAGE_PIN P13 IOSTANDARD LVCMOS33} [get_ports vsync]
+
 ## Configuration options, can be used for all designs
 set_property BITSTREAM.CONFIG.CONFIGRATE 50 [current_design]
 set_property CONFIG_VOLTAGE 3.3 [current_design]

@@ -35,6 +35,8 @@ module tb_accellant_soc;
     // Outputs
     logic[LED_COUNT-1:0]    led;
     logic                   uart_rx;
+    logic[4:0]              r, g, b;
+    logic                   hsync, vsync;
 
     // DDR3
     wire                    ddr3_reset_n;
@@ -419,9 +421,9 @@ module tb_accellant_soc;
     //**************************************************************************//
     // Memory Models instantiations
     //**************************************************************************//
-    genvar r,i;
+    genvar ri,i;
     generate
-    for (r = 0; r < CS_WIDTH; r = r + 1) begin: mem_rnk
+    for (ri = 0; ri < CS_WIDTH; ri = ri + 1) begin: mem_rnk
         if(DQ_WIDTH/16) begin: mem
         for (i = 0; i < NUM_COMP; i = i + 1) begin: gen_mem
             ddr3_model u_comp_ddr3
@@ -430,18 +432,18 @@ module tb_accellant_soc;
                 .ck      (ddr3_ck_p_sdram),
                 .ck_n    (ddr3_ck_n_sdram),
                 .cke     (ddr3_cke_sdram),
-                .cs_n    (ddr3_cs_n_sdram[r]),
+                .cs_n    (ddr3_cs_n_sdram[ri]),
                 .ras_n   (ddr3_ras_n_sdram),
                 .cas_n   (ddr3_cas_n_sdram),
                 .we_n    (ddr3_we_n_sdram),
                 .dm_tdqs (ddr3_dm_sdram[(2*(i+1)-1):(2*i)]),
-                .ba      (ddr3_ba_sdram[r]),
-                .addr    (ddr3_addr_sdram[r]),
+                .ba      (ddr3_ba_sdram[ri]),
+                .addr    (ddr3_addr_sdram[ri]),
                 .dq      (ddr3_dq_sdram[16*(i+1)-1:16*(i)]),
                 .dqs     (ddr3_dqs_p_sdram[(2*(i+1)-1):(2*i)]),
                 .dqs_n   (ddr3_dqs_n_sdram[(2*(i+1)-1):(2*i)]),
                 .tdqs_n  (),
-                .odt     (ddr3_odt_sdram[r])
+                .odt     (ddr3_odt_sdram[ri])
                 );
         end
         end
@@ -451,14 +453,14 @@ module tb_accellant_soc;
             .rst_n   (ddr3_reset_n),
             .ck      (ddr3_ck_p_sdram),
             .ck_n    (ddr3_ck_n_sdram),
-            .cke     (ddr3_cke_sdram[r]),
-            .cs_n    (ddr3_cs_n_sdram[r]),
+            .cke     (ddr3_cke_sdram[ri]),
+            .cs_n    (ddr3_cs_n_sdram[ri]),
             .ras_n   (ddr3_ras_n_sdram),
             .cas_n   (ddr3_cas_n_sdram),
             .we_n    (ddr3_we_n_sdram),
             .dm_tdqs ({ddr3_dm_sdram[DM_WIDTH-1],ddr3_dm_sdram[DM_WIDTH-1]}),
-            .ba      (ddr3_ba_sdram[r]),
-            .addr    (ddr3_addr_sdram[r]),
+            .ba      (ddr3_ba_sdram[ri]),
+            .addr    (ddr3_addr_sdram[ri]),
             .dq      ({ddr3_dq_sdram[DQ_WIDTH-1:(DQ_WIDTH-8)],
                         ddr3_dq_sdram[DQ_WIDTH-1:(DQ_WIDTH-8)]}),
             .dqs     ({ddr3_dqs_p_sdram[DQS_WIDTH-1],
@@ -466,7 +468,7 @@ module tb_accellant_soc;
             .dqs_n   ({ddr3_dqs_n_sdram[DQS_WIDTH-1],
                         ddr3_dqs_n_sdram[DQS_WIDTH-1]}),
             .tdqs_n  (),
-            .odt     (ddr3_odt_sdram[r])
+            .odt     (ddr3_odt_sdram[ri])
             );
         end
     end

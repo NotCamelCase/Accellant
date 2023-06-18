@@ -8,14 +8,14 @@ extern int errno;
 
 #include "uart_core.h"
 
-extern char     __heap_start[];
-extern char     __heap_end[];
-static char*    __heap = __heap_start;
+extern char __heap_start[];
+extern char __heap_end[];
+static char *__heap = __heap_start;
 
-void*           __dso_handle;
+void *__dso_handle;
 
-char*   __env[1] = { 0 };
-char**  environ = __env;
+char *__env[1] = {0};
+char **environ = __env;
 
 int wait(int *status)
 {
@@ -39,7 +39,7 @@ int open(const char *name, int flags, int mode)
     return -1;
 }
 
-int link (const char *__path1, const char *__path2)
+int link(const char *__path1, const char *__path2)
 {
     errno = EMLINK;
     return -1;
@@ -51,13 +51,13 @@ int fork(void)
     return -1;
 }
 
-int execve(const char*, char* const*, char* const*)
+int execve(const char *, char *const *, char *const *)
 {
     errno = ENOMEM;
     return -1;
 }
 
-int _fstat(int /*fd*/, struct stat* st)
+int _fstat(int /*fd*/, struct stat *st)
 {
     st->st_mode = S_IFCHR;
 
@@ -76,7 +76,8 @@ int _lseek(int /*fd*/, int /*offset*/, int /*whence*/)
 
 void _exit(int /*status*/)
 {
-    while (true) ;
+    while (true)
+        ;
 }
 
 int _close(int /*fd*/)
@@ -94,7 +95,7 @@ int _getpid(void)
     return -1;
 }
 
-int _write(int /*fd*/, char* buf, int count)
+int _write(int /*fd*/, char *buf, int count)
 {
     int written = 0;
 
@@ -107,7 +108,7 @@ int _write(int /*fd*/, char* buf, int count)
     return written;
 }
 
-int _read(int /*fd*/, char* buf, int count)
+int _read(int /*fd*/, char *buf, int count)
 {
     int read = 0;
 
@@ -128,20 +129,20 @@ int _read(int /*fd*/, char* buf, int count)
 
 int _brk(void *addr)
 {
-    __heap = (char*)addr;
+    __heap = (char *)addr;
     return 0;
 }
 
-void* _sbrk(int incr)
+void *_sbrk(int incr)
 {
-    char* prevHeap = __heap;
+    char *prevHeap = __heap;
     // Heap-allocated memory increased
     __heap += incr;
 
-    return (void*)prevHeap;
+    return (void *)prevHeap;
 }
 
-int __cxa_atexit(void (*destructor) (void *), void *arg, void *dso)
+int __cxa_atexit(void (*destructor)(void *), void *arg, void *dso)
 {
     return -1;
 }
