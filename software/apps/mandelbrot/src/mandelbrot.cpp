@@ -9,19 +9,24 @@
  **
  **/
 
-#include <stdio.h>
-#include <stdbool.h>
+#include <cstring>
+
+#include "../../../kernel/vga_core.h"
 
 int main(int argc, char **ppArgv)
 {
     double x, xx, y, cx, cy;
     int iteration, hx, hy;
     int itermax = 100;
-    int hxres = 78;
-    int hyres = 48;
+    int hxres = 640;
+    int hyres = 480;
 
-    printf("** Mandelbrot ASCII image\n");
-    printf("** xres: %d, yres: %d\n", hxres, hyres);
+    auto fb = vga_get_back_buffer();
+
+    memset(fb, 0x0, sizeof(DisplayPixel) * SCREEN_WIDTH * SCREEN_HEIGHT);
+
+    vga_swap_buffers();
+    vga_present();
 
     for (hy = 1; hy <= hyres; hy++)
     {
@@ -45,11 +50,10 @@ int main(int argc, char **ppArgv)
             }
 
             if (!done)
-                printf(" ");
+                fb[hx - 1 + (hy - 1) * hxres] = {0xff, 0xff, 0xff, 0xff};
             else
-                printf("0");
+                fb[hx - 1 + (hy - 1) * hxres] = {};
         }
-        printf("\n");
     }
 
     return 0;

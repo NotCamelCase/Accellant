@@ -1,5 +1,4 @@
 PROJ_NAME := mandelbrot
-
 DEBUG=no
 
 BUILD_DIR = ./build
@@ -31,8 +30,8 @@ RISCV_CC = riscv64-unknown-elf-g++
 RISCV_CPP = riscv64-unknown-elf-g++
 
 CFLAGS += -fstrict-volatile-bitfields -fno-strict-aliasing -Wall -Wextra -Wpedantic -Wconversion -Wshadow -fpermissive -DTARGET_HOST=1
-CXXFLAGS += -fno-exceptions
-LDFLAGS += -nostartfiles -nostdlib -ffreestanding -static -lc -lm -lgcc -mcmodel=medany -Wl,-Bstatic,-T,$(LDSCRIPT),-Map,$(BUILD_DIR)/$(PROJ_NAME).map,--gc-sections,--print-memory-usage
+CXXFLAGS += -std=c++20 -fno-exceptions -fno-rtti -fno-use-cxa-atexit -fno-threadsafe-statics
+LDFLAGS += -nostartfiles -ffreestanding -static -lstdc++ -mcmodel=medany -Wl,-Bstatic,-T,$(LDSCRIPT),-Map,$(BUILD_DIR)/$(PROJ_NAME).map,--gc-sections,--print-memory-usage
 
 # Find all source files to compile
 SRCS := $(shell find $(SRC_DIRS) -name '*.cpp' -or -name '*.c' -or -name '*.s')
