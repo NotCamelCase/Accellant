@@ -87,7 +87,6 @@ module riscv_core
 
     logic                               ix_div_valid;
     ix_div_inf_t                        ix_div_inf;
-    logic                               div_ix_done;
 
     logic                               alu_valid;
     alu_wb_inf_t                        alu_wb_inf;

@@ -90,7 +90,7 @@ module vga_core
     logic                       hsync_reg, vsync_reg;
     logic                       video_on, vblank;
 
-    logic[7:0]                  r_out, g_out, b_out, a_out;
+    logic[31:0]                 pixel_data;
 
     // RGB output
     logic[3:0]                  r_reg, g_reg, b_reg;
@@ -128,8 +128,8 @@ module vga_core
         .full(),
         .almost_empty(px_fifo_almost_empty),
         .almost_full(),
-        .wr_data(axi_rdata),
-        .rd_data({a_out, b_out, g_out, r_out}));
+        .wr_data({20'b0, axi_rdata[23:20], axi_rdata[15:12],  axi_rdata[7:4]}), // Compose 4-bit RGB triplets for VGA out data
+        .rd_data(pixel_data));
 
     // AXI read inf
     assign axi_arburst = 2'b01; // INCR
@@ -225,10 +225,9 @@ module vga_core
 
     // RGB
     always_ff @(posedge clk_vga) begin
-        //TODO: LSB -> MSB for display output!
-        r_reg <= video_on ? r_out[3:0] : 4'b0;
-        g_reg <= video_on ? g_out[3:0] : 4'b0;
-        b_reg <= video_on ? b_out[3:0] : 4'b0;
+        r_reg <= video_on ? pixel_data[3:0] : 4'b0;
+        g_reg <= video_on ? pixel_data[7:4] : 4'b0;
+        b_reg <= video_on ? pixel_data[11:8] : 4'b0;
     end
 
     // Outputs

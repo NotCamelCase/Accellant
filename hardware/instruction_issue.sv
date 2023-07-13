@@ -27,12 +27,10 @@ module instruction_issue
     output ix_mul_inf_t     ix_mul_inf,
     // IX -> DIV
     output logic            ix_div_valid,
-    output ix_div_inf_t     ix_div_inf,
-    // DIV -> IX
-    input logic             div_ix_done
+    output ix_div_inf_t     ix_div_inf
 );
     // Max number of decoded instructions queued up to be issued (must be PoT!)
-    localparam  IQ_LENGTH               = 16;
+    localparam  IQ_LENGTH               = 32;
 
     // Should be equal the depth of IFT -> IX pipe
     localparam  IQ_STALL_IF_THRESHOLD   = IQ_LENGTH - 4;
@@ -41,6 +39,7 @@ module instruction_issue
     localparam  EXE_ALU_LATENCY         = 1;
     localparam  EXE_LSU_LATENCY         = 2;
     localparam  EXE_MUL_LATENCY         = 3;
+    localparam  EXE_DIV_LATENCY         = 16 + 1 + 1;
 
     // Architectural register file
     logic[31:0]                     reg_file[NUM_REGS-1:0];
@@ -59,12 +58,13 @@ module instruction_issue
 
     // WB confict logic
     logic                           wb_conflict;
-    logic                           wb_alu_conflict, wb_lsu_conflict, wb_mul_conflict;
+    logic                           wb_alu_conflict, wb_lsu_conflict, wb_mul_conflict, wb_div_conflict;
     logic[EXE_LSU_LATENCY-1:0]      wb_lsu_latency_reg;
     logic[EXE_MUL_LATENCY-1:0]      wb_mul_latency_reg;
+    logic[EXE_DIV_LATENCY-1:0]      wb_div_latency_reg;
 
     logic                           issue_div_op, issue_lsu_op;
-    logic                           div_pending_op_reg, dcache_flush_pending_op_reg;
+    logic                           dcache_flush_pending_op_reg;
 
     initial begin
         // Zero out x0
@@ -155,33 +155,32 @@ module instruction_issue
         if (rst) begin
             wb_lsu_latency_reg <= '0;
             wb_mul_latency_reg <= '0;
+            wb_div_latency_reg <= '0;
         end else begin
             wb_lsu_latency_reg <= {wb_lsu_latency_reg[EXE_LSU_LATENCY-2:0], (next_instruction_valid && lsu_instr)};
             wb_mul_latency_reg <= {wb_mul_latency_reg[EXE_MUL_LATENCY-2:0], (next_instruction_valid && mul_instr)};
+            wb_div_latency_reg <= {wb_div_latency_reg[EXE_DIV_LATENCY-2:0], (next_instruction_valid && div_instr)};
         end
     end
 
     assign wb_alu_conflict = wb_lsu_latency_reg[EXE_LSU_LATENCY-EXE_ALU_LATENCY-1] ||
-                             wb_mul_latency_reg[EXE_MUL_LATENCY-EXE_ALU_LATENCY-1];
-    assign wb_lsu_conflict = wb_mul_latency_reg[EXE_MUL_LATENCY-EXE_LSU_LATENCY-1];
-    assign wb_mul_conflict = 1'b0; // MUL is the longest EXE pipe currently
+                             wb_mul_latency_reg[EXE_MUL_LATENCY-EXE_ALU_LATENCY-1] ||
+                             wb_div_latency_reg[EXE_DIV_LATENCY-EXE_ALU_LATENCY-1];
+
+    assign wb_lsu_conflict = wb_mul_latency_reg[EXE_MUL_LATENCY-EXE_LSU_LATENCY-1] ||
+                             wb_div_latency_reg[EXE_DIV_LATENCY-EXE_LSU_LATENCY-1];
+
+    assign wb_mul_conflict = wb_div_latency_reg[EXE_DIV_LATENCY-EXE_MUL_LATENCY-1];
+
+    assign wb_div_conflict = 1'b0; // DIV is the longest pipe
 
     assign wb_conflict = (alu_instr && wb_alu_conflict) ||
                          (lsu_instr && wb_lsu_conflict) ||
-                         (mul_instr && wb_mul_conflict);
+                         (mul_instr && wb_mul_conflict) ||
+                         (div_instr && wb_div_conflict);
 
     assign issue_div_op = div_instr && next_instruction_valid && !wb_do_branch && fire_instruction;
     assign issue_lsu_op = lsu_instr && next_instruction_valid && !wb_do_branch && fire_instruction;
-
-    // Track pending DIV ops
-    always_ff @(posedge clk) begin
-        if (rst)
-            div_pending_op_reg <= 1'b0;
-        else if (!div_pending_op_reg)
-            div_pending_op_reg <= issue_div_op;
-        else if (div_ix_done || wb_do_branch)
-            div_pending_op_reg <= 1'b0;
-    end
 
     // Track pending D$ flush op
     always_ff @(posedge clk) begin
@@ -193,7 +192,7 @@ module instruction_issue
             dcache_flush_pending_op_reg <= 1'b0;
     end
 
-    assign fire_instruction = !sb_conflict && !wb_conflict && !div_pending_op_reg && !dcache_flush_pending_op_reg;
+    assign fire_instruction = !sb_conflict && !wb_conflict && !dcache_flush_pending_op_reg;
 
     always_ff @(posedge clk) ix_alu_valid <= alu_instr && next_instruction_valid && !wb_do_branch && fire_instruction;
 

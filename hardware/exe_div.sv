@@ -10,133 +10,82 @@ module exe_div
     // IX -> DIV
     input logic         ix_div_valid,
     input ix_div_inf_t  ix_div_inf,
-    // DIV -> IX
-    output logic        div_ix_done,
     // DIV -> WB
     output logic        div_valid,
     output div_wb_inf_t div_wb_inf
 );
-    // Serial division FSM
-    typedef enum {
-        IDLE,
-        BUSY,
-        OUTPUT
-    } state_t;
+    // 1 input  stage + pipelined division + 1 output stage
+    localparam  LATENCY = 16 + 1 + 1;
 
-    state_t         state_reg, state_nxt;
-    logic[5:0]      ctr_reg, ctr_nxt;
+    logic           flip_sign_rem, flip_sign_qout;
+    logic           div_valid_tmp;
+    logic[4:0]      rd_dly;
+    logic[63:0]     div_result_tmp;
 
-    logic           flip_quot_sign_reg, flip_quot_sign_nxt;
-    logic           flip_rem_sign_reg, flip_rem_sign_nxt;
-    logic           div_op_reg, div_op_nxt;
-    logic[4:0]      rd_reg, rd_nxt;
+    logic           flip_quot_sign_dly, flip_rem_sign_dly, div_op_dly;
+    logic           div_input_valid_reg, div_valid_reg;
+    logic[4:0]      rd_reg;
+    logic[31:0]     divisor_reg, dividend_reg, div_output_reg;
 
-    logic[31:0]     divisor_reg, divisor_nxt;
-    logic[64:0]     rq_reg, rq_nxt;
-
-    logic[32:0]     sub_result;
-
-    logic           div_output_ready;
-    logic           div_done_reg, div_done_nxt;
-
+    // DIV inputs
     always_ff @(posedge clk) begin
-        if (rst) begin // Abort operation
-            state_reg <= IDLE;
-            ctr_reg <= 6'h0;
-            div_done_reg <= 1'b0;
-        end else begin
-            state_reg <= state_nxt;
-            ctr_reg <= ctr_nxt;
-            div_done_reg <= div_done_nxt;
-        end
+        div_input_valid_reg <= ix_div_valid && !wb_do_branch;
+
+        divisor_reg <= {((~ix_div_inf.div_control[0]) & ix_div_inf.rs2[31]) ? -$signed(ix_div_inf.rs2) : ix_div_inf.rs2};
+        dividend_reg <= {((~ix_div_inf.div_control[0]) & ix_div_inf.rs1[31]) ? -$signed(ix_div_inf.rs1) : ix_div_inf.rs1};
     end
 
+    // DIV outputs
     always_ff @(posedge clk) begin
-        flip_quot_sign_reg <= flip_quot_sign_nxt;
-        flip_rem_sign_reg <= flip_rem_sign_nxt;
-
-        div_op_reg <= div_op_nxt;
-
-        divisor_reg <= divisor_nxt;
-        rq_reg <= rq_nxt;
-
-        rd_reg <= rd_nxt;
+        div_valid_reg <= div_valid_tmp;
+        div_output_reg <= div_op_dly ? (flip_quot_sign_dly ? -$signed(div_result_tmp[63:32]) : div_result_tmp[63:32]) :
+                          (flip_rem_sign_dly ? -$signed(div_result_tmp[31:0]) : div_result_tmp[31:0]);
     end
 
-    assign sub_result = rq_reg[63:32] - divisor_reg;
+    always_ff @(posedge clk) rd_reg <= rd_dly;
 
-    // Next-state logic
-    always_comb begin
-        state_nxt = state_reg;
-        ctr_nxt = ctr_reg;
+    pipelined_divider divider(
+        .aclk(clk),
+        .s_axis_divisor_tvalid(div_input_valid_reg),
+        .s_axis_divisor_tdata(divisor_reg),
+        .s_axis_dividend_tvalid(div_input_valid_reg),
+        .s_axis_dividend_tdata(dividend_reg),
+        .m_axis_dout_tvalid(div_valid_tmp),
+        .m_axis_dout_tdata(div_result_tmp));
 
-        flip_quot_sign_nxt = flip_quot_sign_reg;
-        flip_rem_sign_nxt = flip_rem_sign_reg;
+    // Delay WB RD
+    shift_register #(.WIDTH(5), .DELAY_COUNT(LATENCY-1)) dly_rd(
+    	.clk(clk),
+        .d(ix_div_inf.rd),
+        .q(rd_dly));
 
-        div_op_nxt = div_op_reg;
+    // Delay flip sign REM
+    shift_register #(.WIDTH(1), .DELAY_COUNT(LATENCY-1)) dly_flip_sign_rem(
+        .clk(clk),
+        .d(flip_sign_rem),
+        .q(flip_rem_sign_dly));
 
-        divisor_nxt = divisor_reg;
-        rq_nxt = rq_reg;
+    // Delay flip sign QUOT
+    shift_register #(.WIDTH(1), .DELAY_COUNT(LATENCY-1)) dly_flip_sign_qout(
+        .clk(clk),
+        .d(flip_sign_qout),
+        .q(flip_quot_sign_dly));
 
-        rd_nxt = rd_reg;
+    // Delay DIV OP
+    shift_register #(.WIDTH(1), .DELAY_COUNT(LATENCY-1)) dly_div_op(
+        .clk(clk),
+        .d(~ix_div_inf.div_control[1]), // DIV_OP_DIV or DIV_OP_DIVU),
+        .q(div_op_dly));
 
-        div_output_ready = 1'b0;
-        div_done_nxt = 1'b0;
+    assign flip_sign_rem = (ix_div_inf.rs1[31] ^ ix_div_inf.rs2[31]) &
+                           (~ix_div_inf.div_control[0]) & // DIV_OP_DIV or DIV_OP_REM
+                           (|ix_div_inf.rs2); // Don't negate if division-by-zero
 
-        case (state_reg)
-            IDLE: begin
-                ctr_nxt = 6'h20; // Serial division of N-bit word takes N+1 iterations
-
-                flip_quot_sign_nxt = (ix_div_inf.rs1[31] ^ ix_div_inf.rs2[31]) &
-                                     (~ix_div_inf.div_control[0]) & // DIV_OP_DIV or DIV_OP_REM
-                                     (|ix_div_inf.rs2); // Don't negate if division-by-zero
-
-                flip_rem_sign_nxt = ix_div_inf.rs1[31] &
-                                    (~ix_div_inf.div_control[0]); // DIV_OP_DIV or DIV_OP_REM
-
-                div_op_nxt = ~ix_div_inf.div_control[1]; // DIV_OP_DIV or DIV_OP_DIVU
-
-                divisor_nxt = {((~ix_div_inf.div_control[0]) & ix_div_inf.rs2[31]) ? -$signed(ix_div_inf.rs2) :
-                              ix_div_inf.rs2};
-
-                rq_nxt = {32'h0, ((~ix_div_inf.div_control[0]) & ix_div_inf.rs1[31]) ? -$signed(ix_div_inf.rs1) :
-                         ix_div_inf.rs1, 1'b0};
-
-                rd_nxt = ix_div_inf.rd;
-
-                if (ix_div_valid && !wb_do_branch)
-                    state_nxt = BUSY; // Initiate division
-            end
-
-            BUSY: begin
-                rq_nxt = {sub_result[32] ? rq_reg[63:32] : sub_result[31:0], rq_reg[31:0], ~sub_result[32]};
-                ctr_nxt = ctr_reg - 6'b1;
-
-                if (~(|ctr_nxt)) begin
-                    state_nxt = OUTPUT; // End of serial division
-                    div_done_nxt = 1'b1; // Signal the end of out-of-pipe division operation
-                end
-            end
-
-            OUTPUT: begin
-                div_output_ready = 1'b1;
-                div_done_nxt = 1'b0;
-                state_nxt = IDLE; // Result is ready and can be flushed
-            end
-
-            default: ;
-        endcase
-    end
-
-    // Notify IX not to stall any longer
-    assign div_ix_done = div_done_reg;
-
-    always_ff @(posedge clk) div_valid <= div_output_ready;
+    assign flip_sign_qout = ix_div_inf.rs1[31] &
+                            (~ix_div_inf.div_control[0]); // DIV_OP_DIV or DIV_OP_REM
 
     // Outputs to WB
-    always_ff @(posedge clk) begin
-        div_wb_inf.rd <= rd_reg;
-        div_wb_inf.result <= div_op_reg ? (flip_quot_sign_reg ? -$signed(rq_reg[31:0]) : rq_reg[31:0]) :
-                             (flip_rem_sign_reg ? -$signed(rq_reg[64:33]) : rq_reg[64:33]);
-    end
+    assign div_valid = div_valid_reg;
+    assign div_wb_inf.rd = rd_reg;
+    assign div_wb_inf.result = div_output_reg;
 endmodule
