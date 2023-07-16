@@ -90,7 +90,7 @@ module vga_core
     logic                       hsync_reg, vsync_reg;
     logic                       video_on, vblank;
 
-    logic[31:0]                 pixel_data;
+    logic[11:0]                 pixel_data;
 
     // RGB output
     logic[3:0]                  r_reg, g_reg, b_reg;
@@ -118,7 +118,7 @@ module vga_core
     assign vga_ce = clk_vga;
 
     // Pixel FIFO
-    basic_fifo #(.ADDR_WIDTH($clog2(PIXEL_FIFO_LENGTH)), .DATA_WIDTH(32), .ALMOST_EMPTY_THRESHOLD(PIXEL_FIFO_BURST_LENGTH - 1)) pixel_fifo(
+    basic_fifo #(.ADDR_WIDTH($clog2(PIXEL_FIFO_LENGTH)), .DATA_WIDTH(12), .ALMOST_EMPTY_THRESHOLD(PIXEL_FIFO_BURST_LENGTH - 1)) pixel_fifo(
         .clk(clk),
         .rst(rst),
         .clear(clear_px_fifo),
@@ -128,7 +128,7 @@ module vga_core
         .full(),
         .almost_empty(px_fifo_almost_empty),
         .almost_full(),
-        .wr_data({20'b0, axi_rdata[23:20], axi_rdata[15:12],  axi_rdata[7:4]}), // Compose 4-bit RGB triplets for VGA out data
+        .wr_data({axi_rdata[23:20], axi_rdata[15:12],  axi_rdata[7:4]}), // Compose 4-bit RGB triplets for VGA scanout
         .rd_data(pixel_data));
 
     // AXI read inf

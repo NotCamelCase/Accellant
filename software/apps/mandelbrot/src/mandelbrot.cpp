@@ -50,7 +50,7 @@ int main(int argc, char **ppArgv)
             }
 
             if (!done)
-                fb[hx - 1 + (hy - 1) * hxres] = {0xff, 0xff, 0xff, 0xff};
+                fb[hx - 1 + (hy - 1) * hxres] = { 0xff, 0xff, 0xff, 0xff };
             else
                 fb[hx - 1 + (hy - 1) * hxres] = {};
         }
