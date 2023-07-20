@@ -52,10 +52,6 @@ namespace partI
         glm::vec3 E2 = M * glm::vec3(0, 0, 1); // == M[2]
 
         auto fb = vga_get_back_buffer();
-
-        memset(fb, 0x0, sizeof(DisplayPixel) * SCREEN_WIDTH * SCREEN_HEIGHT);
-
-        vga_swap_buffers();
         vga_present();
 
         // Start rasterizing by looping over pixels to output a per-pixel color

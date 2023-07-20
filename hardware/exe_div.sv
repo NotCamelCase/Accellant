@@ -14,8 +14,7 @@ module exe_div
     output logic        div_valid,
     output div_wb_inf_t div_wb_inf
 );
-    // 1 input  stage + pipelined division + 1 output stage
-    localparam  LATENCY = 16 + 1 + 1;
+    localparam  PIPE_DIV_LATENCY = 16;
 
     logic           flip_sign_rem, flip_sign_qout;
     logic           div_valid_tmp;
@@ -27,22 +26,13 @@ module exe_div
     logic[4:0]      rd_reg;
     logic[31:0]     divisor_reg, dividend_reg, div_output_reg;
 
-    // DIV inputs
+    // DIV input stage
     always_ff @(posedge clk) begin
         div_input_valid_reg <= ix_div_valid && !wb_do_branch;
 
         divisor_reg <= {((~ix_div_inf.div_control[0]) & ix_div_inf.rs2[31]) ? -$signed(ix_div_inf.rs2) : ix_div_inf.rs2};
         dividend_reg <= {((~ix_div_inf.div_control[0]) & ix_div_inf.rs1[31]) ? -$signed(ix_div_inf.rs1) : ix_div_inf.rs1};
     end
-
-    // DIV outputs
-    always_ff @(posedge clk) begin
-        div_valid_reg <= div_valid_tmp;
-        div_output_reg <= div_op_dly ? (flip_quot_sign_dly ? -$signed(div_result_tmp[63:32]) : div_result_tmp[63:32]) :
-                          (flip_rem_sign_dly ? -$signed(div_result_tmp[31:0]) : div_result_tmp[31:0]);
-    end
-
-    always_ff @(posedge clk) rd_reg <= rd_dly;
 
     pipelined_divider divider(
         .aclk(clk),
@@ -53,26 +43,30 @@ module exe_div
         .m_axis_dout_tvalid(div_valid_tmp),
         .m_axis_dout_tdata(div_result_tmp));
 
-    // Delay WB RD
-    shift_register #(.WIDTH(5), .DELAY_COUNT(LATENCY-1)) dly_rd(
+    // DIV output stage
+    always_ff @(posedge clk) begin
+        rd_reg <= rd_dly;
+        div_valid_reg <= div_valid_tmp;
+        div_output_reg <= div_op_dly ? (flip_quot_sign_dly ? -$signed(div_result_tmp[63:32]) : div_result_tmp[63:32]) :
+                          (flip_rem_sign_dly ? -$signed(div_result_tmp[31:0]) : div_result_tmp[31:0]);
+    end
+
+    shift_register #(.WIDTH(5), .DELAY_COUNT(PIPE_DIV_LATENCY+1)) dly_rd(
     	.clk(clk),
         .d(ix_div_inf.rd),
         .q(rd_dly));
 
-    // Delay flip sign REM
-    shift_register #(.WIDTH(1), .DELAY_COUNT(LATENCY-1)) dly_flip_sign_rem(
+    shift_register #(.WIDTH(1), .DELAY_COUNT(PIPE_DIV_LATENCY+1)) dly_flip_sign_rem(
         .clk(clk),
         .d(flip_sign_rem),
         .q(flip_rem_sign_dly));
 
-    // Delay flip sign QUOT
-    shift_register #(.WIDTH(1), .DELAY_COUNT(LATENCY-1)) dly_flip_sign_qout(
+    shift_register #(.WIDTH(1), .DELAY_COUNT(PIPE_DIV_LATENCY+1)) dly_flip_sign_qout(
         .clk(clk),
         .d(flip_sign_qout),
         .q(flip_quot_sign_dly));
 
-    // Delay DIV OP
-    shift_register #(.WIDTH(1), .DELAY_COUNT(LATENCY-1)) dly_div_op(
+    shift_register #(.WIDTH(1), .DELAY_COUNT(PIPE_DIV_LATENCY+1)) dly_div_op(
         .clk(clk),
         .d(~ix_div_inf.div_control[1]), // DIV_OP_DIV or DIV_OP_DIVU),
         .q(div_op_dly));

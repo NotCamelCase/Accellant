@@ -9,7 +9,7 @@ static __attribute__((constructor)) void timer_init(void)
 {
     // Insert a dummy wait on FPGA to give a chance e.g. to connect UART console post-boot
 #if ACCELLANT_SILICON
-    timer_sleep(100);
+    timer_sleep(10);
 #endif
 }
 

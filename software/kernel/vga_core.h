@@ -43,9 +43,6 @@ extern "C"
 
     void vga_program_fb_base_addr(DisplayPixel *currentFBBase);
 
-    // Swap current back buffer and front buffer
-    void vga_swap_buffers(void);
-
     // Present current front buffer
     void vga_present(void);
 

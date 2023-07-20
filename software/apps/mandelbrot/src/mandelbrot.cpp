@@ -23,9 +23,6 @@ int main(int argc, char **ppArgv)
 
     auto fb = vga_get_back_buffer();
 
-    memset(fb, 0x0, sizeof(DisplayPixel) * SCREEN_WIDTH * SCREEN_HEIGHT);
-
-    vga_swap_buffers();
     vga_present();
 
     for (hy = 1; hy <= hyres; hy++)

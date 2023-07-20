@@ -5,4 +5,4 @@ Upon reset, a bootloader is executed from the instruction ROM to load a program 
 
 ![accellant_cpu](https://github.com/NotCamelCase/Accellant/blob/master/docs/accellant_cpu.png)
 
-*Pipeliend DIV takes 23 clk
+*Division path takes 23 clk

@@ -81,6 +81,8 @@ module vga_core
 
     state_t                     state_reg;
 
+    logic[7:0]                  pixel_r_in, pixel_g_in, pixel_b_in;
+
     // Counters
     logic[9:0]                  h_ctr_reg, v_ctr_reg;
 
@@ -117,6 +119,21 @@ module vga_core
 
     assign vga_ce = clk_vga;
 
+    true_rom  #(.ROM_FILE("gamma_lut.mem"), .ADDR_WIDTH(8), .DATA_WIDTH(8), .READ_HEX("NO")) gamma_lut_r(
+        .addr(axi_rdata[7:0]),
+        .data(pixel_r_in)
+    );
+
+    true_rom  #(.ROM_FILE("gamma_lut.mem"), .ADDR_WIDTH(8), .DATA_WIDTH(8), .READ_HEX("NO")) gamma_lut_g(
+        .addr(axi_rdata[15:8]),
+        .data(pixel_g_in)
+    );
+
+    true_rom  #(.ROM_FILE("gamma_lut.mem"), .ADDR_WIDTH(8), .DATA_WIDTH(8), .READ_HEX("NO")) gamma_lut_b(
+        .addr(axi_rdata[23:16]),
+        .data(pixel_b_in)
+    );
+
     // Pixel FIFO
     basic_fifo #(.ADDR_WIDTH($clog2(PIXEL_FIFO_LENGTH)), .DATA_WIDTH(12), .ALMOST_EMPTY_THRESHOLD(PIXEL_FIFO_BURST_LENGTH - 1)) pixel_fifo(
         .clk(clk),
@@ -128,7 +145,7 @@ module vga_core
         .full(),
         .almost_empty(px_fifo_almost_empty),
         .almost_full(),
-        .wr_data({axi_rdata[23:20], axi_rdata[15:12],  axi_rdata[7:4]}), // Compose 4-bit RGB triplets for VGA scanout
+        .wr_data({pixel_b_in[7:4], pixel_g_in[7:4], pixel_r_in[7:4]}), // Compose 4-bit gamma-cuorrtec RGB triplets for VGA scanout
         .rd_data(pixel_data));
 
     // AXI read inf

@@ -1,4 +1,4 @@
-PROJ_NAME := HelloTriangle
+PROJ_NAME := riow
 DEBUG=no
 
 BUILD_DIR = ./build
