@@ -63,7 +63,9 @@ module riscv_core
     input logic[1:0]                axi_dbus_rresp,
     input logic                     axi_dbus_rvalid,
     input logic                     axi_dbus_rlast,
-    output logic                    axi_dbus_rready
+    output logic                    axi_dbus_rready,
+    input logic[31:0]               flush_start_addr,
+    input logic[31:0]               flush_end_addr
 );
     logic                               ift_valid;
     ift_ifd_inf_t                       ift_ifd_inf;

@@ -76,13 +76,7 @@ module instruction_fetch_data
     logic[31:0]                         pending_branch_target_reg;
 
     // Handle branch misprediction during cache miss
-    always_ff @(posedge clk) begin
-        if (wb_do_branch)
-            pending_branch_reg <= 1'b1;
-        else if ((state_reg == IDLE) || (ift_valid && cache_hit))
-            pending_branch_reg <= 1'b0;
-    end
-
+    always_ff @(posedge clk) pending_branch_reg <= !((state_reg == IDLE) || (ift_valid && cache_hit)) && wb_do_branch;
     always_ff @(posedge clk) if (wb_do_branch) pending_branch_target_reg <= wb_branch_target;
 
     // AXI read interface

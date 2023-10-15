@@ -134,7 +134,7 @@ module instruction_fetch_tag
             end
 
             // CL tags
-            bram_1r1w #(.ADDR_WIDTH(ICACHE_NUM_SET_BITS), .DATA_WIDTH(ICACHE_NUM_TAG_BITS), .READ_BYPASS(1'b1)) tags(
+            bram_1r1w #(.ADDR_WIDTH(ICACHE_NUM_SET_BITS), .DATA_WIDTH(ICACHE_NUM_TAG_BITS)) tags(
                 .clk(clk),
                 .wr_en(ifd_ift_inf.update_tag_en[way_idx]),
                 .rd_en(fetch_active_reg || wb_do_branch),
@@ -144,9 +144,7 @@ module instruction_fetch_tag
                 .rd_data(ift_ifd_inf.tags_read[way_idx]));
 
             // Pass CL valid bit for way memory to IFD
-            assign cl_valid_bits[way_idx] = !(wb_do_branch && wb_icache_invalidate) &&
-                (((last_pc_fetched.set_idx == ifd_ift_inf.update_tag_set) && (ifd_ift_inf.update_tag_en[way_idx])) ? 1'b1
-                : valid_bits_reg[last_pc_fetched.set_idx]);
+            assign cl_valid_bits[way_idx] = !(wb_do_branch && wb_icache_invalidate) && valid_bits_reg[last_pc_fetched.set_idx];
         end
     endgenerate
 

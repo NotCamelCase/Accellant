@@ -115,9 +115,10 @@ int _read(int /*fd*/, char *buf, int count)
     bool abort = false;
     while ((read < count) && (!abort))
     {
-        uint8_t nc;
-        uart_read_byte(&nc);
+        // Wait for data
+        while (uart_rx_empty()) ;
 
+        uint8_t nc = uart_read_byte();
         *buf++ = nc;
         read++;
 

@@ -14,7 +14,7 @@ module exe_div
     output logic        div_valid,
     output div_wb_inf_t div_wb_inf
 );
-    localparam  PIPE_DIV_LATENCY = 16;
+    localparam  PIPE_DIV_LATENCY = 14;
 
     logic           flip_sign_rem, flip_sign_qout;
     logic           div_valid_tmp;
@@ -45,8 +45,8 @@ module exe_div
 
     // DIV output stage
     always_ff @(posedge clk) begin
-        rd_reg <= rd_dly;
         div_valid_reg <= div_valid_tmp;
+        rd_reg <= rd_dly;
         div_output_reg <= div_op_dly ? (flip_quot_sign_dly ? -$signed(div_result_tmp[63:32]) : div_result_tmp[63:32]) :
                           (flip_rem_sign_dly ? -$signed(div_result_tmp[31:0]) : div_result_tmp[31:0]);
     end

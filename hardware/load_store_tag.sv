@@ -16,7 +16,10 @@ module load_store_tag
     // LST -> LSD
     output dcache_tag_t[DCACHE_NUM_WAYS-1:0]    lst_writeback_tags,
     output logic                                lst_valid,
-    output lst_lsd_inf_t                        lst_lsd_inf
+    output lst_lsd_inf_t                        lst_lsd_inf,
+    // VGA inf
+    input logic[31:0]                           flush_start_addr,
+    input logic[31:0]                           flush_end_addr
 );
     // Memory location to access CL tags & valid bits.
     // It comprises of a base address (rs1) and an (immediate) offset
@@ -162,5 +165,7 @@ module load_store_tag
         lst_lsd_inf.write_strobe <= store_byte_en;
         lst_lsd_inf.write_data <= write_data;
         lst_lsd_inf.pc <= ix_lst_inf.pc;
+        lst_lsd_inf.dcache_flush_start_addr <= flush_start_addr;
+        lst_lsd_inf.dcache_flush_end_addr <= flush_end_addr;
     end
 endmodule

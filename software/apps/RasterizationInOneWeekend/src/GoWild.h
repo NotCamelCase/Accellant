@@ -1,10 +1,20 @@
 #pragma once
 
+#include <numeric>
+
+#include "common.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
+#define TINYOBJLOADER_IMPLEMENTATION
+#include "tiny_obj_loader.h"
+
 namespace partIII
 {
     // Frame buffer dimensions
-    static const auto g_scWidth = 1280u;
-    static const auto g_scHeight = 720u;
+    static const auto g_scWidth = 640u;
+    static const auto g_scHeight = 480u;
 
 // Silence macro redefinition warnings
 #undef TO_RASTER
@@ -14,61 +24,43 @@ namespace partIII
     // Used for texture mapping
     struct Texture
     {
-        stbi_uc*    m_Data = nullptr;
-        int32_t     m_Width = -1;
-        int32_t     m_Height = -1;
-        int32_t     m_NumChannels = -1;
+        stbi_uc *m_Data = nullptr;
+        int32_t m_Width = -1;
+        int32_t m_Height = -1;
+        int32_t m_NumChannels = -1;
     };
 
     // Vertex data to be fed into each VS invocation as input
     struct VertexInput
     {
-        glm::vec3   Pos;
-        glm::vec3   Normal;
-        glm::vec2   TexCoords;
+        glm::vec3 Pos;
+        glm::vec3 Normal;
+        glm::vec2 TexCoords;
     };
 
     // Vertex Shader payload, which will be passed to each FS invocation as input
     struct FragmentInput
     {
-        glm::vec3   Normal;
-        glm::vec2   TexCoords;
+        glm::vec3 Normal;
+        glm::vec2 TexCoords;
     };
 
     // Indexed mesh
     struct Mesh
     {
         // Offset into the global index buffer
-        uint32_t    m_IdxOffset = 0u;
+        uint32_t m_IdxOffset = 0u;
 
         // How many indices this mesh contains. Number of triangles therefore equals (m_IdxCount / 3)
-        uint32_t    m_IdxCount = 0u;
+        uint32_t m_IdxCount = 0u;
 
         // Texture map from material
         std::string m_DiffuseTexName;
     };
 
-    void DrawIndexed(std::vector<glm::vec3>& frameBuffer, std::vector<float>& depthBuffer, std::vector<VertexInput>& vertexBuffer, std::vector<uint32_t>& indexBuffer, Mesh& mesh, glm::mat4& MVP, Texture* pTexture);
+    void DrawIndexed(std::vector<glm::vec3> &frameBuffer, std::vector<float> &depthBuffer, std::vector<VertexInput> &vertexBuffer, std::vector<uint32_t> &indexBuffer, Mesh &mesh, glm::mat4 &MVP, Texture *pTexture);
 
-    void OutputFrame(const std::vector<glm::vec3>& frameBuffer, const char* filename)
-    {
-        assert(frameBuffer.size() >= (g_scWidth * g_scHeight));
-
-        FILE* pFile = nullptr;
-        fopen_s(&pFile, filename, "w");
-        fprintf(pFile, "P3\n%d %d\n%d\n ", g_scWidth, g_scHeight, 255);
-        for (auto i = 0; i < g_scWidth * g_scHeight; ++i)
-        {
-            // Write out color values clamped to [0, 255] 
-            uint32_t r = static_cast<uint32_t>(255 * glm::clamp(frameBuffer[i].r, 0.0f, 1.0f));
-            uint32_t g = static_cast<uint32_t>(255 * glm::clamp(frameBuffer[i].g, 0.0f, 1.0f));
-            uint32_t b = static_cast<uint32_t>(255 * glm::clamp(frameBuffer[i].b, 0.0f, 1.0f));
-            fprintf(pFile, "%d %d %d ", r, g, b);
-        }
-        fclose(pFile);
-    }
-
-    void InitializeSceneObjects(const char* fileName, std::vector<Mesh>& meshBuffer, std::vector<VertexInput>& vertexBuffer, std::vector<uint32_t>& indexBuffer, std::map<std::string, Texture*>& textures)
+    void InitializeSceneObjects(const char *fileName, std::vector<Mesh> &meshBuffer, std::vector<VertexInput> &vertexBuffer, std::vector<uint32_t> &indexBuffer, std::map<std::string, Texture *> &textures)
     {
         tinyobj::attrib_t attribs;
         std::vector<tinyobj::shape_t> shapes;
@@ -82,14 +74,14 @@ namespace partIII
             {
                 for (unsigned i = 0; i < materials.size(); i++)
                 {
-                    const tinyobj::material_t& m = materials[i];
+                    const tinyobj::material_t &m = materials[i];
 
                     std::string diffuseTexName = m.diffuse_texname;
                     assert(!diffuseTexName.empty() && "Mesh missing texture!");
 
                     if (textures.find(diffuseTexName) == textures.end())
                     {
-                        Texture* pAlbedo = new Texture();
+                        Texture *pAlbedo = new Texture();
 
                         pAlbedo->m_Data = stbi_load(("../assets/" + diffuseTexName).c_str(), &pAlbedo->m_Width, &pAlbedo->m_Height, &pAlbedo->m_NumChannels, 0);
                         assert(pAlbedo->m_Data != nullptr && "Failed to load image!");
@@ -108,7 +100,7 @@ namespace partIII
                     uint32_t NormalIdx;
                     uint32_t UVIdx;
 
-                    bool operator<(const IndexedPrimitive& other) const
+                    bool operator<(const IndexedPrimitive &other) const
                     {
                         return memcmp(this, &other, sizeof(IndexedPrimitive)) > 0;
                     }
@@ -117,7 +109,7 @@ namespace partIII
                 std::map<IndexedPrimitive, uint32_t> indexedPrims;
                 for (size_t s = 0; s < shapes.size(); s++)
                 {
-                    const tinyobj::shape_t& shape = shapes[s];
+                    const tinyobj::shape_t &shape = shapes[s];
 
                     uint32_t meshIdxBase = indexBuffer.size();
                     for (size_t i = 0; i < shape.mesh.indices.size(); i++)
@@ -180,12 +172,12 @@ namespace partIII
                                 uv.t = glm::abs(uy);
                             }
 
-                            VertexInput uniqueVertex = { pos, normal, uv };
+                            VertexInput uniqueVertex = {pos, normal, uv};
                             vertexBuffer.push_back(uniqueVertex);
                         }
                     }
 
-                    // Push new mesh to be rendered in the scene 
+                    // Push new mesh to be rendered in the scene
                     Mesh mesh;
                     mesh.m_IdxOffset = meshIdxBase;
                     mesh.m_IdxCount = shape.mesh.indices.size();
@@ -210,7 +202,7 @@ namespace partIII
         std::vector<glm::vec3> frameBuffer(g_scWidth * g_scHeight, glm::vec3(0, 0, 0)); // clear color black = vec3(0, 0, 0)
 
         // Allocate and clear the depth buffer ro FLT_MAX as we utilize z values to resolve visibility now
-        std::vector<float> depthBuffer(g_scWidth * g_scHeight, FLT_MAX);
+        std::vector<float> depthBuffer(g_scWidth * g_scHeight, std::numeric_limits<float>::max());
 
         // We will have single giant index and vertex buffer to draw indexed meshes
         std::vector<VertexInput> vertexBuffer;
@@ -220,7 +212,10 @@ namespace partIII
         std::vector<Mesh> primitives;
 
         // All texture maps loaded. Every mesh will reference their texture map by name at draw time
-        std::map<std::string, Texture*> textures;
+        std::map<std::string, Texture *> textures;
+
+        auto fb = vga_get_back_buffer();
+        vga_present();
 
 #if 1
         const auto fileName = "../assets/sponza.obj";
@@ -259,16 +254,13 @@ namespace partIII
             DrawIndexed(frameBuffer, depthBuffer, vertexBuffer, indexBuffer, primitives[i], MVP, textures[primitives[i].m_DiffuseTexName]);
         }
 
-        // Rendering of one frame is finished, output a .PPM file of the contents of our frame buffer to see what we actually just rendered
-        OutputFrame(frameBuffer, "../render_go_wild.ppm");
-
         // Clean up resources
-        for (const auto& elem : textures)
+        for (const auto &elem : textures)
             delete elem.second;
     }
 
     // Vertex Shader to apply perspective projections and also pass vertex attributes to Fragment Shader
-    glm::vec4 VS(const VertexInput& input, const glm::mat4& MVP, FragmentInput& output)
+    glm::vec4 VS(const VertexInput &input, const glm::mat4 &MVP, FragmentInput &output)
     {
         // Simply pass normal and texture coordinates directly to FS
         output.Normal = input.Normal;
@@ -279,7 +271,7 @@ namespace partIII
     }
 
     // Fragment Shader that will be run at every visible pixel on triangles to shade fragments
-    glm::vec3 FS(const FragmentInput& input, Texture* pTexture)
+    glm::vec3 FS(const FragmentInput &input, Texture *pTexture)
     {
 #if 1 // Render textured polygons
 
@@ -298,23 +290,29 @@ namespace partIII
 #endif
     }
 
-    bool EvaluateEdgeFunction(const glm::vec3& E, const glm::vec2& sample)
+    bool EvaluateEdgeFunction(const glm::vec3 &E, const glm::vec2 &sample)
     {
         // Interpolate edge function at given sample
         float result = (E.x * sample.x) + (E.y * sample.y) + E.z;
 
         // Apply tie-breaking rules on shared vertices in order to avoid double-shading fragments
-        if (result > 0.0f) return true;
-        else if (result < 0.0f) return false;
+        if (result > 0.0f)
+            return true;
+        else if (result < 0.0f)
+            return false;
 
-        if (E.x > 0.f) return true;
-        else if (E.x < 0.0f) return false;
+        if (E.x > 0.f)
+            return true;
+        else if (E.x < 0.0f)
+            return false;
 
-        if ((E.x == 0.0f) && (E.y < 0.0f)) return false;
-        else return true;
+        if ((E.x == 0.0f) && (E.y < 0.0f))
+            return false;
+        else
+            return true;
     }
 
-    void DrawIndexed(std::vector<glm::vec3>& frameBuffer, std::vector<float>& depthBuffer, std::vector<VertexInput>& vertexBuffer, std::vector<uint32_t>& indexBuffer, Mesh& mesh, glm::mat4& MVP, Texture* pTexture)
+    void DrawIndexed(std::vector<glm::vec3> &frameBuffer, std::vector<float> &depthBuffer, std::vector<VertexInput> &vertexBuffer, std::vector<uint32_t> &indexBuffer, Mesh &mesh, glm::mat4 &MVP, Texture *pTexture)
     {
         assert(pTexture != nullptr);
 
@@ -324,9 +322,9 @@ namespace partIII
         for (int32_t idx = 0; idx < triCount; idx++)
         {
             // Fetch vertex input of next triangle to be rasterized
-            const VertexInput& vi0 = vertexBuffer[indexBuffer[mesh.m_IdxOffset + (idx * 3)]];
-            const VertexInput& vi1 = vertexBuffer[indexBuffer[mesh.m_IdxOffset + (idx * 3 + 1)]];
-            const VertexInput& vi2 = vertexBuffer[indexBuffer[mesh.m_IdxOffset + (idx * 3 + 2)]];
+            const VertexInput &vi0 = vertexBuffer[indexBuffer[mesh.m_IdxOffset + (idx * 3)]];
+            const VertexInput &vi1 = vertexBuffer[indexBuffer[mesh.m_IdxOffset + (idx * 3 + 1)]];
+            const VertexInput &vi2 = vertexBuffer[indexBuffer[mesh.m_IdxOffset + (idx * 3 + 2)]];
 
             // To collect VS payload
             FragmentInput fi0;
@@ -346,12 +344,12 @@ namespace partIII
 
             // Base vertex matrix
             glm::mat3 M =
-            {
-                // Notice that glm is itself column-major)
-                { v0Homogen.x, v1Homogen.x, v2Homogen.x},
-                { v0Homogen.y, v1Homogen.y, v2Homogen.y},
-                { v0Homogen.w, v1Homogen.w, v2Homogen.w},
-            };
+                {
+                    // Notice that glm is itself column-major)
+                    {v0Homogen.x, v1Homogen.x, v2Homogen.x},
+                    {v0Homogen.y, v1Homogen.y, v2Homogen.y},
+                    {v0Homogen.w, v1Homogen.w, v2Homogen.w},
+                };
 
             // Singular vertex matrix (det(M) == 0.0) means that the triangle has zero area,
             // which in turn means that it's a degenerate triangle which should not be rendered anyways,
@@ -391,7 +389,7 @@ namespace partIII
                 for (auto x = 0; x < g_scWidth; x++)
                 {
                     // Sample location at the center of each pixel
-                    glm::vec2 sample = { x + 0.5f, y + 0.5f };
+                    glm::vec2 sample = {x + 0.5f, y + 0.5f};
 
                     // Evaluate edge functions at current fragment
                     bool inside0 = EvaluateEdgeFunction(E0, sample);
@@ -427,10 +425,10 @@ namespace partIII
 
                             // Final vertex attributes to be passed to FS
                             glm::vec3 normal = glm::vec3(nxOverW, nyOverW, nzOverW) * w; // {nx/w, ny/w, nz/w} * w -> {nx, ny, nz}
-                            glm::vec2 texCoords = glm::vec2(uOverW, vOverW) * w; // {u/w, v/w} * w -> {u, v}
+                            glm::vec2 texCoords = glm::vec2(uOverW, vOverW) * w;         // {u/w, v/w} * w -> {u, v}
 
                             // Pass interpolated normal & texture coordinates to FS
-                            FragmentInput fsInput = { normal, texCoords };
+                            FragmentInput fsInput = {normal, texCoords};
 
                             // Invoke fragment shader to output a color for each fragment
                             glm::vec3 outputColor = FS(fsInput, pTexture);

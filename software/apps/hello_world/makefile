@@ -9,11 +9,11 @@ KERNEL_SRC_DIRS = ../../kernel
 LDSCRIPT = ../../kernel/linker.ld
 
 MABI=ilp32
-MARCH := rv32im
+MARCH := rv32im_zicsr
 
 ACCELLANT_SILICON ?= 1
 
-CFLAGS += -march=$(MARCH) -mabi=$(MABI) -DNDEBUG -DACCELLANT_SILICON=$(ACCELLANT_SILICON)
+CFLAGS += -march=$(MARCH) -mabi=$(MABI) -DACCELLANT_SILICON=$(ACCELLANT_SILICON)
 LDFLAGS += -march=$(MARCH) -mabi=$(MABI)
 
 ifeq ($(DEBUG),yes)
@@ -21,7 +21,7 @@ ifeq ($(DEBUG),yes)
 endif
 
 ifeq ($(DEBUG),no)
-	CFLAGS += -g -O3
+	CFLAGS += -g -O3 -DNDEBUG
 endif
 
 RISCV_OBJCOPY = riscv64-unknown-elf-objcopy

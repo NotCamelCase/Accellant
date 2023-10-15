@@ -1,11 +1,11 @@
 
 Discarded input sections
 
- .data          0x00000000        0x0 /tmp/ccAcStfq.o
- .bss           0x00000000        0x0 /tmp/ccAcStfq.o
- .data          0x00000000        0x0 /tmp/ccZbm4uR.o
- .bss           0x00000000        0x0 /tmp/ccZbm4uR.o
- .eh_frame      0x00000000      0x12c /tmp/ccZbm4uR.o
+ .data          0x00000000        0x0 /tmp/cckfnayp.o
+ .bss           0x00000000        0x0 /tmp/cckfnayp.o
+ .data          0x00000000        0x0 /tmp/cckqOyzZ.o
+ .bss           0x00000000        0x0 /tmp/cckqOyzZ.o
+ .eh_frame      0x00000000      0x12c /tmp/cckqOyzZ.o
 
 Memory Configuration
 
@@ -16,14 +16,14 @@ ram              0x00000000         0x10000000         xrw
 
 Linker script and memory map
 
-LOAD /tmp/ccAcStfq.o
-LOAD /tmp/ccZbm4uR.o
+LOAD /tmp/cckfnayp.o
+LOAD /tmp/cckqOyzZ.o
 
 .text           0x10000000      0x2cc
  *(.text*)
- .text          0x10000000       0x14 /tmp/ccAcStfq.o
+ .text          0x10000000       0x14 /tmp/cckfnayp.o
                 0x10000000                _start
- .text          0x10000014      0x21c /tmp/ccZbm4uR.o
+ .text          0x10000014      0x21c /tmp/cckqOyzZ.o
                 0x10000014                set_baud_rate(int)
                 0x10000034                rx_empty()
                 0x10000044                rx_full()
@@ -36,21 +36,21 @@ LOAD /tmp/ccZbm4uR.o
                 0x10000168                set_led(unsigned long)
                 0x10000174                transfer_data()
                 0x10000228                execute_app(unsigned long)
- .text.startup  0x10000230       0x9c /tmp/ccZbm4uR.o
+ .text.startup  0x10000230       0x9c /tmp/cckqOyzZ.o
                 0x10000230                main
                 0x10000000                        _sp = (ORIGIN (ram) + LENGTH (ram))
 OUTPUT(boot.elf elf32-littleriscv)
 
 .rela.dyn       0x100002cc        0x0
- .rela.text     0x100002cc        0x0 /tmp/ccAcStfq.o
+ .rela.text     0x100002cc        0x0 /tmp/cckfnayp.o
 
 .riscv.attributes
-                0x00000000       0x2e
+                0x00000000       0x37
  .riscv.attributes
-                0x00000000       0x28 /tmp/ccAcStfq.o
+                0x00000000       0x31 /tmp/cckfnayp.o
  .riscv.attributes
-                0x00000028       0x2e /tmp/ccZbm4uR.o
+                0x00000031       0x37 /tmp/cckqOyzZ.o
 
-.comment        0x00000000       0x24
- .comment       0x00000000       0x24 /tmp/ccZbm4uR.o
-                                 0x25 (size before relaxing)
+.comment        0x00000000       0x2a
+ .comment       0x00000000       0x2a /tmp/cckqOyzZ.o
+                                 0x2b (size before relaxing)

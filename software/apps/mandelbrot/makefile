@@ -8,7 +8,7 @@ KERNEL_SRC_DIRS = ../../kernel
 LDSCRIPT = ../../kernel/linker.ld
 
 MABI=ilp32
-MARCH := rv32im
+MARCH := rv32im_zicsr
 
 ACCELLANT_SILICON ?= 1
 

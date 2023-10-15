@@ -27,9 +27,9 @@ localparam  EXE_PIPE_ID_LSU         = 1;
 localparam  EXE_PIPE_ID_MUL         = 2;
 localparam  EXE_PIPE_ID_DIV         = 3;
 
-// I$ - 8k
+// I$ - 16k
 localparam  ICACHE_NUM_WAYS         = 4;
-localparam  ICACHE_NUM_SETS         = 32;
+localparam  ICACHE_NUM_SETS         = 64;
 localparam  ICACHE_CL_SIZE          = 64; // In bytes
 
 localparam  ICACHE_NUM_BLOCK_BITS   = $clog2(ICACHE_CL_SIZE);
@@ -37,9 +37,9 @@ localparam  ICACHE_NUM_SET_BITS     = $clog2(ICACHE_NUM_SETS);
 localparam  ICACHE_NUM_TAG_BITS     = 32 - (ICACHE_NUM_BLOCK_BITS + ICACHE_NUM_SET_BITS);
 localparam  ICACHE_NUM_WAY_BITS     = $clog2(ICACHE_NUM_WAYS);
 
-// D$ - 16k
+// D$ - 32k
 localparam  DCACHE_NUM_WAYS         = 4;
-localparam  DCACHE_NUM_SETS         = 64;
+localparam  DCACHE_NUM_SETS         = 128;
 localparam  DCACHE_CL_SIZE          = 64; // In bytes
 
 localparam  DCACHE_NUM_BLOCK_BITS   = $clog2(DCACHE_CL_SIZE);
@@ -271,6 +271,8 @@ typedef struct packed {
     logic[3:0]                          write_strobe;
     logic[31:0]                         write_data;
     logic[31:0]                         pc;
+    logic[31:0]                         dcache_flush_start_addr;
+    logic[31:0]                         dcache_flush_end_addr;
     logic[DCACHE_NUM_WAYS-1:0]          valid_bits;
     dcache_tag_t[DCACHE_NUM_WAYS-1:0]   tags_read;
     logic                               io_rd_en;

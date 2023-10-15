@@ -61,7 +61,7 @@ namespace partII
         else if (E.x < 0.0f)
             return false;
 
-        if ((E.x == 0.0f) && (E.y < 0.0f))
+        if (E.y < 0.0f)
             return false;
         else
             return true;

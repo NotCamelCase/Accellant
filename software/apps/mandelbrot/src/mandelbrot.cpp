@@ -9,8 +9,6 @@
  **
  **/
 
-#include <cstring>
-
 #include "../../../kernel/vga_core.h"
 
 int main(int argc, char **ppArgv)

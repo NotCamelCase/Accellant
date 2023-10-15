@@ -39,7 +39,7 @@ module instruction_issue
     localparam  EXE_ALU_LATENCY         = 1;
     localparam  EXE_LSU_LATENCY         = 2;
     localparam  EXE_MUL_LATENCY         = 3;
-    localparam  EXE_DIV_LATENCY         = 16 + 1 + 1;
+    localparam  EXE_DIV_LATENCY         = 14 + 1 + 1;
 
     // Architectural register file
     logic[31:0]                     reg_file[NUM_REGS-1:0];

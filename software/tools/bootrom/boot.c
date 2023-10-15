@@ -1,24 +1,24 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define LED_REG     0xff000000
-#define TIMER_REG   0xff000100
-#define UART_REG    0xff000200
+#define LED_REG 0xff000000
+#define TIMER_REG 0xff000100
+#define UART_REG 0xff000200
 
-#define CPU_CLOCK_FREQ_MHZ  100
-#define LOADER_BAUD_RATE    460800
+#define CPU_CLOCK_FREQ_MHZ 100
+#define LOADER_BAUD_RATE 460800
 
 #define READ_BIT(x, n) ((x >> n) & 0x1)
 #define SET_BIT(x, n) (x |= (1 << n))
 
-#define SDRAM_BASE_ADDRESS  0x0
+#define SDRAM_BASE_ADDRESS 0x0
 
-#define CMD_PING    0x11
-#define CMD_ACK     0x22
+#define CMD_PING 0x11
+#define CMD_ACK 0x22
 
 void set_baud_rate(int rate)
 {
-    volatile uint32_t* pUART = (volatile uint32_t*)UART_REG;
+    volatile uint32_t *pUART = (volatile uint32_t *)UART_REG;
 
     int crate = ((CPU_CLOCK_FREQ_MHZ * 1000000) / (16 * rate)) - 1;
     pUART[1] = crate;
@@ -26,32 +26,34 @@ void set_baud_rate(int rate)
 
 bool rx_empty(void)
 {
-    volatile uint32_t* pUART = (volatile uint32_t*)UART_REG;
+    volatile uint32_t *pUART = (volatile uint32_t *)UART_REG;
     return READ_BIT(pUART[2], 0);
 }
 
 bool rx_full(void)
 {
-    volatile uint32_t* pUART = (volatile uint32_t*)UART_REG;
+    volatile uint32_t *pUART = (volatile uint32_t *)UART_REG;
     return READ_BIT(pUART[2], 1);
 }
 
 bool tx_empty(void)
 {
-    volatile uint32_t* pUART = (volatile uint32_t*)UART_REG;
+    volatile uint32_t *pUART = (volatile uint32_t *)UART_REG;
     return READ_BIT(pUART[2], 2);
 }
 
 bool tx_full(void)
 {
-    volatile uint32_t* pUART = (volatile uint32_t*)UART_REG;
+    volatile uint32_t *pUART = (volatile uint32_t *)UART_REG;
     return READ_BIT(pUART[2], 3);
 }
 
 void write_serial_byte(unsigned char c)
 {
-    volatile uint32_t* pUART = (volatile uint32_t*)UART_REG;
-    while (tx_full()) {} // Wait idle for space
+    volatile uint32_t *pUART = (volatile uint32_t *)UART_REG;
+    while (tx_full())
+    {
+    } // Wait idle for space
     pUART[3] = c;
 }
 
@@ -68,8 +70,9 @@ void write_serial_integer(uint32_t val)
 
 unsigned char read_serial_byte(void)
 {
-    while (rx_empty()) ; // Wait idle for data
-    volatile uint32_t* pUART = (volatile uint32_t*)UART_REG;
+    while (rx_empty())
+        ; // Wait idle for data
+    volatile uint32_t *pUART = (volatile uint32_t *)UART_REG;
     return (unsigned char)pUART[0];
 }
 
@@ -85,13 +88,13 @@ uint32_t read_serial_int(void)
 
 void set_led(uint32_t val)
 {
-    volatile uint32_t* pLedBase = (volatile uint32_t*)LED_REG;
+    volatile uint32_t *pLedBase = (volatile uint32_t *)LED_REG;
     *pLedBase = val;
 }
 
 void transfer_data()
 {
-    uint8_t* pDataPtr = (uint8_t*)SDRAM_BASE_ADDRESS;
+    uint8_t *pDataPtr = (uint8_t *)SDRAM_BASE_ADDRESS;
     uint32_t programSize = read_serial_int();
 
     for (uint32_t i = 0; i < programSize; i++)
@@ -102,7 +105,7 @@ void transfer_data()
 
 void execute_app(uint32_t baseAddress)
 {
-    asm volatile ("jalr %0" : : "r" (baseAddress));
+    asm volatile("jalr %0" : : "r"(baseAddress));
 }
 
 int main(void)
@@ -129,7 +132,7 @@ int main(void)
     set_led(0b1010);
 
     // Commit entire D$ to main memory so that the newly copied program data (instructions & data) are made visible to IF
-    asm volatile ("csrw pmpcfg0, x0");
+    asm volatile("csrw pmpcfg0, x0");
 
     // Jump to the beginning of SDRAM where app instructions & data have just been copied to
     execute_app(SDRAM_BASE_ADDRESS);

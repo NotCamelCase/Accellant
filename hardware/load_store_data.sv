@@ -76,10 +76,11 @@ module load_store_data
 
     logic                               cache_hit, cache_miss;
     logic                               refill_cl, fetch_issue_address, evict_dirty_cl;
-    logic                               writeback_idle, read_cl_flush, evict_dirty_cl_flush;
+    logic                               writeback_idle, read_cl_flush, evict_dirty_cl_flush, flush_addr_within_range;
 
     logic[DCACHE_NUM_WAYS-1:0]          dirty_lines, dirty_lines_flush;
     logic[31:0]                         fetched_word;
+    logic[31:0]                         composed_writeback_address;
     logic[CL_DATA_WIDTH-1:0]            fetched_cache_line;
     logic[CL_DATA_WIDTH-1:0]            writeback_cache_line;
     logic[CL_DATA_WIDTH-1:0]            pending_store_cache_line;
@@ -105,6 +106,7 @@ module load_store_data
     logic                               writeback_dcache_flush_reg;
     logic                               writeback_pending_dcache_flush_reg;
     logic[31:0]                         writeback_wr_data_reg;
+    logic[31:0]                         writeback_flush_addr_start_reg, writeback_flush_addr_end_reg;
     writeback_state_t                   writeback_state_reg;
     logic[CL_FETCH_BITS-1:0]            writeback_send_ctr_reg, writeback_send_ctr_nxt;
     lsu_address_t                       writeback_address_reg; // Memory address the evicted dirty CL should be written at
@@ -203,6 +205,12 @@ module load_store_data
 
     assign writeback_send_ctr_nxt = writeback_send_ctr_reg + CL_FETCH_BITS'(1);
 
+    assign composed_writeback_address = {lst_writeback_tags[writeback_current_way_reg], writeback_current_set_reg, {CL_SIZE_BITS{1'b0}}};
+
+    assign flush_addr_within_range =
+        (composed_writeback_address >= writeback_flush_addr_start_reg) &&
+        (composed_writeback_address < writeback_flush_addr_end_reg);
+
     always_ff @(posedge clk) begin
         if (axi_dbus_wvalid && axi_dbus_wready) // Burst ongoing, register next data to be written back
             writeback_wr_data_reg <= writeback_cache_line[writeback_send_ctr_nxt*32 +: 32];
@@ -229,6 +237,8 @@ module load_store_data
             axi_dbus_awvalid <= 1'b0;
             axi_dbus_wvalid <= 1'b0;
             axi_dbus_wlast <= 1'b0;
+            writeback_flush_addr_start_reg <= '0;
+            writeback_flush_addr_end_reg <= 32'hffffffff;
         end else begin
             unique case (writeback_state_reg)
                 WRITEBACK_IDLE: begin
@@ -243,6 +253,9 @@ module load_store_data
 
                     writeback_current_way_reg <= '0;
                     writeback_current_set_reg <= '0;
+
+                    writeback_flush_addr_start_reg <= lst_lsd_inf.dcache_flush_start_addr;
+                    writeback_flush_addr_end_reg <= lst_lsd_inf.dcache_flush_end_addr;
 
                     if (evict_dirty_cl) begin
                         writeback_current_way_reg <= way_replacement_reg;
@@ -265,11 +278,16 @@ module load_store_data
                 end
 
                 COMPOSE_WRITEBACK_ADDRESS: begin
-                    writeback_state_reg <= ISSUE_WRITE_ADDRESS;
-                    axi_dbus_awvalid <= 1'b1;
+                    // Don't flush the CL to main memory if the address of the next dirty CL to be flushed is not within the flush range
+                    if (flush_addr_within_range) begin
+                        writeback_state_reg <= ISSUE_WRITE_ADDRESS;
+                        axi_dbus_awvalid <= 1'b1;
+                    end else begin
+                        writeback_state_reg <= EVICT_CL_DONE;
+                    end
 
                     // Refresh writeback address to flush current dirty CL on a given way part of the set
-                    writeback_address_reg <= {lst_writeback_tags[writeback_current_way_reg], writeback_current_set_reg, {CL_SIZE_BITS{1'b0}}};
+                    writeback_address_reg <= composed_writeback_address;
                 end
 
                 ISSUE_WRITE_ADDRESS: begin

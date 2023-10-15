@@ -40,7 +40,10 @@ module vga_core
     output logic        axi_rready,
     // VGA inf
     output logic[3:0]   r, g, b,
-    output logic        hsync, vsync
+    output logic        hsync, vsync,
+    // LSD inf
+    output logic[31:0]  flush_start_addr,
+    output logic[31:0]  flush_end_addr
 );
     // VGA video out timings
     localparam  HSYNC_START             = 656;
@@ -55,7 +58,7 @@ module vga_core
     localparam  FRAME_HEIGHT            = 480;
 
     // How many pixels' worth of data will be buffered up
-    localparam  PIXEL_FIFO_LENGTH       = 64;
+    localparam  PIXEL_FIFO_LENGTH       = 128;
     localparam  PIXEL_FIFO_BURST_SIZE   = (PIXEL_FIFO_LENGTH / 2) * 4;
     localparam  PIXEL_FIFO_BURST_LENGTH = PIXEL_FIFO_BURST_SIZE / 4;
 
@@ -112,6 +115,8 @@ module vga_core
         else if (io_bus_s_cs && io_bus_s_wr_en) begin
             unique case (io_bus_s_address[7:0])
                 MMIO_VGA_REG_SET_FB_BASE_ADDR: fb_base_addr_reg <= io_bus_s_wr_data;
+                MMIO_VGA_REG_SET_FLUSH_START_ADDR: flush_start_addr <= io_bus_s_wr_data;
+                MMIO_VGA_REG_SET_FLUSH_END_ADDR: flush_end_addr <= io_bus_s_wr_data;
                 default: ;
             endcase
         end
@@ -119,20 +124,17 @@ module vga_core
 
     assign vga_ce = clk_vga;
 
-    true_rom  #(.ROM_FILE("gamma_lut.mem"), .ADDR_WIDTH(8), .DATA_WIDTH(8), .READ_HEX("NO")) gamma_lut_r(
+    true_rom #(.ROM_FILE("gamma_lut.mem"), .ADDR_WIDTH(8), .DATA_WIDTH(8), .READ_HEX("NO")) gamma_lut_r(
         .addr(axi_rdata[7:0]),
-        .data(pixel_r_in)
-    );
+        .data(pixel_r_in));
 
-    true_rom  #(.ROM_FILE("gamma_lut.mem"), .ADDR_WIDTH(8), .DATA_WIDTH(8), .READ_HEX("NO")) gamma_lut_g(
+    true_rom #(.ROM_FILE("gamma_lut.mem"), .ADDR_WIDTH(8), .DATA_WIDTH(8), .READ_HEX("NO")) gamma_lut_g(
         .addr(axi_rdata[15:8]),
-        .data(pixel_g_in)
-    );
+        .data(pixel_g_in));
 
-    true_rom  #(.ROM_FILE("gamma_lut.mem"), .ADDR_WIDTH(8), .DATA_WIDTH(8), .READ_HEX("NO")) gamma_lut_b(
+    true_rom #(.ROM_FILE("gamma_lut.mem"), .ADDR_WIDTH(8), .DATA_WIDTH(8), .READ_HEX("NO")) gamma_lut_b(
         .addr(axi_rdata[23:16]),
-        .data(pixel_b_in)
-    );
+        .data(pixel_b_in));
 
     // Pixel FIFO
     basic_fifo #(.ADDR_WIDTH($clog2(PIXEL_FIFO_LENGTH)), .DATA_WIDTH(12), .ALMOST_EMPTY_THRESHOLD(PIXEL_FIFO_BURST_LENGTH - 1)) pixel_fifo(
@@ -177,6 +179,8 @@ module vga_core
                 IDLE: begin
                     // Register FB base address
                     axi_araddr <= fb_base_addr_reg;
+
+                    axi_arvalid <= 1'b0;
 
                     burst_ctr_reg <= BURST_CTR_MAX - 1;
 
@@ -225,8 +229,8 @@ module vga_core
     // VGA hsync & vsync gen
     always_ff @(posedge clk_vga) begin
         if (rst) begin
-            h_ctr_reg <= 10'b0;
-            v_ctr_reg <= 10'b0;
+            h_ctr_reg <= '0;
+            v_ctr_reg <= '0;
             hsync_reg <= 1'b1;
             vsync_reg <= 1'b1;
         end else begin

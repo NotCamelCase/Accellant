@@ -8,7 +8,7 @@ KERNEL_SRC_DIRS = ../../kernel
 LDSCRIPT = ../../kernel/linker.ld
 
 MABI=ilp32
-MARCH := rv32im
+MARCH := rv32im_zicsr
 
 ACCELLANT_SILICON ?= 1
 
@@ -29,7 +29,7 @@ RISCV_OBJDUMP = riscv64-unknown-elf-objdump
 RISCV_CC = riscv64-unknown-elf-g++
 RISCV_CPP = riscv64-unknown-elf-g++
 
-CFLAGS += -fstrict-volatile-bitfields -fno-strict-aliasing -Wall -Wextra -Wpedantic -Wconversion -Wshadow -fpermissive -DTARGET_HOST=1
+CFLAGS += -fstrict-volatile-bitfields -fno-strict-aliasing -Wall -Wextra -Wpedantic -Wconversion -Wshadow -fpermissive
 CXXFLAGS += -std=c++20 -fno-exceptions -fno-rtti -fno-use-cxa-atexit -fno-threadsafe-statics
 LDFLAGS += -nostartfiles -ffreestanding -static -lstdc++ -mcmodel=medany -Wl,-Bstatic,-T,$(LDSCRIPT),-Map,$(BUILD_DIR)/$(PROJ_NAME).map,--gc-sections,--print-memory-usage
 

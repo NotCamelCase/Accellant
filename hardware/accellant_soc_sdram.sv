@@ -195,6 +195,9 @@ module accellant_soc_sdram
     logic[31:0]             io_bus_timer_rd_data;
     logic[31:0]             io_bus_uart_rd_data;
 
+    logic[31:0]             flush_start_addr;
+    logic[31:0]             flush_end_addr;
+
     riscv_core core(
     	.clk(clk),
         .rst(rst), // Active-high sync reset
@@ -253,7 +256,9 @@ module accellant_soc_sdram
         .axi_dbus_rresp(axi_dbus_m_rresp),
         .axi_dbus_rvalid(axi_dbus_m_rvalid),
         .axi_dbus_rlast(axi_dbus_m_rlast),
-        .axi_dbus_rready(axi_dbus_m_rready));
+        .axi_dbus_rready(axi_dbus_m_rready),
+        .flush_start_addr(flush_start_addr),
+        .flush_end_addr(flush_end_addr));
 
     io_interconnect io_xbar(
         .clk(clk),
@@ -345,7 +350,9 @@ module accellant_soc_sdram
         .g(g),
         .b(b),
         .hsync(hsync),
-        .vsync(vsync));
+        .vsync(vsync),
+        .flush_start_addr(flush_start_addr),
+        .flush_end_addr(flush_end_addr));
 
     axi_interconnect #(
         .S_COUNT(AXI_XBAR_NUM_SLAVES),

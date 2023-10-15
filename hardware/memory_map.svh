@@ -20,13 +20,15 @@ localparam  MMIO_LED_REG_SET_LED        = 'h0;
 localparam  MMIO_TIMER_BASE_ADDRESS     = MMIO_BASE_ADDRESS + 'h100; // Slot #1
 localparam  MMIO_TIMER_GET_CYCLE_CTR    = 'h0;
 
-localparam  MMIO_UART_BASE_ADDRESS      = MMIO_BASE_ADDRESS + 'h200; // Slot #2
+localparam  MMIO_UART_BASE_ADDRESS          = MMIO_BASE_ADDRESS + 'h200; // Slot #2
 localparam  MMIO_UART_REG_GET_DATA          = 'h0;
 localparam  MMIO_UART_REG_SET_BAUD_RATE     = 'h4;
 localparam  MMIO_UART_REG_GET_STATUS        = 'h8;
 localparam  MMIO_UART_REG_WRITE_DATA        = 'hc;
 
-localparam  MMIO_VGA_BASE_ADDRESS       = MMIO_BASE_ADDRESS + 'h300; // Slot #3
-localparam  MMIO_VGA_REG_SET_FB_BASE_ADDR   = 'h0;
+localparam  MMIO_VGA_BASE_ADDRESS               = MMIO_BASE_ADDRESS + 'h300; // Slot #3
+localparam  MMIO_VGA_REG_SET_FB_BASE_ADDR       = 'h0;
+localparam  MMIO_VGA_REG_SET_FLUSH_START_ADDR   = 'h4;
+localparam  MMIO_VGA_REG_SET_FLUSH_END_ADDR     = 'h8;
 
 `endif

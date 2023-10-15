@@ -216,40 +216,50 @@ Disassembly of section .text:
 Disassembly of section .riscv.attributes:
 
 00000000 <.riscv.attributes>:
-   0:	2d41                	.2byte	0x2d41
+   0:	3641                	.2byte	0x3641
    2:	0000                	.2byte	0x0
    4:	7200                	.2byte	0x7200
    6:	7369                	.2byte	0x7369
    8:	01007663          	bgeu	zero,a6,14 <_start-0xfffffec>
-   c:	00000023          	sb	zero,0(zero) # 0 <_start-0x10000000>
+   c:	002c                	.2byte	0x2c
+   e:	0000                	.2byte	0x0
   10:	1004                	.2byte	0x1004
   12:	7205                	.2byte	0x7205
   14:	3376                	.2byte	0x3376
   16:	6932                	.2byte	0x6932
   18:	7032                	.2byte	0x7032
-  1a:	5f30                	.2byte	0x5f30
+  1a:	5f31                	.2byte	0x5f31
   1c:	326d                	.2byte	0x326d
   1e:	3070                	.2byte	0x3070
-  20:	7a5f 6d6d 6c75      	.byte	0x5f, 0x7a, 0x6d, 0x6d, 0x75, 0x6c
-  26:	7031                	.2byte	0x7031
-  28:	0030                	.2byte	0x30
-  2a:	0108                	.2byte	0x108
-  2c:	0b0a                	.2byte	0xb0a
+  20:	7a5f 6369 7273      	.byte	0x5f, 0x7a, 0x69, 0x63, 0x73, 0x72
+  26:	7032                	.2byte	0x7032
+  28:	5f30                	.2byte	0x5f30
+  2a:	6d7a                	.2byte	0x6d7a
+  2c:	756d                	.2byte	0x756d
+  2e:	316c                	.2byte	0x316c
+  30:	3070                	.2byte	0x3070
+  32:	0800                	.2byte	0x800
+  34:	0a01                	.2byte	0xa01
+  36:	0b              	Address 0x36 is out of bounds.
+
 
 Disassembly of section .comment:
 
 00000000 <.comment>:
    0:	3a434347          	.4byte	0x3a434347
    4:	2820                	.2byte	0x2820
-   6:	32666167          	.4byte	0x32666167
-   a:	37336337          	lui	t1,0x37336
-   e:	3131                	.2byte	0x3131
-  10:	6635                	.2byte	0x6635
-  12:	2029                	.2byte	0x2029
-  14:	3231                	.2byte	0x3231
-  16:	322e                	.2byte	0x322e
-  18:	312e                	.2byte	0x312e
-  1a:	3220                	.2byte	0x3220
-  1c:	3230                	.2byte	0x3230
-  1e:	31343033          	.4byte	0x31343033
-  22:	0035                	.2byte	0x35
+   6:	31363267          	.4byte	0x31363267
+   a:	6234                	.2byte	0x6234
+   c:	34396633          	.4byte	0x34396633
+  10:	6432                	.2byte	0x6432
+  12:	642d                	.2byte	0x642d
+  14:	7269                	.2byte	0x7269
+  16:	7974                	.2byte	0x7974
+  18:	2029                	.2byte	0x2029
+  1a:	3231                	.2byte	0x3231
+  1c:	332e                	.2byte	0x332e
+  1e:	312e                	.2byte	0x312e
+  20:	3220                	.2byte	0x3220
+  22:	3230                	.2byte	0x3230
+  24:	31363033          	.4byte	0x31363033
+  28:	0030                	.2byte	0x30

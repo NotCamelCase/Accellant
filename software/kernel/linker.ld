@@ -20,7 +20,7 @@ MEMORY
     ram (rwx) : ORIGIN = 0x00000000,  LENGTH = 0x10000000 /* 256 Mb */
 }
 
-__stack_size  = DEFINED(stack_size) ? stack_size : 0x40000; /* 256 kB*/
+__stack_size  = DEFINED(stack_size) ? stack_size : 0x100000; /* 1 Mb */
 
 SECTIONS
 {

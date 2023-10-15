@@ -23,12 +23,9 @@ void uart_write_byte(uint8_t val)
     uart_ptr[UART_REG_WRITE_DATA] = val;
 }
 
-void uart_read_byte(uint8_t* val)
+uint8_t uart_read_byte()
 {
-    // Wait for data
-    while (uart_rx_empty()) ;
-
-    *val = (uint8_t)uart_ptr[UART_REG_GET_DATA];
+    return (uint8_t)uart_ptr[UART_REG_GET_DATA];
 }
 
 bool uart_rx_empty()
