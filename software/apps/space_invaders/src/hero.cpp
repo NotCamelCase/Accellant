@@ -42,7 +42,10 @@ void Hero::Render(DisplayPixel *pFramebuffer) const
     for (const auto &laser : m_Lasers)
     {
         if (laser.posX != HERO_LASER_POS_INVALID)
-            DrawRect(pFramebuffer, laserColor, laser.posX, laser.posY, LASER_WIDTH, LASER_HEIGHT);
+        {
+            const Rect laserRect = {laser.posX, laser.posY, LASER_WIDTH, LASER_HEIGHT};
+            DrawRect(pFramebuffer, laserColor, laserRect);
+        }
     }
 }
 

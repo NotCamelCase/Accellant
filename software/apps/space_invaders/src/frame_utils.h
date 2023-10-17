@@ -18,7 +18,7 @@ void ClearScreen(DisplayPixel *pFramebuffer);
 void DrawSprite(DisplayPixel *pFramebuffer, Sprite *pSprite, uint32_t posX, uint32_t posY);
 
 // Draw a rect at (posX, posY) of color on frame buffer
-void DrawRect(DisplayPixel *PFramebuffer, DisplayPixel color, uint32_t posX, uint32_t posY, uint32_t width, uint32_t height);
+void DrawRect(DisplayPixel *pFramebuffer, DisplayPixel color, const Rect& rect);
 
 // Check if rect 'a' collides with rect 'b'
 bool RectCollidesWith(const Rect &a, const Rect &b);

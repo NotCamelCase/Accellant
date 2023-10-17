@@ -31,13 +31,13 @@ void DrawSprite(DisplayPixel *pFrameBuffer, Sprite *pSprite, uint32_t posX, uint
     }
 }
 
-void DrawRect(DisplayPixel *pFramebuffer, DisplayPixel color, uint32_t posX, uint32_t posY, uint32_t width, uint32_t height)
+void DrawRect(DisplayPixel *pFramebuffer, DisplayPixel color, const Rect& rect)
 {
-    auto pFramePtr = &pFramebuffer[posX + posY * SCREEN_WIDTH];
+    auto pFramePtr = &pFramebuffer[rect.x + rect.y * SCREEN_WIDTH];
 
-    for (uint32_t y = 0; y < height; y++)
+    for (uint32_t y = 0; y < rect.h; y++)
     {
-        for (uint32_t x = 0; x < width; x++)
+        for (uint32_t x = 0; x < rect.w; x++)
         {
             pFramePtr[x] = color;
         }

@@ -38,7 +38,9 @@ void Blockers::Render(DisplayPixel *pFramebuffer) const
                 uint16_t blockPosX = BLOCKERS_START_POS_X * i + (block.offsetX * BLOCK_WIDTH);
                 uint16_t blockPosY = BLOCKERS_START_POS_Y + (block.offsetY * BLOCK_HEIGHT);
 
-                DrawRect(pFramebuffer, blockColor, blockPosX, blockPosY, BLOCK_WIDTH, BLOCK_HEIGHT);
+                const Rect rect = {blockPosX, blockPosY, BLOCK_WIDTH, BLOCK_HEIGHT};
+
+                DrawRect(pFramebuffer, blockColor, rect);
             }
         }
     }
